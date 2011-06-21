@@ -1,0 +1,58 @@
+#
+0000C=%s is an open source, multi-platform, truly task oriented IBM Tivoli Storage Manager(*) command line interface
+XXXXX=ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP - árvíztűrő tükörfúrógép
+#
+0000I=Test message, parameter(s): %s
+0010I=COMMAND: '%s' defined.
+0011I=LOADING: [%s] plugin.
+0030I=Killed.
+0040I=Archive directory contains %d entries.
+0041I=Oldest entry dates back to %s %s.
+0042I=Newest entry dates back to %s %s.
+0043I=Average time between samples is %d seconds (%s).
+0044I= ?
+0045I= ?
+0050I=Trying to reach "%s"...
+0060I=Alias %s="%s" defined.
+9900I=You have used our program this time for %s.
+9901I=If you like it, please donate at: %s
+9999I=Thanks!
+
+# Error messages
+0001E=Wrong parameter calling "%s" subroutine!
+0002E=No message for "%s" message ID! The message file naem is "%s".
+#0015E=%s server environment not exist, we are using default server settings.
+0015E=%s server environment does not exist, we are using default server settings.
+#0017E=Terminal width is too small!
+0017E=Insufficient terminal width!
+0020E=This Command is not valid on %s OS!
+0021E=No %s parameter in config file!
+0030E=Missing parameter!
+0031E=Previous command type mismatch. %s!
+0032E=Out of range!
+0033E=OS not supported!
+0050E=No URL found for node %s!
+0099E=%s
+
+# Debug messages
+0003D=TSM command: %s
+0004D=The %s process has started.
+0005D=The %s process returned with [%d] code.
+0006D=QUERY: %s, parameters: %s
+0007D=DSMADMC GOT [%d] line(s)
+0008D=DSMADMC LAST ERROR: [%d]
+0009D=Variable dump: "%s" = "%s"
+0010D=Our Terminal Size is (cols x rows): %d x %d
+0011D=READY FOR THE NEXT COMMAND.
+0012D=COMMAND RECEIVED.
+0013D=COMMAND EXECUTER [%s]
+#0014I=%s server settings was set.
+0014I=%s server setting was set.
+#0016W=Not hided password!
+0016W=Password not hidden!
+#0018I=Debug flag is turned %s.
+0018I=Debug turned %s.
+0019I=Your terminal is: %s.
+0060D=Alias %s="%s" defined.
+0110D=COMMAND: '%s' defined.
+0111D=LOADING: [%s] plugin.
