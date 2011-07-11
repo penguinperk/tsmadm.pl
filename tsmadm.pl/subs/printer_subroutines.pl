@@ -165,7 +165,7 @@ sub setTestTXTOutput
 sub universalTextPrinter ( @ )
 {
     if ( $ParameterRegExpValues{HTML} ) { &HTMLPrinter(@_); return }
-
+    if ( $ParameterRegExpValues{CSV}  ) { &setCSVOutput; }
     my @result = @_;
     my $i      = 0;
 
@@ -480,13 +480,14 @@ sub HTMLPrinter ( @ )
     foreach my $field (@header)
     {    #text  =~ s/\[\s*([^\]]*?)\s*\]//;
         my ( $format, $color, $header );
+        if   ( $field =~ s/{\s*([^\}]*?)\s*}// ) { $format = $1; }
         if   ( $field =~ s/\[\s*([^\]]*?)\s*\]// ) { $color = $1 }
         else                                       { $color = ""; }
         $field =~ s/^\s*|\s*$//g;
         $header = $field;
 
         $fieldColor[$j]  = $color;     #print "$j.oszlop szin:   $fieldColor[$j]\n";
-        $fieldHeader[$j] = $header;    #print "$j.oszlop header: $fieldHeader[$j]\n";
+        $fieldHeader[$j] = $header;    #print "$j.oszlop header: $yfieldHeader[$j]\n";
         $j++;
     }
 

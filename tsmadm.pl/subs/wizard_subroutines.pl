@@ -74,14 +74,14 @@ $formatline
         $str = $_;
         write;
     }
-    print "\n\n\n\n\nHasznalati utmutato:\n\n
-    
-A tsmadm.pl varazslojat latod, ami vagy azert indult el, mert a -wizard opciot hasznaltad inditaskor, vagy mert nem talaltuk meg a konfiguracios fajlt.
+    print "Dear User,
 
-A varazslobol barmikor kilephetsz a quit parancs segitsegevel, vagy a CTRL+C megnyomasaval.
-
-Kezdjunk is hozza!
+You can see the tsmadm.pl wizard now which has started because you used the --wizard option or the program didn't find the configuration file(tsmadm.conf).  
     
+You can quit from this wizard using the "quit" command anywhere or just simple press CTRL+C. 
+
+Let's start!
+        
 ";
 
 ### Questions

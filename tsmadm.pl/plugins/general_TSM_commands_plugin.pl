@@ -189,6 +189,58 @@ $Commands{&commandRegexp( "show", "scratches" )} = sub {
 };
 &defineAlias( 'scr', 'show scratches' );
 
+##################
+# Show MAXscratch #####################################################################################################
+##################
+&msg( '0110D', 'SHow MAXscratch' );
+$Commands{&commandRegexp( "show", "maxscratch" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow MAXscratch Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    my @query = &runTabdelDsmadmc( "SELECT STGPOOLS.STGPOOL_NAME, STGPOOLS.MAXSCRATCH, Count(1) FROM STGPOOLS,VOLUMES WHERE (VOLUMES.STGPOOL_NAME = STGPOOLS.STGPOOL_NAME) GROUP BY STGPOOLS.STGPOOL_NAME, STGPOOLS.MAXSCRATCH" );
+    return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'GENERAL';
+
+    if ( $ParameterRegExpValues{HISTORY} ) {
+
+        my @archive = &initArchiveRetriever ( 'select_stgp_scratches_from_stgpvolumes' );
+        return 0 if ( $#archive < 0 );
+
+        while ( 1 ) {
+
+            &setSimpleTXTOutput();
+            &universalTextPrinter( "StgPool\t#Scratch\t#Volumes", @archive );
+
+            @archive = &archiveRetriever();
+            last if ( $#archive < 0 );
+
+        }
+
+    }
+    else {
+
+        &setSimpleTXTOutput();
+        &universalTextPrinter( "StgPool\t#Scratch\t#Volumes", @query );
+
+    }
+
+    return 0;
+
+};
+&defineAlias( 'scr', 'show scratches' );
+
 ########
 # KIll #######################################################################################################
 ########
