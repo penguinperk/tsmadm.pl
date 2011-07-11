@@ -78,7 +78,7 @@ $formatline
 
 You can see the tsmadm.pl wizard now which has started because you used the --wizard option or the program didn't find the configuration file(tsmadm.conf).  
     
-You can quit from this wizard using the "quit" command anywhere or just simple press CTRL+C. 
+You can quit from this wizard using the \"quit\" command anywhere or just simple press CTRL+C. 
 
 Let's start!
         
@@ -86,17 +86,17 @@ Let's start!
 
 ### Questions
     %question = (
-                DSM_DIR         => "Add meg a DSM_DIR erteket:",
-                DSM_LOG         => "Add meg a DSM_LOG erteket:",
-                DSM_CONFIG      => "Add meg a DSM_CONFIG erteket:",
-                DEBUG           => "Szeretned DEBUG opcioval futtatni a programot?",
+                DSM_DIR         => "Specify DSM_DIR:",
+                DSM_LOG         => "Specify DSM_LOG:",
+                DSM_CONFIG      => "Specify DSM_CONFIG:",
+                DEBUG           => "Would you like to use the program with DEBUG option?",
                 MORE_TSM_SERVER => "\nWould you like to add other server options to the config file?",
                 TSM_SERVER_NAME => "Please type TSM Server section name:",
-                TSMSERVER       => "Szervernev (hosztnev vagy IP cim windows-on, szekcionev minden mas rendszeren):",
+                TSMSERVER       => "Server name (or hostname/DNS or TCP/IP address on windows):",
                 TSMPORT         => "TCP port:",
-                TSMUSERNAME     => "Felhasznalonev:",
-                TSMPASSWORD     => "Jelszo:",
-                DEFAULTSERVER   => "Melyik szerver legyen az alapertelmezett?",
+                TSMUSERNAME     => "Administrator name:",
+                TSMPASSWORD     => "Password:",
+                DEFAULTSERVER   => "Default server name?",
     );
 
     $description{DSM_DIR} = "
@@ -140,8 +140,8 @@ Of course, you can turn on...
 
 TSM Server Section name
 
-Kesobb a szekcionevvel tudsz hivatkozni az egyes szerverekre:
-A set server <szekcionev> parancs segitsegevel lehetoseged van tobb TSM szerver kezelesere, anelkul, hogy a programbol kilepnel.
+You can use this Section name to specify the desired server:
+Use set server <Sectionname> command to change current server. You can create more than one section.
 
 ";
 
@@ -149,9 +149,7 @@ A set server <szekcionev> parancs segitsegevel lehetoseged van tobb TSM szerver 
 
  - TSM Server address/name
 
-   Itt add meg a TSM szervered nevet IP cimet, vagy ha nem windows-t hasznalsz,
-   akkor a dsm.opt fajlban a szekcio nevet
-
+   Specify the DNS name or TCP/IP address for Windows environment or the Server name from your dsm.sys on UNIX system.
 
 ";
     $description{TSMPORT} = "
@@ -163,21 +161,21 @@ A set server <szekcionev> parancs segitsegevel lehetoseged van tobb TSM szerver 
 
  - TSM Server username
 
-   Felhasznalonev, amivel a TSM szervert szeretned adminisztralni
+   TSM administrator user name
 
 ";
     $description{TSMPASSWORD} = "
 
  - TSM Server password
 
-   Jelszo, a korabban megadott felhasznalonevhez
+   Password for that administrator
 
 ";
     $description{DEFAULTSERVER} = "
 
 Default server section
 
-Megadhatod, hogy melyik szerver legyen az alapertelmezett, amikor a tsmadm.pl elindul. 
+You can specify the default server.
 
 ";
 
