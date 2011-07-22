@@ -1230,9 +1230,9 @@ sub readCommand()
                 $input = $History[$HistoryPointer];
                 print "\e[2K\r" . "$CurrentPrompt" . "$input";
                 $charPointer = length($input);
-                open my $DEBUG, ">>", "debug.txt";
-                print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
-                close($DEBUG);
+                #open my $DEBUG, ">>", "debug.txt";
+                #print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
+                #close($DEBUG);
 
             }
             elsif ( $chars[-1] == 66 && $chars[-2] == 91 && $chars[-3] == 27 )
@@ -1244,9 +1244,9 @@ sub readCommand()
                   if ( defined $History[$HistoryPointer] );
                 print "\e[2K\r" . "$CurrentPrompt" . "$input";
                 $charPointer = length($input);
-                open my $DEBUG, ">>", "debug.txt";
-                print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
-                close($DEBUG);
+                #open my $DEBUG, ">>", "debug.txt";
+                #print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
+                #close($DEBUG);
 
             }
             elsif ( $chars[-1] == 68 && $chars[-2] == 91 && $chars[-3] == 27 )
@@ -1254,9 +1254,9 @@ sub readCommand()
                 next if ( $charPointer <= 0 );
                 print "\e[D";
                 $charPointer--;
-                open my $DEBUG, ">>", "debug.txt";
-                print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
-                close($DEBUG);
+                #open my $DEBUG, ">>", "debug.txt";
+                #print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
+                #close($DEBUG);
 
             }
             elsif ( $chars[-1] == 67 && $chars[-2] == 91 && $chars[-3] == 27 )
@@ -1264,11 +1264,12 @@ sub readCommand()
                 next if ( $charPointer >= length($input) );
                 print "\e[C";
                 $charPointer++;
-                open my $DEBUG, ">>", "debug.txt";
-                print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
-                close($DEBUG);
+                #open my $DEBUG, ">>", "debug.txt";
+                #print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
+                #close($DEBUG);
 
             }
+
             elsif ( $chars[-1] == 127 )
             {    # BACKSPACE
                 next if ( $charPointer <= 0 );
@@ -1278,9 +1279,9 @@ sub readCommand()
 	                substr( $input, $charPointer, 1, "" );
                 print "\e[s\e[2K\r" . "$CurrentPrompt" . "$input\e[u";
 
-                open my $DEBUG, ">>", "debug.txt";
-                print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
-                close($DEBUG);
+                #open my $DEBUG, ">>", "debug.txt";
+                #print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
+                #close($DEBUG);
             }
             elsif ( $chars[-1] == 80 && $chars[-2] == 79 && $chars[-3] == 27 )
             {    # F1
@@ -1293,9 +1294,9 @@ sub readCommand()
                     $HistoryPointer = @History;
                     $input          = "";
                     ReadMode('normal');
-                    open my $DEBUG, ">>", "debug.txt";
-                    print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
-                    close($DEBUG);
+                    #open my $DEBUG, ">>", "debug.txt";
+                    #print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
+                    #close($DEBUG);
                     print "\n";
                     return "help ".$command;
             }
@@ -1308,6 +1309,18 @@ sub readCommand()
                     return "quit";
                 }
             }
+	    elsif ( $chars[-1] == 126 && $chars[-2] == 54 && $chars[-3] == 91 && $chars[-4] == 27 )
+            {   # PGDOWN
+		# print "PGDOWN\n";
+            }
+	    elsif ( $chars[-1] == 126 && $chars[-2] == 53 && $chars[-3] == 91 && $chars[-4] == 27 )
+            {   # PGUP
+		# print "PGUP\n";
+            }
+	    elsif ( $chars[-1] == 126 && $chars[-2] == 52 && $chars[-3] == 91 && $chars[-4] == 27 )
+            {   # INSERT
+		# print "INSERT\n";
+            }	    
             elsif (    $chars[-1] == 126
                     && $chars[-2] == 51
                     && $chars[-3] == 91
@@ -1355,9 +1368,9 @@ sub readCommand()
                     $HistoryPointer = @History;
                     $input          = "";
                     ReadMode('normal');
-                    open my $DEBUG, ">>", "debug.txt";
-                    print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
-                    close($DEBUG);
+                    #open my $DEBUG, ">>", "debug.txt";
+                    #print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
+                    #close($DEBUG);
                     print "\n";
                     return $command;
                 }
@@ -1378,9 +1391,9 @@ sub readCommand()
                     $input .= chr( $chars[-1] );
                 }
                 print chr( $chars[-1] );
-                open my $DEBUG, ">>", "debug.txt";
-                print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
-                close($DEBUG);
+                #open my $DEBUG, ">>", "debug.txt";
+                #print $DEBUG "length: " . length($input) . ", charPointer: $charPointer\n";
+                #close($DEBUG);
             }
         }
 

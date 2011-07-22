@@ -584,7 +584,7 @@ You can specify the default server.
     }
     open (CONFIGFILE, ">", "$Settings{CONFIGFILE}") or die;
 
-    print ">>>>>>>>>>CONFIG FILE<<<<<<<<<<\n";
+    print "Writing config file into $Settings{CONFIGFILE} ...";
     print CONFIGFILE "DEBUG = 0
 
 DEFAULTCOLOR   = WHITE
@@ -599,7 +599,11 @@ PROMPT         = TSMADM [SERVERNAME]:
     print CONFIGFILE "DSM_DIR = $answer{DSM_DIR}\n";
     print CONFIGFILE "DSM_LOG = $answer{DSM_DIR}\n";
     print CONFIGFILE "DSM_CONFIG = $answer{DSM_CONFIG}\n";
-    print CONFIGFILE "DSMADMC = $answer{DSM_DIR}dsmadmc" . ( $OS_win ? '.exe' : '' ) . "\n";
+    if ($OS_win) {
+        print CONFIGFILE "DSMADMC = $answer{DSM_DIR}\\dsmadmc.exe\n";
+    } else {
+        print CONFIGFILE "DSMADMC = dsmadmc";      
+    }
     print CONFIGFILE "\n";
     print CONFIGFILE "DEFAULTSERVER = $answer{DEFAULTSERVER}\n";
     print CONFIGFILE "\n";
@@ -614,6 +618,7 @@ PROMPT         = TSMADM [SERVERNAME]:
     }
 
 close (CONFIGFILE) or die;
+print "OK\n";
 
 }
 
