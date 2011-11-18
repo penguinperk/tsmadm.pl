@@ -61,7 +61,7 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select SESSION_ID,STATE,WAIT_SECONDS,BYTES_SENT,BYTES_RECEIVED,SESSION_TYPE,CLIENT_PLATFORM,CLIENT_NAME,INPUT_VOL_ACCESS,OUTPUT_VOL_ACCESS from sessions","select_x_from_sessions" );
+    my @query = &runTabdelDsmadmc( "select SESSION_ID,STATE,WAIT_SECONDS,BYTES_SENT,BYTES_RECEIVED,SESSION_TYPE,CLIENT_PLATFORM,CLIENT_NAME,MOUNT_POINT_WAIT,INPUT_MOUNT_WAIT,INPUT_VOL_WAIT,INPUT_VOL_ACCESS,OUTPUT_MOUNT_WAIT,OUTPUT_VOL_WAIT,OUTPUT_VOL_ACCESS,LAST_VERB,VERB_STATE from sessions","select_x_from_sessions" );
     #,OWNER_NAME,MOUNT_POINT_WAIT,INPUT_MOUNT_WAIT,INPUT_VOL_WAIT,INPUT_VOL_ACCESS,OUTPUT_MOUNT_WAIT,OUTPUT_VOL_WAIT,OUTPUT_VOL_ACCESS,LAST_VERB,VERB_STATE
     return 0 if ( $#query < 0 || $LastErrorcode );
 
@@ -78,11 +78,11 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
         $line[8] = "" if ( ! defined ( $line[8] ) );
         $line[9] = "" if ( ! defined ( $line[9] ) );
 
-        push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7], $line[8].$line[9] ) )
+        push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7], $line[8].$line[9].$line[10].$line[11].$line[12].$line[13].$line[14], $line[16].'['.$line[15].']' ) );
     }
-
+    
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tId\tState\tWait\tSent{RIGHT}\tReceived{RIGHT}\tType\tPlatform\tName\tMediaAccess", &addLineNumbers( @printable ) );
+    &universalTextPrinter( "#{RIGHT}\tId\tState\tWait\tSent{RIGHT}\tReceived{RIGHT}\tType\tPlatform\tName\tMediaAccess\tVerb", &addLineNumbers( @printable ) );
     #\tOWNER_NAME\tMOUNT_POINT_WAIT\tINPUT_MOUNT_WAIT\tINPUT_VOL_WAIT\tINPUT_VOL_ACCESS\tOUTPUT_MOUNT_WAIT\tOUTPUT_VOL_WAIT\tOUTPUT_VOL_ACCESS\tLAST_VERB\tVERB_STATE
 
     return 0;
@@ -239,7 +239,6 @@ $Commands{&commandRegexp( "show", "maxscratch" )} = sub {
     return 0;
 
 };
-&defineAlias( 'scr', 'show scratches' );
 
 ########
 # KIll #######################################################################################################
@@ -508,11 +507,32 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
 
     $LastCommandType = 'DRIVE';
 
-    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'online='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,'['||VOLUME_NAME||']' from drives" );
+    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'online='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,'['||VOLUME_NAME||']',ALLOCATED_TO from drives" );
     return if ( $#query < 0 || $LastErrorcode );
 
+    # István added it
+    my @query_m = &runDsmadmc("q mount");
+    chomp(@query_m);
+
+    my %vols;
+    foreach ( @query_m ) {
+       if ($_ =~ m/^ANR83{29|30|31|32|33}I/) {
+           if ($_ =~ /.*volume (.*) is mounted (.*) in drive.*, status: (.*)\./) {
+               $vols{'['.$1.']'}[0]=$2;
+               $vols{'['.$1.']'}[1]=$3;
+           }
+       }
+    }
+    foreach ( @query ) {
+       my @line = split (/\t/);
+                 
+       if ( defined ($line[6]) && exists $vols{$line[6]} ) {
+               $_.= "\t$vols{$line[6]}[0]\t$vols{$line[6]}[1]";
+       }
+    }
+    
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tLibraryName\tDriveName\tOnline\tElement\tState\tSerial\tVolume", &addLineNumbers( @query ) );
+    &universalTextPrinter( "#{RIGHT}\tLibraryName\tDriveName\tOnline\t#El\tState\tSerial\tVolume\tOwner\tMode{RIGHT}\tMStatus{RIGHT }", &addLineNumbers( @query ) );
 
     return 0;
 
@@ -904,7 +924,7 @@ $Commands{&commandRegexp( "show", "expiration" )} = sub {
     }
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "StartTime\tDuration\tSuccess\tExamined\tAffected", @printable );
+    &universalTextPrinter( "StartTime\tDuration\tSuccess{RIGHT}\tExamined{RIGHT}\tAffected{RIGHT}", @printable );
 
     return 0;
 

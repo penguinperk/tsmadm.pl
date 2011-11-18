@@ -299,7 +299,6 @@ sub universalTextPrinter ( @ )
         $j++;
     }
 
-
     # and finally add the lines around the header
 
       if ( "@fieldHeader" !~ m/NOHEADER/ ) {
@@ -310,7 +309,7 @@ sub universalTextPrinter ( @ )
       }
 
     #BODY
-    foreach (@result)
+    foreach ( &grepIt(@result) )
     {
         chomp;
         

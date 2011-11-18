@@ -142,8 +142,8 @@ sub Dsmadmc ( $$ ) {
         }
 
         # grep and invgrep
-        @return = &grepIt ( @return );
-
+        #@return = &grepIt ( @return );
+	
     }
     else {
 

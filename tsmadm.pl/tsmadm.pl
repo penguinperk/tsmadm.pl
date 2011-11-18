@@ -16,6 +16,10 @@
 # Written by _flex from FleXoft and Marcell.
 #   (flex@tsmadm.pl) (marcell@tsmadm.pl)
 #
+# v2.00, 2012.01.01. Budapest, FleXoft
+#	Add:	improved version
+#	Bfx:	several bfxs
+#
 # v1.00, 2011.06.01. Budapest, FleXoft
 #	Rls:	first release
 #
@@ -104,6 +108,7 @@ my $disableGrep;
 my $debugFlag;
 my $consoleFlag;
 my $wizardFlag;
+my $colortestFlag;
 
 if (
      !GetOptions(
@@ -120,6 +125,7 @@ if (
                   "language=s"     => \$languageOption,
                   "defaultcolor=s" => \$defaultColorOption,
                   "prompt=s"       => \$promptOptions,
+                  "colortest"      => \$colortestFlag,
                 )
    )
 {
@@ -214,11 +220,14 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
 
 %GlobalHighlighter = (
     # volumes
-    '[^A-Z0-9]([B][0-9]{5})[^A-Z0-9_]'              => 'BOLD GREEN',
-    '[^A-Z0-9]([A-Z]{3}[0-9]{3})[^A-Z0-9_]'              => 'BOLD GREEN',
-    '[^A-Z0-9]([A-Z,0-9]{6}J[ABXW])[^A-Z0-9_]'      => 'BOLD GREEN',
-    '[^A-Z0-9]([A-Z,0-9]{6}L[12345])[^A-Z0-9_]'     => 'BOLD GREEN',
-    '[^A-Za-z0-9.\\\/]([A-Za-z0-9.\\\/]+BFS[0-9.]*)[^A-Z0-9.]'     => 'BOLD GREEN',
+    '[^A-Z0-9]([A-Z]{1}[0-9]{5})[^A-Z0-9_]'                     => 'BOLD GREEN',
+    '[^A-Z0-9]([A-Z]{3}[0-9]{3})[^A-Z0-9_]'                     => 'BOLD GREEN',
+    '[^A-Z0-9]([A-Z,0-9]{6}J[ABXW])[^A-Z0-9_]'                  => 'BOLD GREEN',
+    '[^A-Z0-9]([A-Z,0-9]{6}L[12345])[^A-Z0-9_]'                 => 'BOLD GREEN',
+    
+    #'[^A-Za-z0-9.\\\/]([A-Za-z0-9.\\\/]+BFS[0-9.]*)[^A-Z0-9.]' => 'BOLD GREEN',
+    '[^A-Za-z0-9.\\\/]([A-Za-z0-9.\\\/]+BFS)'                   => 'BOLD GREEN',
+    '[^A-Za-z0-9.\\\/]([A-Za-z0-9.\\\/]+DBB)'                   => 'BOLD GREEN',
 
     # sessions
     '(MediaW)'                   => 'BOLD RED',
@@ -227,12 +236,22 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
 #    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)' => 'BOLD BLUE',
 #    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)' => 'BOLD YELLOW',
 
-    '(ANR\d\d\d\dE[A-Za-z _\\.-0-9]*)' => 'BOLD RED',
-    '(ANR\d\d\d\dW[A-Za-z _\\.-0-9]*)' => 'BOLD YELLOW',
+    '(ANR\d\d\d\dE[A-Za-z _\\.-0-9]*)'                          => 'BOLD RED',
+    '(ANR\d\d\d\dW[A-Za-z _\\.-0-9]*)'                          => 'BOLD YELLOW',
 
+    '(Waiting for multiple mount points in device class \w*)'   => 'BOLD YELLOW',
+    '(Waiting for mount point in device class \w*)'             => 'BOLD YELLOW',
+    '(Waiting for mount of output volume \w*)'                  => 'BOLD YELLOW',
+    
     # mounts
-    '(RESERVED)'                 => 'BOLD YELLOW',
-    '(WAITING FOR VOLUME)'       => 'BOLD RED',
+    '(RESERVED)'                                                => 'BOLD YELLOW',
+    '(DISMOUNTING)'                                             => 'BOLD YELLOW',
+    
+  
+    '(WAITING FOR VOLUME)'                                      => 'BOLD RED',
+    
+    # PATHs
+    'online=NO'                                                 => 'BOLD RED',
 );
 
 ##########################################################################################
@@ -273,7 +292,6 @@ else {
 
 # load config file DON'T MOVE THIS SECTION!
 if ( !defined($configfileOption) ) {
-
     # default config file
     $configfileOption = "$Settings{HOMEDIRECTORY}/.tsmadm/tsmadm.conf";
 }
@@ -417,6 +435,20 @@ if ( defined($consoleFlag) ) {
 # Welcome message
 print colorString( "", $Settings{DEFAULTCOLOR} );
 &msg( '0000C', &colorString( "tsmadm.pl v" . $tsmadmplVersion, 'BOLD WHITE' ) );
+
+# colortest only
+if ( defined($colortestFlag) ) {
+    print &textLine( &colorString( "#", $Settings{DEFAULTCOLOR} ).&colorString( " Colortest begin ", "BOLD RED" ), '#');
+    print &textLine( &colorString( "#", $Settings{DEFAULTCOLOR} ).&colorString( " Highlighter [ ABC123JA X ", "BOLD YELLOW" ).&colorString( '], [', "BLUE" ). &colorString( " ABC456L5 ] ", "BOLD WHITE" ), '#');
+    print &globalHighlighter( &textLine( &colorString( "#", $Settings{DEFAULTCOLOR} ).&colorString( " Highlighter [ ABC123JA X ", "BOLD YELLOW" ).&colorString( '], [', "BLUE" ). &colorString( " ABC456L5 ] ", "BOLD WHITE" ), '#') );
+    
+    print &globalHighlighter( "Primary Pool MKB_OS4_J, Copy Pool MKB_OS4_C1_J, Files Backed Up: 24, Bytes Backed Up: 1,134,000,815,259, Unreadable Files: 0, Unreadable Bytes: 0. Current Physical File (bytes): 246,120,144,486 Current input volume: A00448JA. Current output volume: MKB510JA.\n" );
+    print &globalHighlighter( "Volume MKB195JA (storage pool MKB_SQL_C1_J), Moved Files: 4, Moved Bytes: 7,904,512, Unreadable Files: 0, Unreadable Bytes: 0. Current Physical File (bytes): 55,534,602,514 Current input volume: MKB195JA. Current output volume: MKB216JA.\n" );
+    print &globalHighlighter( "Incremental backup: 0 pages of 77452 backed up. Current output volume: /tsm/blackhole/dbDailyIncrements/21536884.DBB.\n" );
+        
+    print &textLine( &colorString( "#", $Settings{DEFAULTCOLOR} ).&colorString( " Colortest end ", "BOLD RED" ), '#');
+    exit 99;
+}
 
 # load plugins
 &reLoadPlugins();

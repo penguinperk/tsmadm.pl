@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use MIME::Base64 ();
 
 # Global variables (Each starts with capital!)
 our $Dirname;                      #
@@ -44,13 +45,15 @@ sub commandSplitterParserExecuter ( $ ) {
 
         # aliases
         for my $key ( keys %Aliases ) {
-            last if ( $command =~ s/^\s*$key(ENDofCOMMAND|\ +)/$Aliases{$key}$1/i );
+            #last if ( $command =~ s/^\s*$key(ENDofCOMMAND|\ +)/$Aliases{$key}$1/i );
+	    # Issue 5 solution from István
+	    last if ( $command =~ s/^\s*$key(ENDofCOMMAND|\ +|\|)/$Aliases{$key}$1/i );
         }
 
         $commandsTmp .= $command.";";
 
     }
-    $commandsTmp =~ s/ENDofCOMMAND//g; # ceanup
+    $commandsTmp =~ s/ENDofCOMMAND//g; # cleanup
 
     my @commands = split( /\s*;\s*/, $commandsTmp );
 
@@ -342,9 +345,9 @@ sub msg ( $@ ) {
             @messageParameters
         );
 
-        # cut it
+        # cut it 
         if ( length($toprint) > $Settings{TERMINALCOLS} - 1 ) {
-            $toprint = substr( $toprint, 0, $Settings{TERMINALCOLS} );
+            $toprint = substr( $toprint, 0, $Settings{TERMINALCOLS} - 1 );
         }
 
         $msg = ( &colorString( &textLine( $toprint, "-" ), "CYAN" ) );
@@ -357,7 +360,7 @@ sub msg ( $@ ) {
 
         # cut it
         if ( length($toprint) + 1 > $Settings{TERMINALCOLS} - 1 ) {
-            $toprint = substr( $toprint, 0, $Settings{TERMINALCOLS} );
+            $toprint = substr( $toprint, 0, $Settings{TERMINALCOLS} - 1);
         }
 
         $msg = &colorString( $toprint . "\n", "BOLD RED" );
@@ -722,7 +725,7 @@ sub grepIt ( @ ) {
         && $ParameterRegExpValues{GREP} ne ""
         && !$Settings{'DISABLEGREP'} )
     {
-            @return = grep( /$ParameterRegExpValues{GREP}/i, @return );    ## Grep
+            @return = grep( /($ParameterRegExpValues{GREP})/i, @return );    ## Grep
     }
 
     @return = grep( !/$ParameterRegExpValues{INVGREP}/i, @return )
@@ -860,6 +863,11 @@ sub globalHighlighter ( $ ) {
 
     my $printableField = $_[0];
 
+#print "\n";
+#my $p = $printableField;
+#$p =~ s/\e/ESC/g;
+#print $p."\n\n";
+
     foreach my $regexp ( keys %GlobalHighlighter ) {
 
         # collect, save and convert
@@ -868,19 +876,32 @@ sub globalHighlighter ( $ ) {
         while ( $printableField =~ m/$regexp/ ) {
 
             my $pattern = $1;
+	    
+#print $pattern."\n";
+	    
             my $coloredString = &colorString( $pattern, $GlobalHighlighter{$regexp} );
-
-            # find the previous color
+ 
+             # find the previous color
             my $previousColor = "";
-            if ( m/(\e\[\d+;\d+m).*$regexp/ )
+#            if ( $printableField =~ m/(\e\[\d+;*\d*m)(.*$pattern)/ )
+#	    (begin)([^b]+|b(?!egin))*(end)
+	    if ( $printableField =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*($pattern)/ )
             {
                 $previousColor = $1;
-            }
-
+#print "FIND$previousColor OK: $2\n";
+		
+#my $p = $previousColor.$2;	
+#$p =~ s/\e/ESC/g;
+#print $p."\n";
+		
+	 }
+	    
             $printableField =~ s/$pattern/COLORIZE\[$i\]/;
             $save[$i] = $coloredString.$previousColor;
 
             $i++;
+
+#print "NEXT\n\n";
 
         }
 
@@ -1106,7 +1127,8 @@ sub checkPassword ()
             my $passwordLength = length($hash_value);
             my $cipher         = substr( $cipherKey, 0, $passwordLength );
             my $xor            = $hash_value ^ $cipher;
-            push( @codedContent, "$hash_key = XOR{$xor}\n" );
+            my $base64	       = MIME::Base64::encode($xor,"");
+            push( @codedContent, "$hash_key = XOR{$base64}\n" );
             $changed = 1;
         }
         else
@@ -1141,6 +1163,7 @@ sub getPassword ()
     }
     $password =~ s/^XOR{//;
     $password =~ s/}$//;
+    $password       = MIME::Base64::decode($password);
     my $passwordLength = length($password);
     my $cipher         = substr( $cipherKey, 0, $passwordLength );
     my $xor            = $password ^ $cipher;

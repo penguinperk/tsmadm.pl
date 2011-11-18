@@ -93,7 +93,61 @@ $Commands{&commandRegexp( 'show', 'environment' )} = sub {
     }
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "KEY[GREEN]\t\tVALUE", &grepIt ( @printable ) );
+    &universalTextPrinter( "KEY[GREEN]\t\tVALUE", @printable );
+
+    return 0; # matched
+
+};
+
+&msg( '0110D', 'SHow SERvers' );
+$Commands{&commandRegexp( 'show', 'servers' )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow SERvers Help!\n";
+        print "--------\n";
+
+        return 0; # Ok
+    }
+
+    my @printable;
+
+    for my $key ( sort( keys %Settings ) ) {
+        push( @printable, "$1" ) if ( $key =~ m/(^.*)\[TSMSERVER\]/ );
+    }
+
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "Servers{RIGHT}", &grepIt ( @printable ) );
+
+    return 0; # matched
+
+};
+
+&msg( '0110D', 'SHow COMmands' );
+$Commands{&commandRegexp( 'show', 'commands' )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow COMmands Help!\n";
+        print "--------\n";
+
+        return 0; # Ok
+    }
+
+    my @printable;
+
+    for my $key ( sort( keys %Commands ) ) {
+        push( @printable, "$1" ) if ( $key =~ m/\(\w*\)*/ );
+    }
+
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "Commands{RIGHT}", &grepIt ( @printable ) );
 
     return 0; # matched
 
