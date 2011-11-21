@@ -167,7 +167,7 @@ sub startConsole ()
 
     if ($OS_win)
     {
-        system( "cmd /c start perl $Dirname/tsmadm.pl --config $Settings{CONFIGFILE} --server $Settings{SERVER} -console " );
+	system( "cmd /c start perl $Dirname/tsmadm.pl --config \"$Settings{CONFIGFILE}\" --server $Settings{SERVER} -console " );
     }
     else
     {

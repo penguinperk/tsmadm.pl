@@ -78,18 +78,19 @@ sub commandSplitterParserExecuter ( $ ) {
             my $value1 = $ParameterRegExps{$key};
             my $value2 = $ParameterRegExpValues{$key};
 
-            #
-            if ( $command =~ s/$value1// ) {
-                if ( defined($2) ) {
-                    $ParameterRegExpValues{$key} .=
-                      ( !defined( $ParameterRegExpValues{$key} )
-                          || $ParameterRegExpValues{$key} eq "" ) ? $2 : '&'
-                      . $2;
-                }
-                else {
-                    $ParameterRegExpValues{$key} = 1;
-                }
-            }
+	    while ( $command =~ s/$value1// ) {
+
+		#
+		if ( defined($2) ) {
+		    my $parameter = $2;
+		    $parameter =~ s/\s+$//;
+		    $ParameterRegExpValues{$key} .= ( !defined( $ParameterRegExpValues{$key} ) || $ParameterRegExpValues{$key} eq "" ) ? $parameter : '&ANDGREP&'.$parameter;
+		}
+		else {
+		    $ParameterRegExpValues{$key} = 1;
+		}
+				
+	    }
         }
 
 #print &colorString( &textLine( "DEBUG: COMMAND RECEIVED. ", "-" ), "bold red" );
@@ -717,24 +718,37 @@ sub commandRegexp( $$ ) {
 
 }
 
+#######################################################################################################################
+# grepIt
+#######################################################################################################################
 sub grepIt ( @ ) {
 
     my @return = @_;
 
-    if (   defined( $ParameterRegExpValues{GREP} )
-        && $ParameterRegExpValues{GREP} ne ""
-        && !$Settings{'DISABLEGREP'} )
+    if (   defined( $ParameterRegExpValues{GREP} ) && $ParameterRegExpValues{GREP} ne "" && !$Settings{'DISABLEGREP'} )
     {
-            @return = grep( /($ParameterRegExpValues{GREP})/i, @return );    ## Grep
+	foreach ( split( '&ANDGREP&', $ParameterRegExpValues{GREP} ) ) {
+	    my $pattern = $_;
+            @return = grep( /($pattern)/i, @return );    ## Grep
+	    
+	    my @return2;
+	    foreach ( @return ) {
+		push ( @return2, &colorizeLineI( $_, '('.$pattern.')', 'RED'));
+	    }
+	    @return = @return2;
+	    
+	}
+    }
+    
+    if ( defined( $ParameterRegExpValues{INVGREP} ) && $ParameterRegExpValues{INVGREP} ne "" && !$Settings{'DISABLEGREP'} )
+    {
+	foreach ( split( '&ANDGREP&', $ParameterRegExpValues{INVGREP} ) ) {
+	    my $pattern = $_;
+            @return = grep( !/$pattern/i, @return );      ## INVGrep
+	}
     }
 
-    @return = grep( !/$ParameterRegExpValues{INVGREP}/i, @return )
-      if ( defined( $ParameterRegExpValues{INVGREP} )
-        && $ParameterRegExpValues{INVGREP} ne ""
-        && !$Settings{'DISABLEGREP'} );                ## INVGrep
-
     return @return;
-
 }
 
 sub deleteColumn( $@ ) {
@@ -863,60 +877,98 @@ sub globalHighlighter ( $ ) {
 
     my $printableField = $_[0];
 
-#print "\n";
-#my $p = $printableField;
-#$p =~ s/\e/ESC/g;
-#print $p."\n\n";
-
     foreach my $regexp ( keys %GlobalHighlighter ) {
 
-        # collect, save and convert
-        my @save;
-        my $i = 0;
-        while ( $printableField =~ m/$regexp/ ) {
-
-            my $pattern = $1;
-	    
-#print $pattern."\n";
-	    
-            my $coloredString = &colorString( $pattern, $GlobalHighlighter{$regexp} );
- 
-             # find the previous color
-            my $previousColor = "";
-#            if ( $printableField =~ m/(\e\[\d+;*\d*m)(.*$pattern)/ )
-#	    (begin)([^b]+|b(?!egin))*(end)
-	    if ( $printableField =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*($pattern)/ )
-            {
-                $previousColor = $1;
-#print "FIND$previousColor OK: $2\n";
-		
-#my $p = $previousColor.$2;	
-#$p =~ s/\e/ESC/g;
-#print $p."\n";
-		
-	 }
-	    
-            $printableField =~ s/$pattern/COLORIZE\[$i\]/;
-            $save[$i] = $coloredString.$previousColor;
-
-            $i++;
-
-#print "NEXT\n\n";
-
-        }
-
-        # restore everything
-        while ( $printableField =~ m/COLORIZE\[(\d+)\]/ ) {
-
-            my $coloredString = $save[$1];
-            $printableField =~ s/COLORIZE\[$1\]/$coloredString/;
-
-        }
+	$printableField = &colorizeLine( $printableField, $regexp, $GlobalHighlighter{$regexp});
 
     }
 
     return $printableField;
 
+}
+
+sub colorizeLine ( $$$ ) {
+
+    my $line = $_[0];
+    my $regexp = $_[1];
+    my $color = $_[2];
+
+        # collect, save and convert
+        my @save;
+        my $i = 0;
+
+        while ( $line =~ m/$regexp/ ) {
+
+            my $pattern = $1;
+            my $coloredString = &colorString( $pattern, $color );
+ 
+             # find the previous color
+            my $previousColor = "";
+
+	    if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*($pattern)/ )
+            {
+                $previousColor = $1;
+	    }
+	    
+            $line =~ s/$pattern/COLORIZE\[$i\]/;
+            $save[$i] = $coloredString.$previousColor;
+
+            $i++;
+
+        }
+
+        # restore everything
+        while ( $line =~ m/COLORIZE\[(\d+)\]/ ) {
+
+            my $coloredString = $save[$1];
+            $line =~ s/COLORIZE\[$1\]/$coloredString/;
+
+        }
+	
+    return( $line );
+ 
+}
+
+sub colorizeLineI ( $$$ ) {
+
+    my $line = $_[0];
+    my $regexp = $_[1];
+    my $color = $_[2];
+
+        # collect, save and convert
+        my @save;
+        my $i = 0;
+
+        while ( $line =~ m/$regexp/i ) {
+
+            my $pattern = $1;
+            my $coloredString = &colorString( $pattern, $color );
+ 
+             # find the previous color
+            my $previousColor = "";
+
+	    if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*($pattern)/ )
+            {
+                $previousColor = $1;
+	    }
+	    
+            $line =~ s/$pattern/COLORIZE\[$i\]/;
+            $save[$i] = $coloredString.$previousColor;
+
+            $i++;
+
+        }
+
+        # restore everything
+        while ( $line =~ m/COLORIZE\[(\d+)\]/ ) {
+
+            my $coloredString = $save[$1];
+            $line =~ s/COLORIZE\[$1\]/$coloredString/;
+
+        }
+	
+    return( $line );
+ 
 }
 
 sub printerGrepHighlighter ( $$$ ) {
