@@ -67,6 +67,9 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
 
     $LastCommandType = "SESSION";
 
+    &pbarInit( "PREPARATION |", scalar( @query ), "|");
+
+    my $i = 1;
     my @printable;
 
     foreach ( @query ) {
@@ -78,7 +81,14 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
         $line[8] = "" if ( ! defined ( $line[8] ) );
         $line[9] = "" if ( ! defined ( $line[9] ) );
 
-        push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7], $line[8].$line[9].$line[10].$line[11].$line[12].$line[13].$line[14], $line[16].'['.$line[15].']' ) );
+        my $mediaAccess = $line[8].$line[9].$line[10].$line[11].$line[12].$line[13].$line[14];
+        if ( $mediaAccess =~ m/(\w*),(\w+),(\d+)/ ) {
+            $mediaAccess = "\[$2\] $1, ".&timeFormatter ( $3, 's' );    
+        }
+        
+        push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7], $mediaAccess, $line[16].'['.$line[15].']' ) );
+        
+        &pbarUpdate( $i++ );
     }
     
     &setSimpleTXTOutput();
@@ -169,7 +179,7 @@ $Commands{&commandRegexp( "show", "scratches" )} = sub {
         while ( 1 ) {
 
             &setSimpleTXTOutput();
-            &universalTextPrinter( "LibraryName\t#Scratch", @archive );
+            &universalTextPrinter( "LibraryName\t#Scratch{RIGHT}", @archive );
 
             @archive = &archiveRetriever();
             last if ( $#archive < 0 );
@@ -180,7 +190,7 @@ $Commands{&commandRegexp( "show", "scratches" )} = sub {
     else {
 
         &setSimpleTXTOutput();
-        &universalTextPrinter( "LibraryName\t#Scratch", @query );
+        &universalTextPrinter( "LibraryName\t#Scratch{RIGHT}", @query );
 
     }
 
@@ -524,11 +534,11 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
        }
     }
     foreach ( @query ) {
-       my @line = split (/\t/);
-                 
-       if ( defined ($line[6]) && exists $vols{$line[6]} ) {
-               $_.= "\t$vols{$line[6]}[0]\t$vols{$line[6]}[1]";
-       }
+        my @line = split (/\t/);
+
+        if ( defined ($line[6]) && exists $vols{$line[6]} ) {
+            $_.= "\t$vols{$line[6]}[0]\t$vols{$line[6]}[1]";
+        }
     }
     
     &setSimpleTXTOutput();
@@ -569,7 +579,7 @@ $Commands{&commandRegexp( "show", "paths" )} = sub {
     return if ( $#query < 0 || $LastErrorcode );
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tSourceName\tDestinationName\tSourceType\tDestinationType\tLibraryName\tDevice\tOnline", &addLineNumbers( @query ) );
+    &universalTextPrinter( "#{RIGHT}\tSourceName\tDestiName\tSourceType\tDestinationType\tLibraryName\tDevice\tOnline", &addLineNumbers( @query ) );
 
     return 0;
 
@@ -751,6 +761,7 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
 
     my $i = 1;
     my @printable;
+    
     foreach ( @query ) {
         my @line = split(/\t/);
 
@@ -777,6 +788,12 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
         elsif ( $line[6] =~ m/severed/i ) {
             $line[6] = colorString( $line[6], "BOLD RED" );
             $line[7] = colorString( $line[7], "BOLD RED" );
+        }
+        elsif ( $line[6] =~ m/started/i ) {
+            $line[6] = colorString( $line[6], "BOLD GREEN" );
+        }
+        elsif ( $line[6] =~ m/pending/i ) {
+            $line[6] = colorString( $line[6], "GREEN" );
         }
 
         push ( @printable, join( "\t", @line ) );

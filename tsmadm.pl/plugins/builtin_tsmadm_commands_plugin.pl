@@ -143,7 +143,7 @@ $Commands{&commandRegexp( 'show', 'commands' )} = sub {
     my @printable;
 
     for my $key ( sort( keys %Commands ) ) {
-        push( @printable, "$1" ) if ( $key =~ m/\(\w*\)*/ );
+        push( @printable, "$1" ) if ( $key =~ m/\((\w+)\).*?\(*(\w*)\)*/ );
     }
 
     &setSimpleTXTOutput();

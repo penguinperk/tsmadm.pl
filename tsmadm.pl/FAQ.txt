@@ -1,0 +1,82 @@
+###############
+# DATE FORMAT #
+###############
+
+0
+Use the locale-specified date format. For AIX, HP-UX, and Solaris: This is the default if the locale-specified date format consists of digits and separator characters.
+
+1
+MM/DD/YYYY
+For AIX, HP-UX, and Solaris: This is the default if the locale-specified date format consists of anything but digits and separator characters.
+
+This is the default for the following available translations:
+
+US English
+Chinese (Traditional)
+Korean
+
+2
+DD-MM-YYYY
+This is the default for the following available translations:
+
+Brazilian Portuguese
+Italian
+3
+YYYY-MM-DD
+This is the default for the following available translations:
+
+Japanese
+Chinese (Simplified)
+Polish
+
+4
+DD.MM.YYYY
+This is the default for the following available translations:
+
+German
+French
+Spanish
+Czech
+Russian
+
+5
+YYYY.MM.DD
+This is the default for the following available translations:
+
+Hungarian
+For AIX, HP-UX, and Solaris: To set a particular date format, edit the source file for your locale and modify the d_fmt line to support your needs. Whatever date format you select applies both to output and to input; however, the input year can be either 2 or 4 digits.
+
+"%m/%d/%y"
+Displays the date in the form MM/DD/YY
+
+"%d.%m.%Y"
+Displays the date in the form DD.MM.YYYY
+When you include the dateformat option with a command, it must precede the fromdate, pitdate, and todate options.
+
+Displays time in one of the formats listed below. Select the format number that corresponds to the format you want to use. When you include the timeformat option in a command, it must precede the fromtime, pittime, and totime options.
+0
+Use the locale-defined time format.
+For AIX, HP-UX, and Solaris: This is the default if the locale-specified format consists of digits, separator characters, and, if applicable, the AM or PM string.
+
+###############
+# TIME FORMAT #
+###############
+
+1
+23:00:00
+For AIX, HP-UX, and Solaris: This is the default if the locale-specified format does not consist of digits, separator characters, and, if applicable, the AM or PM string.
+
+2
+23,00,00
+3
+23.00.00
+4
+12:00:00 A/P
+For AIX, HP-UX, and Solaris: To set a particular time format, edit the source file for your locale and modify the t_fmt line to support your needs. Whatever time format you select applies both to output and to input.
+
+"%H:%M:%S"
+Displays time in the form hh:mm:ss with hh ranging from 0 through 23.
+"%H,%M,%S"
+Displays time in the form hh,mm,ss with hh ranging from 0 through 23.
+"%I,%M,0p"
+Displays time in the form hh,mm,ssA/P with hh ranging from 1 through 12 and A/P is the local abbreviation for ante-meridian (AM in English) or post-meridian (PM in English).

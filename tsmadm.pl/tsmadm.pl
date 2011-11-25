@@ -208,7 +208,7 @@ $OS_win = ( $^O eq "MSWin32" ) ? 1 : 0;                     # Is it MS Windows?
     HISTORY   => '\s+-*(archive|archiv|archi|arch|arc)',    #
     VERBOSE   => '\s+-*(verbose|verbos|verbo|verb)',        #
 
-    INVGREP   => '\|\s*(invgrep)\s+"*([^$|]*|)"*',           #
+    INVGREP   => '\|\s*(invgrep)\s+"*([^$|]*|)"*',          #
     PGREP     => '\|\s*(pgrep)\s+"*([^$|]*|)"*',            #
     GREP      => '\|\s*(grep)\s+"*([^$|]*|)"*',             #
     MORE      => '\|\s*(more)',                             #
@@ -218,6 +218,7 @@ $OS_win = ( $^O eq "MSWin32" ) ? 1 : 0;                     # Is it MS Windows?
 
 $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
 
+# Global highlighter regexps (!CASE SENSITIVE!)
 %GlobalHighlighter = (
     # volumes
     '[^A-Z0-9]([A-Z]{1}[0-9]{5})[^A-Z0-9_]'                     => 'BOLD GREEN',
@@ -226,16 +227,15 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     '[^A-Z0-9]([A-Z,0-9]{6}L[12345])[^A-Z0-9_]'                 => 'BOLD GREEN',
     
     #'[^A-Za-z0-9.\\\/]([A-Za-z0-9.\\\/]+BFS[0-9.]*)[^A-Z0-9.]' => 'BOLD GREEN',
-    '[^A-Za-z0-9.\\\/]([A-Za-z0-9.\\\/]+BFS)'                   => 'BOLD GREEN',
+    '[^A-Za-z0-9.\\\/]([A-Za-z0-9.:\\\/]+BFS\.?[A-Za-z0-9:\\\/]{1,9})' => 'BOLD GREEN',
     '[^A-Za-z0-9.\\\/]([A-Za-z0-9.\\\/]+DBB)'                   => 'BOLD GREEN',
 
     # sessions
-    '(MediaW)'                   => 'BOLD RED',
-
+    '(MediaW)'                                                  => 'BOLD RED',
+            
     # errors and warnings
-#    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)' => 'BOLD BLUE',
-#    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)' => 'BOLD YELLOW',
-
+#    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'               => 'BOLD BLUE',
+#    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'               => 'BOLD YELLOW',
     '(ANR\d\d\d\dE[A-Za-z _\\.-0-9]*)'                          => 'BOLD RED',
     '(ANR\d\d\d\dW[A-Za-z _\\.-0-9]*)'                          => 'BOLD YELLOW',
 

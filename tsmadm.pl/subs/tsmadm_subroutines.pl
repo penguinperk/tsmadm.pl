@@ -68,6 +68,16 @@ sub commandSplitterParserExecuter ( $ ) {
             return 1;
         }
 
+        # quoted regexp
+	if ( $command =~ m/grep\s+"([a-zA-z0-9\|]+)"/ ) {
+
+	    my $regexp = $1;
+	    $regexp =~ s/\|/&ORGREP&/g;
+
+	    $command =~ s/(grep\s+")([a-zA-z0-9\|]+)"/$1$regexp/;
+	}
+
+	# quoted commands
         my $quotedCommand = "";
         if ( $command =~ s/^\s*('|")(.+)('|")// ) {
             $quotedCommand = $2;
@@ -729,6 +739,9 @@ sub grepIt ( @ ) {
     {
 	foreach ( split( '&ANDGREP&', $ParameterRegExpValues{GREP} ) ) {
 	    my $pattern = $_;
+	    
+	    $pattern =~ s/&ORGREP&/\|/g;
+	    
             @return = grep( /($pattern)/i, @return );    ## Grep
 	    
 	    my @return2;
@@ -736,10 +749,9 @@ sub grepIt ( @ ) {
 		push ( @return2, &colorizeLineI( $_, '('.$pattern.')', 'RED'));
 	    }
 	    @return = @return2;
-	    
 	}
     }
-    
+
     if ( defined( $ParameterRegExpValues{INVGREP} ) && $ParameterRegExpValues{INVGREP} ne "" && !$Settings{'DISABLEGREP'} )
     {
 	foreach ( split( '&ANDGREP&', $ParameterRegExpValues{INVGREP} ) ) {
@@ -747,6 +759,7 @@ sub grepIt ( @ ) {
             @return = grep( !/$pattern/i, @return );      ## INVGrep
 	}
     }
+
 
     return @return;
 }
@@ -889,9 +902,9 @@ sub globalHighlighter ( $ ) {
 
 sub colorizeLine ( $$$ ) {
 
-    my $line = $_[0];
+    my $line   = $_[0];
     my $regexp = $_[1];
-    my $color = $_[2];
+    my $color  = $_[2];
 
         # collect, save and convert
         my @save;
@@ -926,14 +939,14 @@ sub colorizeLine ( $$$ ) {
         }
 	
     return( $line );
- 
+     
 }
 
 sub colorizeLineI ( $$$ ) {
 
-    my $line = $_[0];
+    my $line   = $_[0];
     my $regexp = $_[1];
-    my $color = $_[2];
+    my $color  = $_[2];
 
         # collect, save and convert
         my @save;
