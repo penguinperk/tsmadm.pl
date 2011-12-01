@@ -220,24 +220,24 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
 
 # Global highlighter regexps (!CASE SENSITIVE!)
 %GlobalHighlighter = (
+
+    # errors and warnings
+#    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'               => 'BOLD BLUE',
+#    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'               => 'BOLD YELLOW',
+    '(ANR\d\d\d\dE[A-Za-z _\.\-0-9:\\\/]*)'                      => 'BOLD RED',
+    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/]*)'                      => 'BOLD YELLOW',
+
     # volumes
     '[^A-Z0-9]([A-Z]{1}[0-9]{5})[^A-Z0-9_]'                     => 'BOLD GREEN',
     '[^A-Z0-9]([A-Z]{3}[0-9]{3})[^A-Z0-9_]'                     => 'BOLD GREEN',
     '[^A-Z0-9]([A-Z,0-9]{6}J[ABXW])[^A-Z0-9_]'                  => 'BOLD GREEN',
     '[^A-Z0-9]([A-Z,0-9]{6}L[12345])[^A-Z0-9_]'                 => 'BOLD GREEN',
     
-    #'[^A-Za-z0-9.\\\/]([A-Za-z0-9.\\\/]+BFS[0-9.]*)[^A-Z0-9.]' => 'BOLD GREEN',
-    '[^A-Za-z0-9.\\\/]([A-Za-z0-9.:\\\/]+BFS\.?[A-Za-z0-9:\\\/]{1,9})' => 'BOLD GREEN',
-    '[^A-Za-z0-9.\\\/]([A-Za-z0-9.\\\/]+DBB)'                   => 'BOLD GREEN',
+    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/]+\.BFS\.?[0-9]{0,9})' => 'BOLD GREEN',
+    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/]+\.DBB\.?[0-9]{0,9})' => 'BOLD GREEN',
 
     # sessions
     '(MediaW)'                                                  => 'BOLD RED',
-            
-    # errors and warnings
-#    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'               => 'BOLD BLUE',
-#    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'               => 'BOLD YELLOW',
-    '(ANR\d\d\d\dE[A-Za-z _\\.-0-9]*)'                          => 'BOLD RED',
-    '(ANR\d\d\d\dW[A-Za-z _\\.-0-9]*)'                          => 'BOLD YELLOW',
 
     '(Waiting for multiple mount points in device class \w*)'   => 'BOLD YELLOW',
     '(Waiting for mount point in device class \w*)'             => 'BOLD YELLOW',
@@ -251,7 +251,7 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     '(WAITING FOR VOLUME)'                                      => 'BOLD RED',
     
     # PATHs
-    'online=NO'                                                 => 'BOLD RED',
+    '(online=NO)'                                               => 'BOLD RED',
 );
 
 ##########################################################################################
@@ -444,8 +444,28 @@ if ( defined($colortestFlag) ) {
     
     print &globalHighlighter( "Primary Pool MKB_OS4_J, Copy Pool MKB_OS4_C1_J, Files Backed Up: 24, Bytes Backed Up: 1,134,000,815,259, Unreadable Files: 0, Unreadable Bytes: 0. Current Physical File (bytes): 246,120,144,486 Current input volume: A00448JA. Current output volume: MKB510JA.\n" );
     print &globalHighlighter( "Volume MKB195JA (storage pool MKB_SQL_C1_J), Moved Files: 4, Moved Bytes: 7,904,512, Unreadable Files: 0, Unreadable Bytes: 0. Current Physical File (bytes): 55,534,602,514 Current input volume: MKB195JA. Current output volume: MKB216JA.\n" );
+
     print &globalHighlighter( "Incremental backup: 0 pages of 77452 backed up. Current output volume: /tsm/blackhole/dbDailyIncrements/21536884.DBB.\n" );
-        
+    print &globalHighlighter( 'Incremental backup: 0 pages of 77452 backed up. Current output volume: D:\tsm\blackhole\dbDailyIncrements\21536884.DBB.'."\n" );
+
+    print &globalHighlighter( "Incremental backup: 0 pages of 77452 backed up. Current output volume: /tsm/blackhole/dbDailyIncrements/21536884.DBB.1212122.\n" );
+    print &globalHighlighter( 'Incremental backup: 0 pages of 77452 backed up. Current output volume: D:\tsm\blackhole\dbDailyIncrements\21536884.DBB.12121.'."\n" );
+
+    print &globalHighlighter( "ANR2020E Incremental backup: 0 pages of 77452 backed up. Current output volume: /tsm/blackhole/dbDailyIncrements/21536884.DBB.\n" );
+    print &globalHighlighter( 'ANR2020E Incremental backup: 0 pages of 77452 backed up. Current output volume: D:\tsm\blackhole\dbDailyIncrements\21536884.DBB.'."\n" );
+
+    print &globalHighlighter( "ANR2020W Incremental backup: 0 pages of 77452 backed up. Current output volume: /tsm/blackhole/dbDailyIncrements/21536884.DBB.1212122.\n" );
+    print &globalHighlighter( 'ANR2020W Incremental backup: 0 pages of 77452 backed up. Current output volume: D:\tsm\blackhole\dbDailyIncrements\21536884.DBB.12121.'."\n" );
+
+    print &globalHighlighter( "ANR2020E RECLAIM STGPOOL: Invalid parameter - TRE.\n" );
+    print &globalHighlighter( "TSMADM [USERTSM.SR]:reclaim stgp files_vtl tres60\n" );
+
+    print &globalHighlighter( "ANR2020W RECLAIM STGPOOL: Invalid parameter - TRE.\n" );
+    print &globalHighlighter( "TSMADM [USERTSM.SR]:reclaim stgp files_vtl tres60\n" );
+    
+    print &globalHighlighter( 'ANR2020E RECLAIM STGPOOL: Invalid para\\\\meter - TRE.'."\n" );
+    print &globalHighlighter( 'ANR2020W RECLAIM STGPOOL: Invalid para /tsm/alam.DBB meter - TRE.'."\n" );
+
     print &textLine( &colorString( "#", $Settings{DEFAULTCOLOR} ).&colorString( " Colortest end ", "BOLD RED" ), '#');
     exit 99;
 }

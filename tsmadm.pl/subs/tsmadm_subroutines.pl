@@ -918,6 +918,9 @@ sub colorizeLine ( $$$ ) {
              # find the previous color
             my $previousColor = "";
 
+	    # fix the path with '\'
+	    $pattern =~ s/\\/\\\\/g;
+
 	    if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*($pattern)/ )
             {
                 $previousColor = $1;
