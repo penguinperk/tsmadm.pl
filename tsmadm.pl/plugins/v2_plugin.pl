@@ -113,4 +113,34 @@ $Commands{&commandRegexp( "show", "2backup" )} = sub {
 
 };
 
+#################
+# SHow ACTivity ########################################################################################################
+#################
+&msg( '0110D', 'SHow ACTivity' );
+$Commands{&commandRegexp( "show", "activity" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow ACTivity Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    $LastCommandType = 'ACTIVITY';
+
+    my @query = &runTabdelDsmadmc('q actlog '.$3.' '.$4.' '.$5);
+    return if ( $#query < 0 );
+
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "Date\tActivity", @query );
+    
+    return 0;
+};
+
 1;

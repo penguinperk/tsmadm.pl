@@ -573,7 +573,13 @@ $Commands{&commandRegexp( "show", "paths" )} = sub {
     $LastCommandType = 'PATH';
 
     my @query = &runTabdelDsmadmc( "select SOURCE_NAME,DESTINATION_NAME,'srct='||SOURCE_TYPE,'destt='||DESTINATION_TYPE,LIBRARY_NAME,'device='||DEVICE,'online='||ONLINE from paths where LIBRARY_NAME is null" );
-    return if ( $LastErrorcode );
+    if ( $LastErrorcode ) {
+        # check valid libraries like ACSLS and override this LastErrorcode and continue
+        my @tmpQuery = &runTabdelDsmadmc( "select LIBRARY_NAME from LIBRARIES" );
+        if ( $LastErrorcode ) {
+            return;    
+        }
+    }
 
     push ( @query, &runTabdelDsmadmc( "select SOURCE_NAME,DESTINATION_NAME,'srct='||SOURCE_TYPE,'destt='||DESTINATION_TYPE,'library='||LIBRARY_NAME,'device='||DEVICE,'online='||ONLINE from paths where LIBRARY_NAME is not null" ) );
     return if ( $#query < 0 || $LastErrorcode );

@@ -11,5 +11,6 @@ use warnings;
 &defineAlias( 'b',  'set server b' );
 &defineAlias( 'w',  'set server w' );
 &defineAlias( 'f',  'set server f' );
+&defineAlias( 'h',  'set server h' );
 
 1;
