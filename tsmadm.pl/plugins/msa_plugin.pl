@@ -78,8 +78,7 @@ $Commands{&commandRegexp( "delete", "associations" )} = sub {
     }
 
     my $number = $3;
-    print $number."\n";
-
+    
     if ( $number eq '' ) {
         &msg ( '0030E' );
         return 0;

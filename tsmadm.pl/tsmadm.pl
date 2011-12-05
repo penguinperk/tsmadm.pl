@@ -224,8 +224,8 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     # errors and warnings
 #    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'               => 'BOLD BLUE',
 #    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'               => 'BOLD YELLOW',
-    '(ANR\d\d\d\dE[A-Za-z _\.\-0-9:\\\/\(\)]*)'                 => 'BOLD RED',
-    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/\(\)]*)'                 => 'BOLD YELLOW',
+    '(^ANR\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}]*)'                => 'BOLD RED',
+    '(^ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}]*)'                => 'BOLD YELLOW',
 
     # volumes
     '[^A-Z0-9]([A-Z]{1}[0-9]{5})[^A-Z0-9_]'                     => 'BOLD GREEN',
@@ -310,6 +310,8 @@ if (! -r $Settings{CONFIGFILE} ) {
     &wizard;
     exit 666;
 }
+
+$Settings{GREPCOLOR} = 'BOLD WHITE';
 
 &checkPassword($configfileOption);
 
@@ -465,7 +467,10 @@ if ( defined($colortestFlag) ) {
     
     print &globalHighlighter( 'ANR2020E RECLAIM STGPOOL: Invalid para\\\\meter - TRE.'."\n" );
     print &globalHighlighter( 'ANR2020W RECLAIM STGPOOL: Invalid para /tsm/alam.DBB meter - TRE.'."\n" );
-
+    
+    print 'ANR8209E Unable to establish TCP/IP session with 10.16.2.234 - connection refused. (SESSION: 94)'."\n" ;
+    print &globalHighlighter( 'ANR8209E Unable to establish TCP/IP session with 10.16.2.234 - connection refused. (SESSION: 94)'."\n" );
+    
     print &textLine( &colorString( "#", $Settings{DEFAULTCOLOR} ).&colorString( " Colortest end ", "BOLD RED" ), '#');
     exit 99;
 }

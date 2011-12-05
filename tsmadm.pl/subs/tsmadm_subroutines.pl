@@ -746,7 +746,7 @@ sub grepIt ( @ ) {
 	    
 	    my @return2;
 	    foreach ( @return ) {
-		push ( @return2, &colorizeLineI( $_, '('.$pattern.')', 'RED'));
+		push ( @return2, &colorizeLineI( $_, '('.$pattern.')', $Settings{GREPCOLOR} ));
 	    }
 	    @return = @return2;
 	}
@@ -891,7 +891,7 @@ sub globalHighlighter ( $ ) {
     my $printableField = $_[0];
 
     foreach my $regexp ( keys %GlobalHighlighter ) {
-
+	
 	$printableField = &colorizeLine( $printableField, $regexp, $GlobalHighlighter{$regexp});
 
     }
@@ -906,40 +906,49 @@ sub colorizeLine ( $$$ ) {
     my $regexp = $_[1];
     my $color  = $_[2];
 
-        # collect, save and convert
-        my @save;
-        my $i = 0;
+    # collect, save and convert
+    my @save;
+    my $i = 0;
 
-        while ( $line =~ m/$regexp/ ) {
+    # hide ()
+    $line =~ s/\(/{{/g;
+    $line =~ s/\)/}}/g;
 
-            my $pattern = $1;
-            my $coloredString = &colorString( $pattern, $color );
- 
-             # find the previous color
-            my $previousColor = "";
+    while ( $line =~ m/$regexp/ ) {
 
-	    # fix the path with '\'
-	    $pattern =~ s/\\/\\\\/g;
+	my $pattern = $1;
+	my $coloredString = &colorString( $pattern, $color );
 
-	    if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*($pattern)/ )
-            {
-                $previousColor = $1;
-	    }
-	    
-            $line =~ s/$pattern/COLORIZE\[$i\]/;
-            $save[$i] = $coloredString.$previousColor;
+	 # find the previous color
+	my $previousColor = "";
 
-            $i++;
+	# fix the path with '\'
+	$pattern =~ s/\\/\\\\/g;
 
-        }
+	if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*$pattern/ )
+	{
+	    $previousColor = $1;
+	}
 
-        # restore everything
-        while ( $line =~ m/COLORIZE\[(\d+)\]/ ) {
+	$line =~ s/$pattern/COLORIZE\[$i\]/;
+	$save[$i] = $coloredString.$previousColor;
 
-            my $coloredString = $save[$1];
-            $line =~ s/COLORIZE\[$1\]/$coloredString/;
 
-        }
+	$i++;
+
+    }
+
+    # restore everything
+    while ( $line =~ m/COLORIZE\[(\d+)\]/ ) {
+
+	my $coloredString = $save[$1];
+	$line =~ s/COLORIZE\[$1\]/$coloredString/;
+
+    }
+	
+    # unhide ()	
+    $line =~ s/{{/\(/g;
+    $line =~ s/}}/\)/g;			    
 	
     return( $line );
      
@@ -951,38 +960,38 @@ sub colorizeLineI ( $$$ ) {
     my $regexp = $_[1];
     my $color  = $_[2];
 
-        # collect, save and convert
-        my @save;
-        my $i = 0;
+    # collect, save and convert
+    my @save;
+    my $i = 0;
 
-        while ( $line =~ m/$regexp/i ) {
+    while ( $line =~ m/$regexp/i ) {
 
-            my $pattern = $1;
-            my $coloredString = &colorString( $pattern, $color );
- 
-             # find the previous color
-            my $previousColor = "";
+	my $pattern = $1;
+	my $coloredString = &colorString( $pattern, $color );
 
-	    if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*($pattern)/ )
-            {
-                $previousColor = $1;
-	    }
-	    
-            $line =~ s/$pattern/COLORIZE\[$i\]/;
-            $save[$i] = $coloredString.$previousColor;
+	 # find the previous color
+	my $previousColor = "";
 
-            $i++;
-
-        }
-
-        # restore everything
-        while ( $line =~ m/COLORIZE\[(\d+)\]/ ) {
-
-            my $coloredString = $save[$1];
-            $line =~ s/COLORIZE\[$1\]/$coloredString/;
-
-        }
+	if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*($pattern)/ )
+	{
+	    $previousColor = $1;
+	}
 	
+	$line =~ s/$pattern/COLORIZE\[$i\]/;
+	$save[$i] = $coloredString.$previousColor;
+
+	$i++;
+
+    }
+
+    # restore everything
+    while ( $line =~ m/COLORIZE\[(\d+)\]/ ) {
+
+	my $coloredString = $save[$1];
+	$line =~ s/COLORIZE\[$1\]/$coloredString/;
+
+    }
+    
     return( $line );
  
 }
