@@ -224,8 +224,8 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     # errors and warnings
 #    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'               => 'BOLD BLUE',
 #    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'               => 'BOLD YELLOW',
-    '(^ANR\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}]*)'                => 'BOLD RED',
-    '(^ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}]*)'                => 'BOLD YELLOW',
+    '(ANR\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}]*)'                => 'BOLD RED',
+    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}]*)'                => 'BOLD YELLOW',
 
     # volumes
     '[^A-Z0-9]([A-Z]{1}[0-9]{5})[^A-Z0-9_]'                     => 'BOLD GREEN',
@@ -433,6 +433,8 @@ if ( defined($consoleFlag) ) {
     &consoleHighlighter;
     exit 0;
 }
+
+$LastCommandType = 'NOCOMMANDS';
 
 # Welcome message
 print colorString( "", $Settings{DEFAULTCOLOR} );

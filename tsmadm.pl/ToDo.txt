@@ -3,27 +3,25 @@
 #######
 
 file output > nocolor!
-Multiple grep, invgrep
-pgrep?
+file output > in selects!
 
-improve volume highlighter          [Done]
-improve highlighter                 [Done]
- sh tra -archive!                   [Done]
- 
-sh sess media access parser 
+another multiple grep "pattern|pattern|pattern"
+
+pgrep?
  
 v2 commands
 .
 .
 .
 
-sh sess media acc fix
 &commandRegexp minimal character handler
 reach url handling http:\\index.hu\
 
-
-+ sh server                         [Done]
+sh commands
 + add server
 
-+ sh volumeusage
-  select node_name, stgpool_name, count(distinct volume_name) from volumeusage group by node_name, stgpool_name order by 3 desc
+"" and '' handler command  
+
+
+Node occu:
+ select node_name, sum(logical_mb) as DATA_IN_MB, sum(num_files) as NUM_OF_FILES from occupancy group by node_name having min(num_files) >=1 order by data_in_mb desc

@@ -340,6 +340,7 @@ $Commands{&commandRegexp( "reach", "" )} = sub {
     }
 
     my $parameter = $2;
+    my $extras = ' '.$3.' '.$4.' '.$5;
 
     if ( defined( $LastCommandType ) && $LastCommandType =~ m/SESSION/ && $parameter =~ m/\d+/ ) {
 
@@ -380,20 +381,21 @@ $Commands{&commandRegexp( "reach", "" )} = sub {
 
         my $node_name = uc( $parameter );
 
-        print "[$node_name]\n";
+        #print "[$node_name]\n";
 
         my @url = &runTabdelDsmadmc( "select URL from NODES where NODE_NAME='".$node_name."'" );
 
         if ( ! defined ( $url[0] ) || $url[0] eq '' ) {
+            
+            &msg ( '0050E', $node_name );
+            &reach ( $parameter.$extras );
+            
+        }
+        else {
 
-                &msg ( '0050E', $node_name );
+            &reach ( $url[0] );
 
-            }
-            else {
-
-                &reach ( $url[0] );
-
-            }
+        }
 
     }
     else {

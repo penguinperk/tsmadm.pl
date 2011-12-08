@@ -203,7 +203,7 @@ sub pluginCommandExecuter( $ ) {
     # plugin command
     for my $key ( keys %Commands ) {
         if ( $command =~ /$key/i ) {
-            return &{ $Commands{$key} }( $1, $2, $3, $4, $5, $6, $7, $8, $9 );
+            return &{ $Commands{$key} }( @_ );
         }
     }
 

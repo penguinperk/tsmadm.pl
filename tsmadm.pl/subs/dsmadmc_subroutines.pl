@@ -128,7 +128,7 @@ sub Dsmadmc ( $$ ) {
     $LastErrorcode = $? >> 8;         # save the errorcode
 
     &msg( "0008D", $LastErrorcode );
-    &msg( "0007D", $#return );
+    &msg( "0007D", $#return+1 );
 
     if ( ! $LastErrorcode ) {
 

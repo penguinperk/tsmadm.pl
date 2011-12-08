@@ -77,6 +77,12 @@ $Commands{&commandRegexp( "delete", "associations" )} = sub {
         return 0;
     }
 
+    if ( $LastCommandType ne 'ASSOC' ) {
+      #print "No schedule association to delete. The previous command type was not [ASSOC]. Use acceptable command before it!\n";
+      # route back this command now
+      return 1;
+    }
+
     my $number = $3;
     
     if ( $number eq '' ) {
@@ -84,11 +90,6 @@ $Commands{&commandRegexp( "delete", "associations" )} = sub {
         return 0;
     }
     $number--;
-
-    if ( $LastCommandType ne 'ASSOC' ) {
-      print "No schedule association to delete. The previous command type was not [ASSOC]. Use acceptable command before it!\n";
-      return;
-    }
 
     my @return;
 

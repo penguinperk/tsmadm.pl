@@ -134,11 +134,19 @@ $Commands{&commandRegexp( "show", "activity" )} = sub {
 
     $LastCommandType = 'ACTIVITY';
 
-    my @query = &runTabdelDsmadmc('q actlog '.$3.' '.$4.' '.$5);
+    my @query = &runTabdelDsmadmc('q actlog '.$3.' '.$4.' '.$5.' '.$6.' '.$7.' '.$8);
     return if ( $#query < 0 );
+    
+    my @printable;
+    
+    foreach ( @query ) {
+        my @line = split ( /\t/ );
+#        $line[1] =~ s/Total /\nTOTAL /g;
+        push ( @printable, join( "\t", $line[0], $line[1] ));
+    }
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "Date\tActivity", @query );
+    &universalTextPrinter( "Date\tActivity", @printable );
     
     return 0;
 };
