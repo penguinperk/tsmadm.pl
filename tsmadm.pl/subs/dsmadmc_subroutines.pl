@@ -77,6 +77,11 @@ sub Dsmadmc ( $$ ) {
     my $command = $_[0];
     $command =~ s /[^\\]"/\\"/g;
 
+    my $serverCommandRouting = '';
+    $serverCommandRouting .= $ParameterRegExpValues{SERVERCOMMANDROUTING1} if ( defined $ParameterRegExpValues{SERVERCOMMANDROUTING1} );
+    $serverCommandRouting .= $ParameterRegExpValues{SERVERCOMMANDROUTING2} if ( defined $ParameterRegExpValues{SERVERCOMMANDROUTING2} );
+    $serverCommandRouting = '('.$serverCommandRouting.') ' if ( $serverCommandRouting ne '' );
+
     if ($OS_win) {
         $ENV{"DSM_DIR"} = $Settings{DSM_DIR}
           if ( defined( $Settings{DSM_DIR} ) );
@@ -87,7 +92,7 @@ sub Dsmadmc ( $$ ) {
         open( PIPE,
                 '"'
               . $Settings{DSMADMC} . '"'
-              . " -id=$Settings{$TSMUserName} -password=$decodedPassword $extraParameters -tcpserveraddress=$Settings{$TSMServer} -tcpport=$Settings{$TSMPort} ".'"'.$_[0].'"'." |"
+              . " -id=$Settings{$TSMUserName} -password=$decodedPassword $extraParameters -tcpserveraddress=$Settings{$TSMServer} -tcpport=$Settings{$TSMPort} ".'"'.$serverCommandRouting.$_[0].'"'." |"
 #              . " -id=$Settings{$TSMUserName} -password=$decodedPassword $extraParameters -tcpserveraddress=$Settings{$TSMServer} -tcpport=$Settings{$TSMPort} ".$_[0]." |"
         );
     }
@@ -98,7 +103,7 @@ sub Dsmadmc ( $$ ) {
           if ( defined( $Settings{DSM_LOG} ) );
         $ENV{"DSM_CONFIG"} = $Settings{DSM_CONFIG}
           if ( defined( $Settings{DSM_CONFIG} ) );
-        open( PIPE, "$Settings{DSMADMC} -id=$Settings{$TSMUserName} -password=$decodedPassword $extraParameters -se=$Settings{$TSMServer} ".'"'.$_[0].'"'." |" );
+        open( PIPE, "$Settings{DSMADMC} -id=$Settings{$TSMUserName} -password=$decodedPassword $extraParameters -se=$Settings{$TSMServer} ".'"'.$serverCommandRouting.$_[0].'"'." |" );
 #        open( PIPE, "$Settings{DSMADMC} -id=$Settings{$TSMUserName} -password=$decodedPassword $extraParameters -se=$Settings{$TSMServer} ".$_[0]." |" );
     }
 

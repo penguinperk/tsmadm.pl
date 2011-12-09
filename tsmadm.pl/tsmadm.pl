@@ -90,6 +90,7 @@ require "$Dirname/subs/printer_subroutines.pl";
 require "$Dirname/subs/pbar_subroutines.pl";
 require "$Dirname/subs/archive_subroutines.pl";
 require "$Dirname/subs/wizard_subroutines.pl";
+require "$Dirname/subs/christmas_present.pl";
 
 # prepare options for Getopt
 my $helpFlag;
@@ -207,6 +208,8 @@ $OS_win = ( $^O eq "MSWin32" ) ? 1 : 0;                     # Is it MS Windows?
     HELP      => '\s+-*(help)',                             #
     HISTORY   => '\s+-*(archive|archiv|archi|arch|arc)',    #
     VERBOSE   => '\s+-*(verbose|verbos|verbo|verb)',        #
+    SERVERCOMMANDROUTING1 => '(^\s*)([\w_\.-]+):\s*',                   #
+    SERVERCOMMANDROUTING2 => '(^\s*)\(([\w_\.-]+)\)\s*',                #
 
     INVGREP   => '\|\s*(invgrep)\s+"*([^$|]*|)"*',          #
     PGREP     => '\|\s*(pgrep)\s+"*([^$|]*|)"*',            #
@@ -435,6 +438,8 @@ if ( defined($consoleFlag) ) {
 }
 
 $LastCommandType = 'NOCOMMANDS';
+
+#print &christmasTree();
 
 # Welcome message
 print colorString( "", $Settings{DEFAULTCOLOR} );
