@@ -25,3 +25,57 @@ sh commands
 
 Node occu:
  select node_name, sum(logical_mb) as DATA_IN_MB, sum(num_files) as NUM_OF_FILES from occupancy group by node_name having min(num_files) >=1 order by data_in_mb desc
+
+-------
+
+Video on mac
+start
+sh sess
+sh drives
+sh processes
+sh timing
+sh events
+sh env
+sh backups
+error
+console
+
+
+##########################################################
+
+PRint TEXt
+SHow ADM
+
+SHow SERverstatus
+SHow FULl backups
+
+SHow INCremental backups
+
+SHow MOVeable
+
+SHow FILlings
+
+SHow OCCupancy
+
+MOVeit
+SHow NODes
+SHow SUSpicious
+
+SHow INActive
+
+SHow STGSCRatch
+SHow SCHedules
+SHow EXPiration
+SHow LICence
+
+SHow MIGration
+SHow MOVEP
+SHow
+
+SHow stgphist
+
+SHow EXCeptionsonly
+
+SHow ASSOciations
+
+

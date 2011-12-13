@@ -48,6 +48,10 @@ sub commandSplitterParserExecuter ( $ ) {
             #last if ( $command =~ s/^\s*$key(ENDofCOMMAND|\ +)/$Aliases{$key}$1/i );
 	    # Issue 5 solution from István
 	    last if ( $command =~ s/^\s*$key(ENDofCOMMAND|\ +|\|)/$Aliases{$key}$1/i );
+	    
+	    #command routing reservation
+	    last if ( $command =~ s/^\s*([\w_\-\.]+):\s*$key(ENDofCOMMAND|\ +|\|)/$1: $Aliases{$key}$2/i );
+	    last if ( $command =~ s/^\s*\(([\w_\-\.]+)\)\s*$key(ENDofCOMMAND|\ +|\|)/\($1\) $Aliases{$key}$2/i );
         }
 
         $commandsTmp .= $command.";";

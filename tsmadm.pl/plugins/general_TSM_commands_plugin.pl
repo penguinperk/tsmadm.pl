@@ -82,9 +82,22 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
         $line[9] = "" if ( ! defined ( $line[9] ) );
 
         my $mediaAccess = $line[8].$line[9].$line[10].$line[11].$line[12].$line[13].$line[14];
+        my $mediaAccessExtra = '';
+        
+        if ( $line[8] ne '' ) {
+            $mediaAccessExtra = 'W';
+        }
+        elsif ( $line[9].$line[10].$line[11] ne '' ) {
+            $mediaAccessExtra = 'I';
+        }
+        elsif ( $line[9].$line[10].$line[11] ne '' ) {
+            $mediaAccessExtra = 'O';
+        }
+        
         if ( $mediaAccess =~ m/(\w*),(\w+),(\d+)/ ) {
             $mediaAccess = "\[$2\] $1, ".&timeFormatter ( $3, 's' );    
         }
+        $mediaAccess = $mediaAccessExtra.$mediaAccess;
         
         push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7], $mediaAccess, $line[16].'['.$line[15].']' ) );
         
@@ -544,7 +557,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
     }
     
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tLibraryName\tDriveName\tOnline\t#El\tState\tSerial\tVolume\tOwner\tMode{RIGHT}\tMStatus{RIGHT }", &addLineNumbers( @query ) );
+    &universalTextPrinter( "#{RIGHT}\tLibraryName\tDriveName\tOnline\t#El\tState\tSerial\tVolume\tOwner\tMod{RIGHT}\tMStatus{RIGHT }", &addLineNumbers( @query ) );
 
     return 0;
 
@@ -1017,6 +1030,167 @@ $Commands{&commandRegexp( "show", "fillings" )} = sub {
   return 0;
   
 };
+
+########################################################################################################################
+
+###############
+# Show TIMIng ##########################################################################################################
+###############
+&msg( '0110D', 'SHow DISks' );
+$Commands{&commandRegexp( "show", "timing" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow TIMing Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    my @return;
+
+    $LastCommandType = 'GENERAL';
+
+    my @query = &runTabdelDsmadmc('q event * * begind=-1 begint=16:00 endd=today endt=now f=d '.$3.' '.$4.' '. $5);
+    return if ( $#query < 0 || $LastErrorcode );
+
+    my @line;
+
+    my $first_time;
+    @line = split( /\t/, $query[0] );
+    $first_time = &convert_date( $line[3] );
+
+    my $last_time;
+    @line = split( /\t/, $query[$#query] );
+    if ( $line[5] ne '' ) {
+        $last_time = &convert_date( $line[5] );
+    }
+    else {
+        $last_time = &convert_date( $line[3] );
+    }
+
+    &pbarInit( "PASS 1 |", scalar( @query ), "|");
+
+    my @maxlength; $maxlength[0]=$maxlength[1]=$maxlength[2]=$maxlength[3]=0;
+    my $i = 0;
+    foreach ( @query ) {
+
+        my @line = split( /\t/ );
+
+        $line[7] = '?' if ( ! defined $line[7] );
+
+        my $number = $i + 1;
+        my $length;
+        
+        $length = colorLength( "$number" );
+        $maxlength[0] = $length if ( $length > $maxlength[0] );
+        #
+        $length = colorLength( "$line[1]" );
+        $maxlength[1] = $length if ( $length > $maxlength[1] );
+        #
+        $length = colorLength( "$line[2]" );
+        $maxlength[2] = $length if ( $length > $maxlength[2] );
+        #
+        $length = colorLength( "$line[7]" );
+        $maxlength[3] = $length if ( $length > $maxlength[3] );
+        
+        &pbarUpdate( ++$i );
+
+    }
+    
+    my $size = $Settings{TERMINALCOLS} - $maxlength[0] - $maxlength[1] - $maxlength[2] - $maxlength[3] - 9;
+
+    my $quantum = $size;
+    $quantum = $quantum / ( $last_time - $first_time ) if ( $last_time - $first_time > 0 );
+        
+    &pbarInit( "PASS 2 |", $size, "|");
+
+    # create an empty bar line
+    my @emptybar;
+    for ( my $i = 0; $i <= $size; $i++ ) {
+        $emptybar[$i] = ' ';
+        &pbarUpdate( $i );
+    }
+
+    &pbarInit( "PASS 3 |", scalar( @query ), "|");
+
+    $i = 0;
+    for ( @query ) {
+        my @line = split(/\t/);
+
+        my @bar = @emptybar;
+
+        $bar[int((&convert_date($line[3])-$first_time)*$quantum)] = 'S';
+
+        if ( $line[6] =~ m/Future/i ) {
+            &fill_bar(\@bar, int((&convert_date($line[3])-$first_time)*$quantum), $size, 'f')
+        }
+
+        if ( $line[6] =~ m/Missed/i ) {
+            &fill_bar(\@bar, int((&convert_date($line[3])-$first_time)*$quantum), $size, 'M')
+        }
+
+        if ( $line[6] =~ m/(C|F)(ompleted|ailed)/i ) {
+            &fill_bar(\@bar, int((&convert_date($line[3])-$first_time)*$quantum), int((&convert_date($line[4])-$first_time)*$quantum), 'w');
+            &fill_bar(\@bar, int((&convert_date($line[4])-$first_time)*$quantum), int((&convert_date($line[5])-$first_time)*$quantum), 'r');
+
+            $bar[int((&convert_date($line[4])-$first_time)*$quantum)] = 'A';
+            $bar[int((&convert_date($line[5])-$first_time)*$quantum)] = "$1";
+        }
+
+        if ( ! defined $line[7] ) {
+            $line[7] = colorString( '>', "GREEN" )
+        }
+        else {
+            if ( $line[7] == 0 ) {
+                    $line[7] = colorString( $line[7], "GREEN" );
+            }
+            elsif ( $line[7] == 4 || $line[7] == 8 ) {
+                    $line[7] = colorString( $line[7], "BOLD YELLOW" );
+            }
+            else {
+                $line[7] = colorString( $line[7], "BOLD RED" );
+            }
+        }
+        push( @return, join( "\t", ++$i, $line[1], $line[2], '|'.join("", @bar).'|', $line[7] ));
+
+        &pbarUpdate( $i );
+
+    }
+
+    # "---\nS-ScheduleStart A-ActualStart r-Running C-Completed, F-Failed, M-Missed, f-furure\n";
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "#{RIGHT}\tScheduleName\tNodeName\tTiming\tR{RIGHT}", @return );
+
+    return 0;
+
+};
+
+sub convert_date ($) {
+  my $tmpdate = $_[0];
+
+  return if ( ! defined $tmpdate || $tmpdate eq '' );
+
+  $tmpdate =~ m/(\d\d)\/(\d\d)\/.*(\d\d) +(\d\d):(\d\d):(\d\d)/;
+  return timelocal( $6, $5, $4, $2, $1-1, $3 );
+
+};
+
+sub fill_bar ( $$$$ ) {
+    my $r_array   = $_[0];
+    my $first_poz = $_[1];
+    my $last_poz  = $_[2];
+    my $value     = $_[3];
+
+    for ( my $i = $first_poz; $i <= $last_poz; $i++ ) {
+        @$r_array[$i] = $value;
+    }
+}
 
 ########################################################################################################################
 

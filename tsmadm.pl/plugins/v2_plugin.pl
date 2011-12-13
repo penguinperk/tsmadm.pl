@@ -80,7 +80,7 @@ $Commands{&commandRegexp( "show", "2backup" )} = sub {
 
     $LastCommandType = '?';
 
-    my @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL from summary where ACTIVITY='STGPOOL BACKUP' and (start_time >= current_timestamp - 1 day) and (END_TIME <= current_timestamp - 0 day)" );
+    my @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='STGPOOL BACKUP' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
     return if ( $#query < 0 );
     
     &pbarInit( "PREPARATION |", scalar( @query ), "|");
@@ -91,7 +91,12 @@ $Commands{&commandRegexp( "show", "2backup" )} = sub {
     foreach ( @query ) {
         my @line = split(/\t/);
         
+        &pbarUpdate( $i++ );
+        
         if ( $line[0] =~ m/(\d\d\d\d-\d\d-\d\d\s*)/ ) {
+            
+            next if ( $line[4] == 0 ); # no data
+            
             my $date = $1;
             if ( $line[2] =~ s/$date// ) {
                 # same day
@@ -101,13 +106,14 @@ $Commands{&commandRegexp( "show", "2backup" )} = sub {
             }
         }
         
-        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7], $line[8], $line[9], &byteFormatter ( $line[10], 'B' ), $line[11], &timeFormatter ( $line[12], 's' ), $line[13], $line[14]) );
-
-        &pbarUpdate( $i++ );
+        my $speed = int( ( $line[10]/1024/1024 ) / $line[15])." MB/s";
+        
+        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$line[9], &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), &timeFormatter ( $line[12], 's' ), $line[13], $line[14]) );
+       
     }    
         
     &setSimpleTXTOutput();
-    &universalTextPrinter( "Start\tEnd\t#Proc\tPool\tSchedName\t#Exam\t#Affec\t#Fail\t#Bytes{RIGHT}\tIdle\tMedia{RIGHT}\tProc\tSuc", @printable );
+    &universalTextPrinter( "Start\tEnd\t#Proc\tPool\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc", @printable );
 
     return 0;
 
@@ -141,7 +147,6 @@ $Commands{&commandRegexp( "show", "activity" )} = sub {
     
     foreach ( @query ) {
         my @line = split ( /\t/ );
-#        $line[1] =~ s/Total /\nTOTAL /g;
         push ( @printable, join( "\t", $line[0], $line[1] ));
     }
 

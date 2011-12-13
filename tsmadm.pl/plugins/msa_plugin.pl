@@ -78,7 +78,7 @@ $Commands{&commandRegexp( "delete", "associations" )} = sub {
     }
 
     if ( $LastCommandType ne 'ASSOC' ) {
-      #print "No schedule association to delete. The previous command type was not [ASSOC]. Use acceptable command before it!\n";
+      # print "No schedule association to delete. The previous command type was not [ASSOC]. Use acceptable command before it!\n";
       # route back this command now
       return 1;
     }
