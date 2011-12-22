@@ -440,7 +440,7 @@ if ( defined($consoleFlag) ) {
 
 $LastCommandType = 'NOCOMMANDS';
 
-#print &christmasTree();
+print &christmasTree();
 
 # Welcome message
 print colorString( "", $Settings{DEFAULTCOLOR} );
