@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use Pod::Usage;
 
+no warnings 'redefine';
+
 # Global variables (Each starts with capital!)
 our $Dirname;                      #
 our $tsmadmplVersion;              # version info
@@ -29,10 +31,10 @@ our @History;                      #
 &msg( '0110D', 'new v2 commands' );
 
 ####################
-# SHow VOLumeusage #####################################################################################################
+# SHow VOLUMEUsage #####################################################################################################
 ###################$
-&msg( '0110D', 'SHow VOLumeusage' );
-$Commands{&commandRegexp( "show", "volumeusage" )} = sub {
+&msg( '0110D', 'SHow VOLUMEUsage' );
+$Commands{&commandRegexp( "show", "volumeusage", 2, 7 )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
@@ -59,18 +61,18 @@ $Commands{&commandRegexp( "show", "volumeusage" )} = sub {
 
 };
 
-####################
-# SHow 2BAckup #####################################################################################################
-###################$
-&msg( '0110D', 'SHow 2BAckup' );
-$Commands{&commandRegexp( "show", "2backup" )} = sub {
+##########################
+# SHow BACKUPPerformance #####################################################################################################
+##########################
+&msg( '0110D', 'SHow BACKUPPerformance' );
+$Commands{&commandRegexp( "show", "backupperformance", 2, 7 )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
         # Put your help message here! #
         ###############################
         print "--------\n";
-        print "SHow 2BAckup Help!\n";
+        print "SHow BACKUPPerformance Help!\n";
         print "--------\n";
 
         $LastCommandType = "HELP";
@@ -78,9 +80,80 @@ $Commands{&commandRegexp( "show", "2backup" )} = sub {
         return 0;
     }
 
-    $LastCommandType = '?';
+    &basicPerformanceFromSummary( 'STGPOOL BACKUP' );
 
-    my @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='STGPOOL BACKUP' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
+    return 0;
+
+};
+
+############################
+# SHow MOVEDATAPerformance #####################################################################################################
+############################
+&msg( '0110D', 'SHow MOVEDATAPerformance' );
+$Commands{&commandRegexp( "show", "movedataperformance", 3, 9 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow MOVEDATAPerformance Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    &basicPerformanceFromSummary( 'MOVE DATA' );
+
+    return 0;
+
+};
+
+###############################
+# SHow RECLAMATIONPerformance #####################################################################################################
+###############################
+&msg( '0110D', 'SHow RECLAMATIONPerformance' );
+$Commands{&commandRegexp( "show", "reclamationperformance", 2, 12 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow REClamationperformance Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    &basicPerformanceFromSummary( 'RECLAMATION' );
+
+    return 0;
+
+};
+
+sub basicPerformanceFromSummary ( $ ) {
+
+    # ARCHIVE
+    # BACKUP
+    # EXPIRATION
+    # FULL_DBBACKUP
+    # INCR_DBBACKUP
+    # MIGRATION
+    # MOVE DATA
+    # RECLAMATION
+    # RESTORE
+    # RETRIEVE
+    # STGPOOL BACKUP
+    # TAPE MOUNT
+    
+    $LastCommandType = 'PERFORMANCE';
+
+    my @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='".$_[0]."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
     return if ( $#query < 0 );
     
     &pbarInit( "PREPARATION |", scalar( @query ), "|");
@@ -114,10 +187,8 @@ $Commands{&commandRegexp( "show", "2backup" )} = sub {
         
     &setSimpleTXTOutput();
     &universalTextPrinter( "Start\tEnd\t#Proc\tPool\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc", @printable );
-
-    return 0;
-
-};
+    
+}
 
 #################
 # SHow ACTivity ########################################################################################################

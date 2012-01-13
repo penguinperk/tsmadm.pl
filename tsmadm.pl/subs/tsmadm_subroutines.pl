@@ -694,16 +694,17 @@ sub updatePrompt() {
 #######################################################################################################################
 # commandInjector
 #######################################################################################################################
-sub commandRegexp( $$ ) {
+sub commandRegexp( $$$$ ) {
 
-    my $finalRegexp = '^\s*(';
-    my $firstMinLenght = ( $_[1] ne '' ) ? 2 : 3;
-
-    for (
-        my $string1 = $_[0];
-        length($string1) >= $firstMinLenght;
-        $string1 = substr( $string1, 0, ( length($string1) - 1 ) )
-      )
+    my $finalRegexp     = '^\s*(';
+    my $firstMinLenght  = ( $_[1] ne '' ) ? 2 : 3;
+    $firstMinLenght     = $_[2] if ( defined ( $_[2] ) ); # override if 
+    
+    my $secondMinLenght = 3;
+    $secondMinLenght    = $_[3] if ( defined ( $_[3] ) && $_[3] > 3 ); # override if 
+           
+    # first command 
+    for ( my $string1 = $_[0]; length($string1) >= $firstMinLenght; $string1 = substr( $string1, 0, ( length($string1) - 1 ) ) )
     {
         $finalRegexp .= length($string1) > $firstMinLenght ? $string1 . '|' : $string1 . ')';
     }
@@ -712,21 +713,18 @@ sub commandRegexp( $$ ) {
 
         $finalRegexp .= '\s+(';
 
-        for (
-            my $string2 = $_[1] ;
-            length($string2) >= 3 ;
-            $string2 = substr( $string2, 0, ( length($string2) - 1 ) )
-          )
-        {
-            $finalRegexp .=
-              length($string2) > 3 ? $string2 . '|' : $string2 . ')';
+        for ( my $string2 = $_[1]; length( $string2 ) >= $secondMinLenght; $string2 = substr( $string2, 0, ( length($string2) - 1 ) ) )
+	{
+            $finalRegexp .= length($string2) > $secondMinLenght ? $string2 . '|' : $string2 . ')';
         }
 
     }
 
-    $finalRegexp .= '[^\w]\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)';
+    # 10 extra parameters
+    $finalRegexp .= '[^\w]\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)';
 
-#    print "[".$finalRegexp."]\n";
+    #print "[".$finalRegexp."]\n";
+    #print uc( substr( $_[0], 0, $firstMinLenght ) ).substr( $_[0], $firstMinLenght )." ".uc( substr( $_[1], 0, $secondMinLenght ) ).substr( $_[1], $secondMinLenght )."\n";
 
     return $finalRegexp;
 
@@ -748,7 +746,7 @@ sub grepIt ( @ ) {
 	    
             @return = grep( /($pattern)/i, @return );    ## Grep
 	    
-	    my @return2;
+	     my @return2;
 	    foreach ( @return ) {
 		push ( @return2, &colorizeLineI( $_, '('.$pattern.')', $Settings{GREPCOLOR} ));
 	    }
@@ -926,8 +924,9 @@ sub colorizeLine ( $$$ ) {
 	 # find the previous color
 	my $previousColor = "";
 
-	# fix the path with '\'
+	# fix the regexp path with '\' and the escape sec \[
 	$pattern =~ s/\\/\\\\/g;
+	$pattern =~ s/\[/\\\[/g;
 
 	if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*$pattern/ )
 	{
@@ -936,7 +935,6 @@ sub colorizeLine ( $$$ ) {
 
 	$line =~ s/$pattern/COLORIZE\[$i\]/;
 	$save[$i] = $coloredString.$previousColor;
-
 
 	$i++;
 

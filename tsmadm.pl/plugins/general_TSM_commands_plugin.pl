@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+no warnings 'redefine';
+
 # Global variables (Each starts with capital!)
 our $Dirname;                      #
 our $tsmadmplVersion;              # version info
@@ -484,7 +486,7 @@ $Commands{&commandRegexp( "show", "stgpools" )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select STGPOOL_NAME,DEVCLASS,EST_CAPACITY_MB,PCT_UTILIZED,PCT_MIGR,HIGHMIG,LOWMIG,NEXTSTGPOOL from STGPOOLS", 'select_x_from_stgpools' );
+    my @query = &runTabdelDsmadmc( "select STGPOOL_NAME,DEVCLASS,COLLOCATE,EST_CAPACITY_MB,PCT_UTILIZED,PCT_MIGR,HIGHMIG,LOWMIG,NEXTSTGPOOL from STGPOOLS", 'select_x_from_stgpools' );
     return if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'GENERAL';
@@ -493,16 +495,16 @@ $Commands{&commandRegexp( "show", "stgpools" )} = sub {
 
     foreach ( @query ) {
       my @line = split ( /\t/ );
-      $line[2] = &byteFormatter ( $line[2], 'MB' );
-      $line[4] = " " if ( ! defined ( $line[4] ) );
+      $line[3] = &byteFormatter ( $line[3], 'MB' );
       $line[5] = " " if ( ! defined ( $line[5] ) );
       $line[6] = " " if ( ! defined ( $line[6] ) );
       $line[7] = " " if ( ! defined ( $line[7] ) );
-      push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7] ) );
+      $line[8] = " " if ( ! defined ( $line[8] ) );
+      push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7], $line[8] ) );
     }
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tStgPoolName\tDeviceClass\tEstCap{RIGHT}\tPctUtil{RIGHT}\tPctMig{RIGHT}\tHigh{RIGHT}\tLow{RIGHT}\tNextStgPool", &addLineNumbers( @printable ) );
+    &universalTextPrinter( "#{RIGHT}\tStgPoolName\tDeviceClass\tColl\tEstCap{RIGHT}\tPctUtil{RIGHT}\tPctMig{RIGHT}\tHigh{RIGHT}\tLow{RIGHT}\tNextStgPool", &addLineNumbers( @printable ) );
 
     return 0;
 
@@ -824,7 +826,7 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
     }
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "Domain\tScheduleName\tNodeName\tScheduledStart\tActStart{RIGHT}\tCompleted{RIGHT}\tStatus\tRC", @printable );
+    &universalTextPrinter( "Domain\tScheduleName\tNodeName\tScheduledStart\tActStart{RIGHT}\tCompleted{RIGHT}\tStatus\tRC{RIGHT}", @printable );
 
     return 0;
 
@@ -990,45 +992,100 @@ $Commands{&commandRegexp( "show", "fillings" )} = sub {
         return 0;
     }
 
-  my $stg = $3;
+    my $stg = $3;
 
-  my @tmpquery = &runTabdelDsmadmc( "select stgpool_name, count(*) from volumes where stgpool_name like upper\('$stg%'\) and status='FILLING' and ACCESS='READWRITE' group by STGPOOL_NAME order by 2 desc" );
-  return if ( $#tmpquery < 0 );
+    my @tmpquery = &runTabdelDsmadmc( "select stgpool_name, count(*) from volumes where stgpool_name like upper\('%$stg%'\) and status='FILLING' and ACCESS='READWRITE' and devclass_name in (select devclass_name from devclasses where WORM='NO' and DEVCLASS_NAME !='DISK') group by STGPOOL_NAME order by 2 desc" );
+    return if ( $#tmpquery < 0 );
 
-  my @query;
-  my @printable;
+    $LastCommandType = 'FILLING';
+  
+    my @printable;
+    my @laststore;
+    my $counter = 1;
 
-  my $counter = 1;
+    # add the deltas
+    for ( @tmpquery ) {
+        my @line = split( /\t/ );
 
-  # add the deltas
-  for ( @tmpquery ) {
-    my @line = split( /\t/ );
+        # filling tresholds
+        if ( ( $line[1] <= 1 ) || ( defined $filling_tresholds{$line[0]} && $filling_tresholds{$line[0]} >= $line[1] ) ) {
+#          push (@line, '  OK');
+#         push (@return, join(',', @line))
+        }
+        else {
+            # stgp header
+            # $line[0] = "$line[0] $line[1]/$filling_tresholds{$line[0]}" if ( defined $filling_tresholds{$line[0]} );
+            push ( @printable, "\t$line[0] ($line[1])\tFAILED" );
 
-    # filling tresholds
-    if ( ( $line[1] <= 1 ) || ( defined $filling_tresholds{$line[0]} && $filling_tresholds{$line[0]} >= $line[1] ) ) {
-#      push (@line, '  OK');
-#      push (@return, join(',', @line))
+            for ( &runTabdelDsmadmc( "select VOLUME_NAME, PCT_UTILIZED from volumes where STGPOOL_NAME='$line[0]' and STATUS='FILLING' and ACCESS='READWRITE' order by PCT_UTILIZED" ) ) {
+                my @line = split(/\t/);
+                push ( @printable, "$counter\t\ [$line[0]\] \[$line[1]\]" );
+                push ( @laststore, $line[0] );
+                $counter++;
+            }
+        }
     }
-    else {
-      $line[1] = "$line[1]/$filling_tresholds{$line[0]}" if ( defined $filling_tresholds{$line[0]} );
-      push ( @line, 'FAILED');
-      push ( @printable, join( "\t", @line ) );
-
-      for ( &runTabdelDsmadmc( "select VOLUME_NAME, PCT_UTILIZED from volumes where STGPOOL_NAME='$line[0]' and STATUS='FILLING' and ACCESS='READWRITE' order by PCT_UTILIZED" ) ) {
-        my @line = split(/\t/);
-        push ( @printable, " [$counter]\t\[$line[0]\] \[$line[1]\]" );
-        push ( @query, join( "\t", "FAKESTRING", $line[0] ) );
-        $counter++;
-      }
-    }
-
-  }
 
   &setSimpleTXTOutput();
-  &universalTextPrinter( "StgpoolName\tFillingVolume#\tResult", @printable );
+  &universalTextPrinter( "#{RIGHT}\tFillingVolume#\tResult", @printable );
+
+  &addLineNumbers( @laststore );  # put all lines to lastresult array
 
   return 0;
   
+};
+
+########################################################################################################################
+
+##########
+# MOVeit ################################################################################################################
+##########
+&msg( '0110D', 'MOveit' );
+$Commands{&commandRegexp( "moveit", "" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "MOveit Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    my $number = $2;
+
+    if ( $number eq '' ) {
+        &msg ( '0030E' );
+        return 0;
+    }
+
+    $number--;
+
+    if ( defined( $LastCommandType ) && $LastCommandType =~ m/FILLING/ && $number <= $#LastResult ) {
+
+        my @line = split ( /\t/, $LastResult[$number] );
+
+        &setSimpleTXTOutput();
+        &universalTextPrinter( "NOHEADER", &runDsmadmc( "move data $line[1]" ) ) if ( $LastCommandType eq 'FILLING' );
+
+    }
+    elsif ( $number > $#LastResult ) {
+
+        &msg ( '0032E' ); # out of range
+
+    }
+    else {
+
+        &msg ( '0031E', "Only 'SHow FILlings' allowed" );
+
+    }
+
+    return 0;
+
 };
 
 ########################################################################################################################

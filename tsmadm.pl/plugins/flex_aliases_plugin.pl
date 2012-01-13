@@ -13,7 +13,9 @@ use warnings;
 &defineAlias( 'f',        'set server f' );
 &defineAlias( 'h',        'set server h' );
 
-&defineAlias( 'i',        'reach chrome.exe --new-tab index.hu' );
+&defineAlias( 'a',        'b; actew; w; actew; f; actew' );
+
+&defineAlias( 'i',        'reach chrome --new-tab index.hu' );
 &defineAlias( 'tsm',      'reach \\tsmmanager\c$' );
 
 &defineAlias( 'itsm1',    'reach ssh://flex@itsm1' );

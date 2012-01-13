@@ -79,6 +79,7 @@ use Time::Local;
 use Getopt::Long;
 use File::Path;
 use File::Spec;
+use File::Spec::Functions;
 use File::Basename;
 use Pod::Usage;
 use utf8;
@@ -226,36 +227,34 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
 %GlobalHighlighter = (
 
     # errors and warnings
-#    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'               => 'BOLD BLUE',
-#    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'               => 'BOLD YELLOW',
-    '(ANR\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}]*)'                => 'BOLD RED',
-    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}]*)'                => 'BOLD YELLOW',
+#    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'                       => 'BOLD BLUE',
+#    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'                       => 'BOLD YELLOW',
+    '(ANR\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}]*)'                          => 'BOLD RED',
+    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}]*)'                          => 'BOLD YELLOW',
 
     # volumes
-    '[^A-Z0-9]([A-Z]{1}[0-9]{5})[^A-Z0-9_]'                     => 'BOLD GREEN',
-    '[^A-Z0-9]([A-Z]{3}[0-9]{3})[^A-Z0-9_]'                     => 'BOLD GREEN',
-    '[^A-Z0-9]([A-Z,0-9]{6}J[ABXW])[^A-Z0-9_]'                  => 'BOLD GREEN',
-    '[^A-Z0-9]([A-Z,0-9]{6}L[12345])[^A-Z0-9_]'                 => 'BOLD GREEN',
+    '[^A-Z0-9]([A-Z]{1}[0-9]{5})[^A-Z0-9_]'                            => 'BOLD GREEN',
+    '[^A-Z0-9]([A-Z]{3}[0-9]{3})[^A-Z0-9_]'                            => 'BOLD GREEN',
+    '[^A-Z0-9]([A-Z,0-9]{6}J[ABXW])[^A-Z0-9_]'                         => 'BOLD GREEN',
+    '[^A-Z0-9]([A-Z,0-9]{6}L[12345])[^A-Z0-9_]'                        => 'BOLD GREEN',
     
-    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/]+\.BFS\.?[0-9]{0,9})' => 'BOLD GREEN',
-    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/]+\.DBB\.?[0-9]{0,9})' => 'BOLD GREEN',
+    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.BFS\.?[0-9]{0,9})' => 'BOLD GREEN',
+    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.DBB\.?[0-9]{0,9})' => 'BOLD GREEN',
 
     # sessions
-    '(MediaW)'                                                  => 'BOLD RED',
+    '(MediaW)'                                                         => 'BOLD RED',
 
-    '(Waiting for multiple mount points in device class \w*)'   => 'BOLD YELLOW',
-    '(Waiting for mount point in device class \w*)'             => 'BOLD YELLOW',
-    '(Waiting for mount of output volume \w*)'                  => 'BOLD YELLOW',
+    '(Waiting for multiple mount points in device class \w*)'          => 'BOLD YELLOW',
+    '(Waiting for mount point in device class \w*)'                    => 'BOLD YELLOW',
+    '(Waiting for mount of output volume \w*)'                         => 'BOLD YELLOW',
     
     # mounts
-    '(RESERVED)'                                                => 'BOLD YELLOW',
-    '(DISMOUNTING)'                                             => 'BOLD YELLOW',
-    
-  
-    '(WAITING FOR VOLUME)'                                      => 'BOLD RED',
+    '(RESERVED)'                                                       => 'BOLD YELLOW',
+    '(DISMOUNTING)'                                                    => 'BOLD YELLOW',
+    '(WAITING FOR VOLUME)'                                             => 'BOLD RED',
     
     # PATHs
-    '(online=NO)'                                               => 'BOLD RED',
+    '(online=NO)'                                                      => 'BOLD RED',
 );
 
 ##########################################################################################
@@ -282,7 +281,7 @@ if ($OS_win) {
     require Win32::Console;
     require Win32::Console::ANSI;
 
-    $Settings{HOMEDIRECTORY} = $ENV{HOMEDRIVE} . $ENV{HOMEPATH};
+    $Settings{HOMEDIRECTORY} = File::Spec->canonpath( $ENV{HOMEDRIVE}.$ENV{HOMEPATH} );
 
 }
 else {
@@ -297,7 +296,7 @@ else {
 # load config file DON'T MOVE THIS SECTION!
 if ( !defined($configfileOption) ) {
     # default config file
-    $configfileOption = "$Settings{HOMEDIRECTORY}/.tsmadm/tsmadm.conf";
+    $configfileOption = File::Spec->canonpath( "$Settings{HOMEDIRECTORY}/.tsmadm/tsmadm.conf" );
 }
 
 $Settings{CONFIGFILE} = $configfileOption;
@@ -315,8 +314,6 @@ if (! -r $Settings{CONFIGFILE} ) {
     exit 666;
 }
 
-$Settings{GREPCOLOR} = 'BOLD WHITE';
-
 &checkPassword($configfileOption);
 
 %Settings = &loadFileToHash($configfileOption);
@@ -324,9 +321,11 @@ $Settings{GREPCOLOR} = 'BOLD WHITE';
 $Settings{CONFIGFILE} = $configfileOption;
 
 # put it to the right place and use from here
-
-$Settings{HISTORYFILE}      = "$Settings{HOMEDIRECTORY}/.tsmadm/command_history";
-$Settings{ARCHIVEDIRECTORY} = "$Dirname/archives";
+ 
+$Settings{HISTORYFILE}      = File::Spec->canonpath( "$Settings{HOMEDIRECTORY}/.tsmadm/command_history" );
+$Settings{ARCHIVEDIRECTORY} = File::Spec->canonpath( "$Dirname/archives" );
+$Settings{CLOPTSETS}        = File::Spec->canonpath( "$Dirname/cloptsets" );
+$Settings{SCRIPTS}          = File::Spec->canonpath( "$Dirname/scripts" );
 
 # load language file
 if ( defined($languageOption) ) {
@@ -336,7 +335,7 @@ elsif ( !defined( $Settings{LANGUAGE} ) ) {
     $Settings{LANGUAGE} = "en_US";
 }
 
-%Messages = &loadFileToHash( "$Dirname/languages/" . $Settings{LANGUAGE} . ".txt" );
+%Messages = &loadFileToHash( File::Spec->canonpath( "$Dirname/languages/" . $Settings{LANGUAGE} . ".txt" ) );
 
 &updateTerminalSettings();
 
@@ -402,6 +401,10 @@ if ( defined($disableGrep) ) {
 }
 elsif ( !defined( $Settings{DISABLEGREP} ) ) {
     $Settings{DISABLEGREP} = 0;
+}
+
+if ( ! defined( $Settings{GREPCOLOR} )  ) {
+    $Settings{GREPCOLOR} = 'BOLD WHITE';   
 }
 
 $Settings{OS} = $^O;
@@ -479,6 +482,16 @@ if ( defined($colortestFlag) ) {
     print 'ANR8209E Unable to establish TCP/IP session with 10.16.2.234 - connection refused. (SESSION: 94)'."\n" ;
     print &globalHighlighter( 'ANR8209E Unable to establish TCP/IP session with 10.16.2.234 - connection refused. (SESSION: 94)'."\n" );
     
+    print &textLine( &colorString( "#", $Settings{DEFAULTCOLOR} ).&colorString( " Colortest GREP section ", "BOLD RED" ), '#');
+    
+    $ParameterRegExpValues{GREP} = "dbDailyIncrements";
+    print &grepIt( &globalHighlighter( "ANR2020E Incremental backup: 0 pages of 77452 backed up. Current output volume: /tsm/blackhole/dbDailyIncrements/21536884.DBB.\n" ));
+    print &grepIt( &globalHighlighter( 'ANR2020E Incremental backup: 0 pages of 77452 backed up. Current output volume: D:\tsm\blackhole\dbDailyIncrements\21536884.DBB.'."\n" ));
+    
+    $ParameterRegExpValues{GREP} = "full";    
+    print &grepIt( &globalHighlighter( "01/09/2012 06:04:29      BACKUPFULL            842             0          1     DCFILE_01        /tsmdata/full/26085469.DBB\n" ));
+    print &grepIt( &globalHighlighter( "01/09/2012 06:04:29      BACKUPFULL            842             0          1     DCFILE_01        /tsmdata/full/26085469.DBB\n" ));
+        
     print &textLine( &colorString( "#", $Settings{DEFAULTCOLOR} ).&colorString( " Colortest end ", "BOLD RED" ), '#');
     exit 99;
 }
@@ -525,8 +538,8 @@ else {
 }
 
 # End summary
-&msg( '9900I', &msgSpentTime( time - $starttime ) );
-&msg( '9901I', 'http://tsmadm.pl/' );
+&msg( '9900I', &colorString( &msgSpentTime( time - $starttime ), 'BOLD WHITE' ) );
+&msg( '9901I', &colorString( 'http://tsmadm.pl/', 'BOLD BLUE' ) );
 &msg( '9999I' );
 
 __END__

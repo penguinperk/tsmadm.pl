@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+no warnings 'redefine';
+
 # Global variables (Each starts with capital!)
 our $Dirname;                      #
 our $tsmadmplVersion;              # version info
@@ -36,8 +38,8 @@ my $status;
 ####################
 # Show BACkupstgp  #####################################################################################################
 ####################
-&msg( '0110D', 'SHow BACkup' );
-$Commands{&commandRegexp( "show", "backup" )} = sub {
+&msg( '0110D', 'SHow _BACkup' );
+$Commands{&commandRegexp( "show", "_backup" )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
