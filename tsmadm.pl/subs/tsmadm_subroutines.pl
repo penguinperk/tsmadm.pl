@@ -924,6 +924,9 @@ sub colorizeLine ( $$$ ) {
 	 # find the previous color
 	my $previousColor = "";
 
+#print "LINE: $line".&colorLength($line)."\n";
+#print "PATT: $pattern".&colorLength($pattern)."\n";
+
 	# fix the regexp path with '\' and the escape sec \[
 	$pattern =~ s/\\/\\\\/g;
 	$pattern =~ s/\[/\\\[/g;
@@ -943,8 +946,16 @@ sub colorizeLine ( $$$ ) {
     # restore everything
     while ( $line =~ m/COLORIZE\[(\d+)\]/ ) {
 
-	my $coloredString = $save[$1];
-	$line =~ s/COLORIZE\[$1\]/$coloredString/;
+	my $index=$1;
+
+	my $coloredString = $save[$index];
+	
+	# change the reset
+#	my $justcolor = &colorString( "", $color );
+#	$justcolor =~ s/\e\[0m//;
+#	$coloredString =~ s/\e\[0m(.+)/$justcolor$1/g; 
+	
+	$line =~ s/COLORIZE\[$index\]/$coloredString/;
 
     }
 	

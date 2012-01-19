@@ -195,22 +195,42 @@ sub universalTextPrinter ( @ )
 
     foreach my $field ( @header ) {
         my ( $format, $color, $header, $align );
-        if   ( $field =~ s/{\s*([^\}]*?)\s*}// ) { $format = $1; }
-        else                                     { $format = ""; }
-        if   ( $field =~ s/\[\s*([^\]]*?)\s*\]// ) { $color = $1 }
-        else                                       { $color = ""; }
+        if ( $field =~ s/{\s*([^\}]*?)\s*}// )
+        {
+            $format = $1;
+        }
+        else
+        {
+            $format = "";
+        }
+        if ( $field =~ s/\[\s*([^\]]*?)\s*\]// )
+        {
+            $color = $1
+        }
+        else
+        {
+            $color = "";
+        }
         $field =~ s/^\s*|\s*$//g;
         $header = $field;
-        if (uc($format) =~ m/LEFT|RIGHT/ ) {
+        if (uc($format) =~ m/LEFT|RIGHT/ )
+        {
             $align = $format;
             $format = "";
-        } else {$align = "LEFT";}
-        $fieldlength[$j] = &colorLength($field);
+        }
+        else
+        {
+            $align = "LEFT";
+        }
+        $fieldlength[$j] = &colorLength( $field );
+
         $fieldColor[$j]  = $color;
         $fieldHeader[$j] = $header;
         $fieldFormat[$j] = $format;
         $fieldAlign[$j]  = $align;
+        
         $j++;
+        
     }
 
     # Find longest fields
@@ -220,7 +240,7 @@ sub universalTextPrinter ( @ )
         $j = 0;
         foreach ( split( /\t/, $_ ) ) {
 
-            if ( $fieldFormat[$j] !~ m/MAX/ )
+            if ( defined( $fieldFormat[$j] ) && $fieldFormat[$j] !~ m/MAX/ )
             {
                 my $printableField = $_;
                 $printableField = sprintf( $fieldFormat[$j], $_ )
@@ -329,13 +349,13 @@ sub universalTextPrinter ( @ )
                 $printableField = &printerGrepHighlighter ( $printableField, $ParameterRegExpValues{PGREP}, $Settings{HIGHLIGHTCOLOR} );
             }
 
-            if ( $fieldAlign[$j] ne "LEFT" )
+            if ( defined ( $fieldAlign[$j] ) && $fieldAlign[$j] ne "LEFT" )
             {
-                $printableField = sprintf( "% " . (length( $printableField )+$fieldlength[$j]-&colorLength( $printableField ) ) . "s", "$printableField" );
+                $printableField = sprintf( "% " . ( length( $printableField ) + $fieldlength[$j] - &colorLength( $printableField ) ) . "s", "$printableField" ) if ( defined( $fieldlength[$j] ) );
             }
             else
             {
-                $printableField = sprintf( "%-" . (length( $printableField )+$fieldlength[$j]-&colorLength( $printableField ) ) . "s", "$printableField" );
+                $printableField = sprintf( "%-" . ( length( $printableField ) + $fieldlength[$j] - &colorLength( $printableField ) ) . "s", "$printableField" ) if ( defined( $fieldlength[$j] ) );
             }
 
 #			if ($printableField =~ m/$grep/ ) {$printableField = colorString($printableField,"RED");} ## whole line grep

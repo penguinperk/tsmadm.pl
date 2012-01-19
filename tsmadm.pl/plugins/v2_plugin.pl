@@ -136,6 +136,31 @@ $Commands{&commandRegexp( "show", "reclamationperformance", 2, 12 )} = sub {
 
 };
 
+##########################
+# SHow CLIBACKUPPerformance #####################################################################################################
+##########################
+&msg( '0110D', 'SHow CLIBACKUPPerformance' );
+$Commands{&commandRegexp( "show", "clibackupperformance", 2, 10 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow BACKUPPerformance Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    &basicPerformanceFromSummary( 'BACKUP' );
+
+    return 0;
+
+};
+
 sub basicPerformanceFromSummary ( $ ) {
 
     # ARCHIVE
@@ -179,14 +204,16 @@ sub basicPerformanceFromSummary ( $ ) {
             }
         }
         
-        my $speed = int( ( $line[10]/1024/1024 ) / $line[15])." MB/s";
+        my $speed   = ( $line[15] > 0 ) ? int( ( $line[10]/1024/1024 ) / $line[15] )." MB/s" : "n/a";
+        my $failed  = ( $line[9] > 0 ) ? &colorString( $line[9], 'BOLD RED') : $line[9];
+        my $success = ( $line[14] eq 'NO' ) ? &colorString( $line[14], 'BOLD RED') : $line[14];
         
-        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$line[9], &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), &timeFormatter ( $line[12], 's' ), $line[13], $line[14]) );
+        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), &timeFormatter ( $line[12], 's' ), $line[13], $success ) );
        
     }    
         
     &setSimpleTXTOutput();
-    &universalTextPrinter( "Start\tEnd\t#Proc\tPool\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc", @printable );
+    &universalTextPrinter( "Start\tEnd\t#Proc\tPool\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc{RIGHT}", @printable );
     
 }
 
@@ -211,7 +238,7 @@ $Commands{&commandRegexp( "show", "activity" )} = sub {
 
     $LastCommandType = 'ACTIVITY';
 
-    my @query = &runTabdelDsmadmc('q actlog '.$3.' '.$4.' '.$5.' '.$6.' '.$7.' '.$8);
+    my @query = &runTabdelDsmadmc( 'q actlog '.$3.' '.$4.' '.$5.' '.$6.' '.$7.' '.$8 );
     return if ( $#query < 0 );
     
     my @printable;
@@ -223,6 +250,43 @@ $Commands{&commandRegexp( "show", "activity" )} = sub {
 
     &setSimpleTXTOutput();
     &universalTextPrinter( "Date\tActivity", @printable );
+    
+    return 0;
+};
+
+#######################
+# SHow NODEOccuopancy ########################################################################################################
+#######################
+&msg( '0110D', 'SHow NODEOccuopancy' );
+$Commands{&commandRegexp( "show", "nodeoccuopancy", 2, 5 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow NODEOccuopancy Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    $LastCommandType = 'NODEOCCU';
+
+    my @query = &runTabdelDsmadmc( "select node_name, sum(logical_mb) , sum(num_files) from occupancy where node_name like upper('$3%')  group by node_name order by 2 desc" );
+    return if ( $#query < 0 );
+    
+    my @printable;
+    
+    foreach ( @query ) {
+        my @line = split ( /\t/ );
+        push ( @printable, join( "\t", $line[0], &byteFormatter( $line[1], 'MB'), $line[2] ) );
+    }
+
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "#{RIGHT}\tNodeName\tData{RIGHT}\tFile#{RIGHT}", &addLineNumbers( @printable ) );
     
     return 0;
 };

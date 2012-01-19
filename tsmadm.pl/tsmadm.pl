@@ -539,7 +539,7 @@ else {
 
 # End summary
 &msg( '9900I', &colorString( &msgSpentTime( time - $starttime ), 'BOLD WHITE' ) );
-&msg( '9901I', &colorString( 'http://tsmadm.pl/', 'BOLD BLUE' ) );
+&msg( '9901I', &colorString( 'http://tsmadm.pl/', 'BOLD BLUE ON_WHITE' ) );
 &msg( '9999I' );
 
 __END__
