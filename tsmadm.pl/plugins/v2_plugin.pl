@@ -52,7 +52,7 @@ $Commands{&commandRegexp( "show", "volumeusage", 2, 7 )} = sub {
     $LastCommandType = 'VOLUMEUSAGE';
 
     my @query = &runTabdelDsmadmc( "select node_name, stgpool_name, count(distinct volume_name) from volumeusage group by node_name, stgpool_name order by 3 desc" );
-    return if ( $#query < 0 );
+    return 0 if ( $#query < 0 || $LastErrorcode );
         
     &setSimpleTXTOutput();
     &universalTextPrinter( "NodeName\tStgPool\t#Volumes{RIGHT}", @query );
@@ -179,7 +179,7 @@ sub basicPerformanceFromSummary ( $ ) {
     $LastCommandType = 'PERFORMANCE';
 
     my @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='".$_[0]."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
-    return if ( $#query < 0 );
+    return 0 if ( $#query < 0 || $LastErrorcode );
     
     &pbarInit( "PREPARATION |", scalar( @query ), "|");
 
@@ -239,7 +239,7 @@ $Commands{&commandRegexp( "show", "activity" )} = sub {
     $LastCommandType = 'ACTIVITY';
 
     my @query = &runTabdelDsmadmc( 'q actlog '.$3.' '.$4.' '.$5.' '.$6.' '.$7.' '.$8 );
-    return if ( $#query < 0 );
+    return 0 if ( $#query < 0 || $LastErrorcode );
     
     my @printable;
     
@@ -276,7 +276,7 @@ $Commands{&commandRegexp( "show", "nodeoccuopancy", 2, 5 )} = sub {
     $LastCommandType = 'NODEOCCU';
 
     my @query = &runTabdelDsmadmc( "select node_name, sum(logical_mb) , sum(num_files) from occupancy where node_name like upper('$3%')  group by node_name order by 2 desc" );
-    return if ( $#query < 0 );
+    return 0 if ( $#query < 0 || $LastErrorcode );
     
     my @printable;
     

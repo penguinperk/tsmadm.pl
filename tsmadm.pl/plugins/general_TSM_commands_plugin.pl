@@ -534,32 +534,119 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
 
     $LastCommandType = 'DRIVE';
 
-    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'online='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,'['||VOLUME_NAME||']',ALLOCATED_TO from drives" );
+    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'online='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,VOLUME_NAME,ALLOCATED_TO from drives" );
     return if ( $#query < 0 || $LastErrorcode );
 
     # István added it
-    my @query_m = &runDsmadmc("q mount");
-    chomp(@query_m);
+    my @query_m = &runDsmadmc( "q mount" );
+    chomp( @query_m );
 
+    my $i = 1;
     my %vols;
+        
+    &pbarInit( "PREPARATION  I. |", scalar( @query_m ), "|");
+    
     foreach ( @query_m ) {
-       if ($_ =~ m/^ANR83{29|30|31|32|33}I/) {
-           if ($_ =~ /.*volume (.*) is mounted (.*) in drive.*, status: (.*)\./) {
-               $vols{'['.$1.']'}[0]=$2;
-               $vols{'['.$1.']'}[1]=$3;
+       
+       if ( $_ =~ m/^ANR83{29|30|31|32|33}I/ ) {
+           if ( $_ =~ /.*volume (.*) is mounted (.*) in drive.*, status: (.*)\./ ) {
+                $vols{$1}[0]=$2;
+                $vols{$1}[1]=$3;
            }
        }
-    }
-    foreach ( @query ) {
-        my @line = split (/\t/);
-
-        if ( defined ($line[6]) && exists $vols{$line[6]} ) {
-            $_.= "\t$vols{$line[6]}[0]\t$vols{$line[6]}[1]";
-        }
+       
+       &pbarUpdate( $i++ );
     }
     
+    $i = 1;
+    my @printable;
+    
+    &pbarInit( "PREPARATION II. |", scalar( @query ), "|");
+    
+    foreach ( @query ) {
+        my @line = split ( /\t/ );
+
+        if ( defined ( $line[6] ) && exists ( $vols{$line[6]} ) ) {
+            
+            $line[8] = $vols{$line[6]}[0];
+            $line[9] = $vols{$line[6]}[1];
+            
+        }
+
+        if ( defined ( $line[6] ) and $line[6] ne '' ) {
+            
+            # route the command if it necessary
+            $ParameterRegExpValues{SERVERCOMMANDROUTING1} = '';
+            $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $line[7] if ( $TSMSeverStatus{SERVERNAME} ne $line[7] );
+            
+            my @query_pr = &runTabdelDsmadmc( "select PROCESS,PROCESS_NUM from processes where STATUS like '%$line[6]%'" );
+            if ( defined ( $query_pr[0] ) ) {
+                my @tmpline = split ( /\t/, $query_pr[0] );
+                $line[10] = "$tmpline[0] ($tmpline[1])";
+            }
+            else {
+                my @query_sess = &runTabdelDsmadmc( "select SESSION_ID from sessions where INPUT_MOUNT_WAIT like '%$line[6]%' or INPUT_VOL_WAIT like '%$line[6]%' or INPUT_VOL_ACCESS like '%$line[6]%' or OUTPUT_MOUNT_WAIT like '%$line[6]%' or OUTPUT_VOL_WAIT like '%$line[6]%' or OUTPUT_VOL_ACCESS like '%$line[6]%'" );
+                if ( defined ( $query_sess[0] ) ) {
+                    $line[10] = "Client Session ($query_sess[0])";
+                }
+                else {
+                    $line[10] = ' ';
+                }
+            }
+            
+            $line[6] = '['.$line[6].']';
+            
+        }
+        
+        # fill
+        $line[6] = " " if ( ! defined ( $line[6] ) );
+        $line[7] = " " if ( ! defined ( $line[7] ) );
+        $line[8] = " " if ( ! defined ( $line[8] ) );
+        $line[9] = " " if ( ! defined ( $line[9] ) );
+        $line[10] = " " if ( ! defined ( $line[10] ) );
+
+        push ( @printable, join ( "\t", @line ) );
+        
+        &pbarUpdate( $i++ );
+        
+    }
+    
+    my $level = 1;
+    $i = 0;
+    foreach ( @printable ) {
+        my @line = split ( /\t/ );
+        
+        if ( defined ( $line[10] ) && $line[10] ne ' ' ) {
+            
+            # find pair
+            for ( my $index = $i+1; $index <= $#printable; $index++ ) {
+                my @printableline = split ( /\t/, $printable[$index] );
+                if ( defined ( $printableline[10]) && $line[10] eq $printableline[10] ) {
+                    # pair found $i start, $index end
+                    $printable[$i] .= ( $level == 1 ) ? "\t+" : "+";
+                    for ( my $index2 = $i+1; $index2 <= $index-1; $index2++ ) {
+                        $printable[$index2] .= ( $level == 1 ) ? "\t|" : "|";
+                    }
+                    $printable[$index] .= ( $level == 1 ) ? "\t+" : "+";
+                    #rest
+                    for ( my $index3 = $index+1; $index3 <= $#printable; $index3++ ) {
+                        $printable[$index3] .= ( $level == 1 ) ? "\t " : " ";
+                    }
+                        
+                    $level++;
+                    
+                }
+            }
+            
+        }
+        
+        $i++;
+        
+    }
+    
+    
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tLibraryName\tDriveName\tOnline\t#El\tState\tSerial\tVolume\tOwner\tMod{RIGHT}\tMStatus{RIGHT }", &addLineNumbers( @query ) );
+    &universalTextPrinter( "#{RIGHT}\tLibraryName\tDriveName\tOnline\t#El\tState\tSerial\tVolume\tOwner\tMod{RIGHT}\tMStatus{RIGHT}\tRemark{RIGHT}\t ", &addLineNumbers( @printable ) );
 
     return 0;
 
@@ -776,7 +863,7 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
     $LastCommandType = 'EVENTS';
 
     my @query = &runTabdelDsmadmc('q event * * begind=-1 begint=07:00 endd=today endt=now f=d '.$3.' '.$4.' '.$5);
-    return if ( $#query < 0 );
+    return if ( $#query < 0 || $LastErrorcode );
 
     @query = deleteColumn( 8, @query);
 
@@ -851,12 +938,8 @@ $Commands{&commandRegexp( "show", "libvolume" )} = sub {
         return 0;
     }
 
-    my @libvolumes =
-      &runTabdelDsmadmc( "select volume_name, library_name from libvolumes",
-        "select_vol_lib_from_libvolumes" );
-    my @volumes = &runTabdelDsmadmc(
-"select volume_name, stgpool_name from volumes where devclass_name != 'DISK'"
-    );
+    my @libvolumes = &runTabdelDsmadmc( "select volume_name, library_name from libvolumes", "select_vol_lib_from_libvolumes" );
+    my @volumes    = &runTabdelDsmadmc( "select volume_name, stgpool_name from volumes where devclass_name != 'DISK'" );
 
     my %tmpLibvolumeHash;
 
@@ -920,7 +1003,7 @@ $Commands{&commandRegexp( "show", "schedules" )} = sub {
     $LastCommandType = 'SCHEDULES';
 
     my @query = &runTabdelDsmadmc( 'q sched '.$3 );
-    return if ( $#query < 0 );
+    return if ( $#query < 0 || $LastErrorcode );
 
     &setSimpleTXTOutput();
     &universalTextPrinter( "Domain\tScheduleName\tAction\tStartDateTime\tDuration\tPeriod\tDay", &deleteColumn( 1, @query ) );
@@ -953,7 +1036,7 @@ $Commands{&commandRegexp( "show", "expiration" )} = sub {
     $LastCommandType = 'EXPIRATION';
 
     my @query = &runTabdelDsmadmc( "select START_TIME, END_TIME-START_TIME as DURATION, SUCCESSFUL, EXAMINED, AFFECTED from Summary where ACTIVITY ='EXPIRATION'", 'select_EXPIRATION_from_summary' );
-    return if ( $#query < 0 );
+    return if ( $#query < 0 || $LastErrorcode );
 
     my @printable;
 
@@ -995,7 +1078,7 @@ $Commands{&commandRegexp( "show", "fillings" )} = sub {
     my $stg = $3;
 
     my @tmpquery = &runTabdelDsmadmc( "select stgpool_name, count(*) from volumes where stgpool_name like upper\('%$stg%'\) and status='FILLING' and ACCESS='READWRITE' and devclass_name in (select devclass_name from devclasses where WORM='NO' and DEVCLASS_NAME !='DISK') group by STGPOOL_NAME order by 2 desc" );
-    return if ( $#tmpquery < 0 );
+    return if ( $#tmpquery < 0 || $LastErrorcode );
 
     $LastCommandType = 'FILLING';
   
