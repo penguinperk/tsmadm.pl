@@ -646,16 +646,14 @@ sub getTSMStatus() {
             "LEVEL",      "SUBLEVEL"
         );
 
-        my @status = &runTabdelDsmadmc(
-"select server_name,platform,version,release,level,sublevel from status"
-        );
+        my @status = &runTabdelDsmadmc( "select server_name,platform,version,release,level,sublevel from status" );
 
         if ( !$LastErrorcode ) {
 
             my @values = split( /\t/, $status[0] );
             my $i = 0;
 
-            foreach (@filedNames) {
+            foreach ( @filedNames ) {
                 $TSMSeverStatus{$_} = $values[$i];
                 $i++;
             }

@@ -49,11 +49,11 @@ $Commands{&commandRegexp( "show", "volumeusage", 2, 7 )} = sub {
         return 0;
     }
 
-    $LastCommandType = 'VOLUMEUSAGE';
-
     my @query = &runTabdelDsmadmc( "select node_name, stgpool_name, count(distinct volume_name) from volumeusage group by node_name, stgpool_name order by 3 desc" );
     return 0 if ( $#query < 0 || $LastErrorcode );
-        
+
+    $LastCommandType = 'VOLUMEUSAGE';
+
     &setSimpleTXTOutput();
     &universalTextPrinter( "NodeName\tStgPool\t#Volumes{RIGHT}", @query );
 
@@ -176,10 +176,10 @@ sub basicPerformanceFromSummary ( $ ) {
     # STGPOOL BACKUP
     # TAPE MOUNT
     
-    $LastCommandType = 'PERFORMANCE';
-
     my @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='".$_[0]."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
     return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'PERFORMANCE';
     
     &pbarInit( "PREPARATION |", scalar( @query ), "|");
 
@@ -236,10 +236,10 @@ $Commands{&commandRegexp( "show", "activity" )} = sub {
         return 0;
     }
 
-    $LastCommandType = 'ACTIVITY';
-
     my @query = &runTabdelDsmadmc( 'q actlog '.$3.' '.$4.' '.$5.' '.$6.' '.$7.' '.$8 );
     return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'ACTIVITY';
     
     my @printable;
     
@@ -273,10 +273,10 @@ $Commands{&commandRegexp( "show", "nodeoccuopancy", 2, 5 )} = sub {
         return 0;
     }
 
-    $LastCommandType = 'NODEOCCU';
-
     my @query = &runTabdelDsmadmc( "select node_name, sum(logical_mb) , sum(num_files) from occupancy where node_name like upper('$3%')  group by node_name order by 2 desc" );
     return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'NODEOCCU';
     
     my @printable;
     
@@ -287,6 +287,104 @@ $Commands{&commandRegexp( "show", "nodeoccuopancy", 2, 5 )} = sub {
 
     &setSimpleTXTOutput();
     &universalTextPrinter( "#{RIGHT}\tNodeName\tData{RIGHT}\tFile#{RIGHT}", &addLineNumbers( @printable ) );
+    
+    return 0;
+};
+
+#######################
+# SHow COLumns ########################################################################################################
+#######################
+&msg( '0110D', 'SHow COLumns' );
+$Commands{&commandRegexp( "show", "columns", 2, 3 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow COLumns Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    my $tabname = $3;
+   
+    my @query = &runTabdelDsmadmc( "select tabname,colname,typename,length,remarks from columns where tabname like upper('%$tabname%')" );
+    return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'COLUMNS';
+   
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "Table\tColumn\tType{RIGHT}\tLength{RIGHT}\tRemark", @query );
+    
+    return 0;
+};
+
+#######################
+# SHow DBBackup ########################################################################################################
+#######################
+&msg( '0110D', 'SHow DBBackup' );
+$Commands{&commandRegexp( "show", "dbbackup", 2, 3 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow DBBackup Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,VOLUME_SEQ,DEVCLASS,'['||VOLUME_NAME||']' from volhistory where type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
+    return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'BACKUP';
+   
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "Date\tTime\tType\tSerie{RIGHT}\tSeq{RIGHT}\tDeviceClass\tVolume{RIGHT}", @query );
+
+    return 0;
+};
+
+#######################
+# SHow STAtus ########################################################################################################
+#######################
+&msg( '0110D', 'SHow STAtus' );
+$Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow STAtus Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+#    my @query = &runTabdelDsmadmc( "select node_name, sum(logical_mb) , sum(num_files) from occupancy where node_name like upper('$3%')  group by node_name order by 2 desc" );
+#    return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'STATUS';
+    
+    print $TSMSeverStatus{"VERSION"}."\n";
+    
+    my @printable;
+
+    push ( @printable, "$TSMSeverStatus{VERSION}\t\t\t");
+
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "#{RIGHT}\tNodeName\tData{RIGHT}\tFile#{RIGHT}", @printable );
     
     return 0;
 };
