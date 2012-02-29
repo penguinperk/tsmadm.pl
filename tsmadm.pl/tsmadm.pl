@@ -209,7 +209,8 @@ $OS_win = ( $^O eq "MSWin32" ) ? 1 : 0;                     # Is it MS Windows?
     HELP      => '\s+-*(help)',                             #
     HISTORY   => '\s+-*(archive|archiv|archi|arch|arc)',    #
     VERBOSE   => '\s+-*(verbose|verbos|verbo|verb)',        #
-    
+    LISTMODE  => '\s+-*(list)',                             #
+        
     SERVERCOMMANDROUTING1 => '(^\s*)([\w_\-\.]+):\s*',      # if you change thsese two regexps don't forget to change in the tsmadm_subroutine.pl
     SERVERCOMMANDROUTING2 => '(^\s*)\(([\w_\-\.]+)\)\s*',   # command routing reservation section
 
@@ -218,7 +219,7 @@ $OS_win = ( $^O eq "MSWin32" ) ? 1 : 0;                     # Is it MS Windows?
     GREP      => '\|\s*(grep)\s+"*([^$|]*|)"*',             #
     MORE      => '\|\s*(more)',                             #
 
-    OUTPUT => '(\>)\s*(.+)',                                #
+    OUTPUT    => '(\>)\s*(.+)',                             # 
 );
 
 $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH

@@ -31,6 +31,7 @@ XXXXX=ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP - árvíztűrő tükörfúrógép
 0031E=Previous command type mismatch. %s!
 0032E=Out of range!
 0033E=OS not supported!
+0034E=Wrong parameter!
 0050E=No URL found for node %s!
 0099E=%s
 

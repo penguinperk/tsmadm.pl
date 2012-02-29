@@ -1127,7 +1127,7 @@ $Commands{&commandRegexp( "show", "fillings" )} = sub {
 ########################################################################################################################
 
 ##########
-# MOVeit ################################################################################################################
+# MOveit ################################################################################################################
 ##########
 &msg( '0110D', 'MOveit' );
 $Commands{&commandRegexp( "moveit", "" )} = sub {
@@ -1152,9 +1152,17 @@ $Commands{&commandRegexp( "moveit", "" )} = sub {
         return 0;
     }
 
+    if ( $number =~ m/\w\w\w\w\w\w/ || $number =~ m/\w\w\w\w\w\w\w\w/ ) {
+        
+        &setSimpleTXTOutput();
+        &universalTextPrinter( "NOHEADER", &runDsmadmc( "move data $number" ) );
+        
+        return 0;
+    }
+
     $number--;
 
-    if ( defined( $LastCommandType ) && $LastCommandType =~ m/FILLING/ && $number <= $#LastResult ) {
+    if ( defined( $LastCommandType ) && $LastCommandType eq 'FILLING' && $number =~ m/^\d+$/ && $number <= $#LastResult ) {
 
         my @line = split ( /\t/, $LastResult[$number] );
 
@@ -1166,6 +1174,11 @@ $Commands{&commandRegexp( "moveit", "" )} = sub {
 
         &msg ( '0032E' ); # out of range
 
+    }
+    elsif ( $number !~ m/^\d+$/ ) {
+        
+        &msg ( '0034E' ); # wrong parameter
+        
     }
     else {
 

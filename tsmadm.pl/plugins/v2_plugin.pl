@@ -376,10 +376,16 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
 #    return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'STATUS';
-    
-    print $TSMSeverStatus{"VERSION"}."\n";
-    
+   
     my @printable;
+
+    if ( $TSMSeverStatus{VERSION} <= 5 ) {
+        
+        
+    }
+    else {
+        
+    }
 
     push ( @printable, "$TSMSeverStatus{VERSION}\t\t\t");
 
