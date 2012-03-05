@@ -642,8 +642,7 @@ sub getTSMStatus() {
     if ( $Settings{AUTOCONNECT} ) {
 
         my @filedNames = (
-            "SERVERNAME", "PLATFORM", "VERSION", "RELEASE",
-            "LEVEL",      "SUBLEVEL"
+            "SERVERNAME", "PLATFORM", "VERSION", "RELEASE", "LEVEL", "SUBLEVEL"
         );
 
         my @status = &runTabdelDsmadmc( "select server_name,platform,version,release,level,sublevel from status" );
@@ -657,7 +656,7 @@ sub getTSMStatus() {
                 $TSMSeverStatus{$_} = $values[$i];
                 $i++;
             }
-
+	    
         }
         else {
 
@@ -670,8 +669,41 @@ sub getTSMStatus() {
               &colorString( '!NOSERVER!', 'BOLD RED' );
 
         }
+	
+	&setTitle();
+	
     }
 
+}
+
+sub setTitle () {
+
+    if ( defined ( $TSMSeverStatus{SERVERNAME} ) ) {
+
+	# issue: #27 -> Change title
+	my $title = " tsmadm.pl | ";
+	
+	if ( $TSMSeverStatus{SERVERNAME} =~ m/!NOSERVER!/ ) {
+	    $title .= "???";
+	}
+	else {
+	    $title .= "Current TSM server: [$TSMSeverStatus{SERVERNAME}] | $TSMSeverStatus{PLATFORM} | v$TSMSeverStatus{VERSION}.$TSMSeverStatus{RELEASE}.$TSMSeverStatus{LEVEL}.$TSMSeverStatus{SUBLEVEL}";
+	}
+	
+	if ( $OS_win ) {
+	    
+	    my $CONSOLE=Win32::Console->new;
+	    $CONSOLE->Title( "$title" );
+    
+	}
+	else {
+	
+	    print "\033]0;$title\007";
+	    
+	}
+	
+    }
+    
 }
 
 #######################################################################################################################

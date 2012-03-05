@@ -82,7 +82,7 @@ sub Dsmadmc ( $$ ) {
     $serverCommandRouting .= $ParameterRegExpValues{SERVERCOMMANDROUTING2} if ( defined $ParameterRegExpValues{SERVERCOMMANDROUTING2} );
     $serverCommandRouting = '('.$serverCommandRouting.') ' if ( $serverCommandRouting ne '' );
 
-    if ($OS_win) {
+    if ( $OS_win ) {
         $ENV{"DSM_DIR"} = $Settings{DSM_DIR}
           if ( defined( $Settings{DSM_DIR} ) );
         $ENV{"DSM_LOG"} = $Settings{DSM_LOG}
@@ -162,6 +162,8 @@ sub Dsmadmc ( $$ ) {
         @return = @coloredError;
 
     }
+    
+    &setTitle() if ( $OS_win );
 
     return @return;
 }
@@ -205,7 +207,7 @@ sub startDsmadmc ( $ )
         $connectString .= " -se=$Settings{$TSMServer}";
     }
 
-    if ($OS_win)
+    if ( $OS_win )
     {
         $ENV{"DSM_DIR"} = $Settings{DSM_DIR}       if ( defined( $Settings{DSM_DIR} ) );
         $ENV{"DSM_LOG"} = $Settings{DSM_LOG}       if ( defined( $Settings{DSM_LOG} ) );
@@ -214,6 +216,9 @@ sub startDsmadmc ( $ )
                 . "DSMADMC from tsmadm.pl" . '" ' . '"'
                 . "$Settings{DSMADMC}" . '"'
                 . $connectString );
+	
+	&setTitle();
+	
     }
     else
     {
@@ -239,7 +244,7 @@ sub consoleHighlighter()
     my $decodedPassword = &getPassword( $Settings{$TSMPassword} );
     my $connectString   = " -console -id=$Settings{$TSMUserName} -password=$decodedPassword -NOConfirm ";
 
-    if ($OS_win)
+    if ( $OS_win )
     {
         $connectString .= " -tcpserveraddress=$Settings{$TSMServer} -tcpport=$Settings{$TSMPort}";
     }
@@ -270,7 +275,7 @@ sub consoleHighlighter()
         if (m/ANR....E/) { print &colorString( $_, "BOLD RED" );    next; }
         if (m/ANR....W/) { print &colorString( $_, "BOLD YELLOW" ); next; }
 
-        print &globalHighlighter($_);
+        print &globalHighlighter( $_ );
     }
     close PIPE;
 

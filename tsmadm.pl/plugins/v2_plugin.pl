@@ -342,13 +342,13 @@ $Commands{&commandRegexp( "show", "dbbackup", 2, 3 )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,VOLUME_SEQ,DEVCLASS,'['||VOLUME_NAME||']' from volhistory where type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
+    my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,'['||VOLUME_NAME||']' from volhistory where type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'BACKUP';
    
     &setSimpleTXTOutput();
-    &universalTextPrinter( "Date\tTime\tType\tSerie{RIGHT}\tSeq{RIGHT}\tDeviceClass\tVolume{RIGHT}", @query );
+    &universalTextPrinter( "Date\tTime\tType\tSerie{RIGHT}\t#{RIGHT}\tSeq{RIGHT}\tDeviceClass\tVolume{RIGHT}", @query );
 
     return 0;
 };

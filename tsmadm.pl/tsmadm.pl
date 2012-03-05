@@ -275,7 +275,7 @@ close $MYSELF or die;
 $Settings{HOMEDIRECTORY} = "";
 
 # OS
-if ($OS_win) {
+if ( $OS_win ) {
 
     # MS Windows environments
     require Win32;

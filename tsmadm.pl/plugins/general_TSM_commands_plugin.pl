@@ -105,7 +105,7 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
         
         &pbarUpdate( $i++ );
     }
-    
+  
     &setSimpleTXTOutput();
     &universalTextPrinter( "#{RIGHT}\tId\tState\tWait\tSent{RIGHT}\tReceived{RIGHT}\tType\tPlatform\tName\tMediaAccess\tVerb", &addLineNumbers( @printable ) );
     #\tOWNER_NAME\tMOUNT_POINT_WAIT\tINPUT_MOUNT_WAIT\tINPUT_VOL_WAIT\tINPUT_VOL_ACCESS\tOUTPUT_MOUNT_WAIT\tOUTPUT_VOL_WAIT\tOUTPUT_VOL_ACCESS\tLAST_VERB\tVERB_STATE
@@ -650,9 +650,8 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
         
     }
     
-    
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tLibraryName\tDriveName\tOnline\t#El\tState\tSerial\tVolume\tOwner\tMod{RIGHT}\tMStatus{RIGHT}\tRemark{RIGHT}\t ", &addLineNumbers( @printable ) );
+    &universalTextPrinter( "#{RIGHT}\tLibraryName\tDriveName\tOnline\t#El\tState\tSerial\tVolume{RIGHT}\tOwner\tMod{RIGHT}\tMStatus{RIGHT}\tRemark{RIGHT}\t ", &addLineNumbers( @printable ) );
 
     return 0;
 
