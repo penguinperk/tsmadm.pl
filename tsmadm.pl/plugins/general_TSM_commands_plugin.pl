@@ -87,12 +87,12 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
         my $mediaAccessExtra = '';
         
         if ( $line[8] ne '' ) {
-            $mediaAccessExtra = 'W';
+            $mediaAccessExtra = 'w';
         }
         elsif ( $line[9].$line[10].$line[11] ne '' ) {
             $mediaAccessExtra = 'I';
         }
-        elsif ( $line[9].$line[10].$line[11] ne '' ) {
+        elsif ( $line[12].$line[13].$line[14] ne '' ) {
             $mediaAccessExtra = 'O';
         }
         

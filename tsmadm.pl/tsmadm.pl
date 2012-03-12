@@ -241,6 +241,7 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     
     '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.BFS\.?[0-9]{0,9})' => 'BOLD GREEN',
     '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.DBB\.?[0-9]{0,9})' => 'BOLD GREEN',
+    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.DBV\.?[0-9]{0,9})' => 'BOLD GREEN',
 
     # sessions
     '(MediaW)'                                                         => 'BOLD RED',
@@ -444,7 +445,7 @@ if ( defined($consoleFlag) ) {
 
 $LastCommandType = 'NOCOMMANDS';
 
-print &christmasTree();
+#print &christmasTree();
 
 # Welcome message
 print colorString( "", $Settings{DEFAULTCOLOR} );
