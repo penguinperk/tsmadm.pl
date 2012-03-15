@@ -273,7 +273,7 @@ $Commands{&commandRegexp( "show", "nodeoccuopancy", 2, 5 )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select node_name, sum(logical_mb) , sum(num_files) from occupancy where node_name like upper('$3%')  group by node_name order by 2 desc" );
+    my @query = &runTabdelDsmadmc( "select node_name, sum(logical_mb), sum(num_files) from occupancy where node_name like upper('$3%') group by node_name order by 2 desc" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'NODEOCCU';
@@ -372,6 +372,8 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         return 0;
     }
 
+    return 0 if ( ! defined ( $TSMSeverStatus{"VERSION"} ) );
+
     $LastCommandType = 'STATUS';
    
     my @query;
@@ -384,14 +386,18 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     #
     my $FULLDB = 2;
     
+    my $DBLASTDAY = 1;
+    
     my $DBerrorcollector = 0;
 
     if ( $TSMSeverStatus{VERSION} <= 5 ) {
 
         # DB v5
         push ( @printable, "DB\t\t");
-        @query = &runTabdelDsmadmc( "select AVAIL_SPACE_MB, PCT_UTILIZED, CACHE_HIT_PCT, LAST_BACKUP_DATE from db" );        
-        my ( $dbAvailableSpace, $dbPctUtil, $dbCacheHitPct, $dbLastBackupDate ) = ( split( /\t/, $query[0] ) );
+        @query = &runTabdelDsmadmc( "select AVAIL_SPACE_MB, PCT_UTILIZED, CACHE_HIT_PCT, hour(current_timestamp-LAST_BACKUP_DATE) from db" );
+        return 0 if ( $#query < 0 || $LastErrorcode );
+        
+        my ( $dbAvailableSpace, $dbPctUtil, $dbCacheHitPct, $dbLastBackupDay ) = ( split( /\t/, $query[0] ) );
 
         my $DBUtilStatus = "Ok";
         if ( $dbPctUtil > $DBMAX ) {
@@ -407,6 +413,19 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         }
         push ( @printable, " Cache Hit\t$dbCacheHitPct%\t$DBCacheStatus") if ( defined $dbCacheHitPct );
 
+        my $DBbackupStatus = "";
+        if ( $dbLastBackupDay > $DBLASTDAY ) {
+            $DBbackupStatus = "Failed";
+            $DBerrorcollector++;
+        }
+        push ( @printable, " Last backup\t$dbLastBackupDay\t$DBbackupStatus") if ( defined $dbLastBackupDay );
+    
+        @query = &runTabdelDsmadmc( "select '['||VOLUME_NAME||']', BACKUP_SERIES from volhistory where type='BACKUPFULL' order by BACKUP_SERIES desc" );
+        return 0 if ( $#query < 0 || $LastErrorcode );
+        
+        my ( $DBLastFull, $dbLastSeq ) = ( split( /\t/, $query[0] ) );
+        push ( @printable, " Last Volume\t$DBLastFull\t") if ( defined $DBLastFull );
+    
         if ( $DBerrorcollector > 0 ) {
             push ( @printable, " STATUS\t  =>\tFAILED");
         }
@@ -419,6 +438,8 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         push ( @printable, "LOG\t\t");
         my $LOGerrorcollector = 0;
         @query = &runTabdelDsmadmc( "select PCT_UTILIZED, MAX_PCT_UTILIZED from log" );
+        return 0 if ( $#query < 0 || $LastErrorcode );
+        
         my ( $logPctUtil, $logMaxPctUtil ) = ( split( /\t/, $query[0] ) );
         
         my $LOGUtilStatus = "Ok";
@@ -447,8 +468,10 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         
         # DB v6
         push ( @printable, "DB\t\t");
-        @query = &runTabdelDsmadmc( "select FREE_SPACE_MB, BUFF_HIT_RATIO, PKG_HIT_RATIO, LAST_REORG, LAST_BACKUP_DATE from db" );        
-        my ( $dbFreeSpace, $dbCacheHitPct, $dbPkgHitPct, $dbLastBackupDate ) = ( split( /\t/, $query[0] ) );
+        @query = &runTabdelDsmadmc( "select FREE_SPACE_MB, BUFF_HIT_RATIO, PKG_HIT_RATIO, LAST_REORG, hour(current_timestamp-LAST_BACKUP_DATE) from db" );
+        return 0 if ( $#query < 0 || $LastErrorcode );
+        
+        my ( $dbFreeSpace, $dbCacheHitPct, $dbPkgHitPct, $dbLastBackupDay ) = ( split( /\t/, $query[0] ) );
 
         push ( @printable, " FreeSpace\t$dbFreeSpace\t");
 
@@ -478,6 +501,8 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         push ( @printable, "LOG\t\t");
         my $LOGerrorcollector = 0;
         @query = &runTabdelDsmadmc( "select FREE_SPACE_MB, ACTIVE_LOG_DIR, ARCH_LOG_DIR, MIRROR_LOG_DIR, AFAILOVER_LOG_DIR from log" );
+        return 0 if ( $#query < 0 || $LastErrorcode );
+        
         my ( $logFreeSpace, $logActLogDir, $logArchLogDir, $logMirrorDir, $logArchFailLog ) = ( split( /\t/, $query[0] ) );
         
         push ( @printable, " FreeSpace\t$logFreeSpace\t");
@@ -500,6 +525,8 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     @query = &runTabdelDsmadmc( "select count(*) from volumes" );
     my $AllVolumes = ( defined $query[0] ) ? $query[0] : '0';
     @query = &runTabdelDsmadmc( "select count(*) from volumes where access like '%READO%'" );
+    return 0 if ( $LastErrorcode );
+    
     my $ReadOnlyStatus = "Ok";
     $query[0] = 0 if (! defined $query[0] );
     if ( $query[0] > 0 ) {
@@ -509,6 +536,8 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     
     # UNAVAILABLE volumes
     @query = &runTabdelDsmadmc( "select count(*) from volumes where access like '%UNAVA%'" );
+    return 0 if ( $LastErrorcode );
+    
     my $UnavaStatus = "Ok";
     $query[0] = 0 if ( ! defined $query[0] );
     if ( $query[0] > 0 ) {
@@ -517,6 +546,8 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     push ( @printable, "Unavailable Vol(s)\t$AllVolumes/$query[0]\t$UnavaStatus" );
     # SUSPICIOUS volumes
     @query = &runTabdelDsmadmc( "select count(*) from volumes where WRITE_ERRORS>0 or READ_ERRORS>0" );
+    return 0 if ( $LastErrorcode );
+    
     my $SusStatus = "Ok";
     $query[0] = 0 if ( ! defined $query[0] );
     if ( $query[0] > 0 ) {
@@ -528,8 +559,13 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
   
     # DRIVES
     @query = &runTabdelDsmadmc( "select count(*) from drives" );
+    return 0 if ( $LastErrorcode );
+    
     my $OnlineDrives = ( defined $query[0] ) ? $query[0] : '0';
+    
     @query = &runTabdelDsmadmc( "select count(*) from drives where online='NO'" );
+    return 0 if ( $LastErrorcode );
+    
     my $DriveStatus = "Ok";
     $query[0] = 0 if ( ! defined $query[0] );
     if ( $query[0] > 0 ) {
@@ -538,8 +574,12 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     push ( @printable, "Offline Drive(s)\t$OnlineDrives/$query[0]\t$DriveStatus");
     # PATHS
     @query = &runTabdelDsmadmc( "select count(*) from paths");
+    return 0 if ( $LastErrorcode );
+    
     my $OnlinePaths = ( defined $query[0] ) ? $query[0] : '0';
     @query = &runTabdelDsmadmc( "select count(*) from paths where online='NO'");
+    return 0 if ( $LastErrorcode );
+    
     my $PathStatus = "Ok";
     $query[0] = 0 if ( ! defined $query[0] );
     if ( $query[0] > 0 ) {
