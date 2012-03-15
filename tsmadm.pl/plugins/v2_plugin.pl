@@ -386,7 +386,8 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     #
     my $FULLDB = 2;
     
-    my $DBLASTDAY = 1;
+    my $DBLASTHOUR = 2;
+    my $DBLASTFULLHOUR = 24;
     
     my $DBerrorcollector = 0;
 
@@ -397,40 +398,50 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         @query = &runTabdelDsmadmc( "select AVAIL_SPACE_MB, PCT_UTILIZED, CACHE_HIT_PCT, hour(current_timestamp-LAST_BACKUP_DATE) from db" );
         return 0 if ( $#query < 0 || $LastErrorcode );
         
-        my ( $dbAvailableSpace, $dbPctUtil, $dbCacheHitPct, $dbLastBackupDay ) = ( split( /\t/, $query[0] ) );
+        my ( $dbAvailableSpace, $dbPctUtil, $dbCacheHitPct, $dbLastBackupHour ) = ( split( /\t/, $query[0] ) );
 
-        my $DBUtilStatus = "Ok";
+        my $DBUtilStatus = "  Ok";
         if ( $dbPctUtil > $DBMAX ) {
-            $DBUtilStatus = "Failed";
+            $DBUtilStatus = &colorString( "Failed!", "BOLD RED");
             $DBerrorcollector++;
         }
         push ( @printable, " PctUtil\t$dbPctUtil%\t$DBUtilStatus") if ( defined $dbPctUtil );
 
-        my $DBCacheStatus = "Ok";
+        my $DBCacheStatus = "  Ok";
         if ( $dbCacheHitPct < $DBHITMIN ) {
-            $DBCacheStatus = "Failed";
+            $DBCacheStatus = &colorString( "Failed!", "BOLD RED");
             $DBerrorcollector++;
         }
         push ( @printable, " Cache Hit\t$dbCacheHitPct%\t$DBCacheStatus") if ( defined $dbCacheHitPct );
 
-        my $DBbackupStatus = "";
-        if ( $dbLastBackupDay > $DBLASTDAY ) {
-            $DBbackupStatus = "Failed";
+        my $DBBackupStatus = "  Ok";
+        if ( $dbLastBackupHour > $DBLASTHOUR ) {
+            $DBBackupStatus = &colorString( "Failed!", "BOLD RED");
             $DBerrorcollector++;
         }
-        push ( @printable, " Last backup\t$dbLastBackupDay\t$DBbackupStatus") if ( defined $dbLastBackupDay );
+        $dbLastBackupHour = &timeFormatter ( $dbLastBackupHour, "H" );
+        push ( @printable, " Last DBBackup\t$dbLastBackupHour\t$DBBackupStatus") if ( defined $dbLastBackupHour );
     
-        @query = &runTabdelDsmadmc( "select '['||VOLUME_NAME||']', BACKUP_SERIES from volhistory where type='BACKUPFULL' order by BACKUP_SERIES desc" );
+        @query = &runTabdelDsmadmc( "select '['||VOLUME_NAME||']', BACKUP_SERIES, hour(current_timestamp-DATE_TIME) from volhistory where type='BACKUPFULL' order by BACKUP_SERIES desc" );
         return 0 if ( $#query < 0 || $LastErrorcode );
         
-        my ( $DBLastFull, $dbLastSeq ) = ( split( /\t/, $query[0] ) );
-        push ( @printable, " Last Volume\t$DBLastFull\t") if ( defined $DBLastFull );
+        my ( $DBLastFull, $dbLastSeq, $dbLastFullBackupHour ) = ( split( /\t/, $query[0] ) );
+        
+        my $DBFullBackupStatus = "  Ok";
+        if ( $dbLastFullBackupHour > $DBLASTFULLHOUR ) {
+            $DBFullBackupStatus = &colorString( "Failed!", "BOLD RED");
+            $DBerrorcollector++;
+        }
+        $dbLastFullBackupHour = &timeFormatter ( $dbLastFullBackupHour, "H" );
+        push ( @printable, " Last Full DBBackup\t$dbLastFullBackupHour\t$DBFullBackupStatus") if ( defined $dbLastFullBackupHour );
+        
+        push ( @printable, " Last Full Volume\t$DBLastFull\t") if ( defined $DBLastFull );
     
         if ( $DBerrorcollector > 0 ) {
-            push ( @printable, " STATUS\t  =>\tFAILED");
+            push ( @printable, " Status\t  =>\t".&colorString( "Failed!", "BOLD RED"));
         }
         else {
-            push ( @printable, " Status\t=> \t[OK]");
+            push ( @printable, " Status\t=> \t [OK]");
         }
         push ( @printable, "\t\t" );   
         
@@ -442,25 +453,25 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         
         my ( $logPctUtil, $logMaxPctUtil ) = ( split( /\t/, $query[0] ) );
         
-        my $LOGUtilStatus = "Ok";
+        my $LOGUtilStatus = "  Ok";
         if ( $logPctUtil > $LOGMAX ) {
-            $LOGUtilStatus = "Failed";
+            $LOGUtilStatus = &colorString( "Failed!", "BOLD RED");
             $LOGerrorcollector++;
         }
         push ( @printable, " PctUtil\t$logPctUtil%\t$LOGUtilStatus");
         
-        my $LOGMaxStatus = "Ok";
+        my $LOGMaxStatus = "  Ok";
         if ( $logMaxPctUtil > $LOGMAX ) {
-            $LOGMaxStatus = "Failed";
+            $LOGMaxStatus = &colorString( "Failed!", "BOLD RED");
             $LOGerrorcollector++;
         }
         push ( @printable, " MaxPct\t$logMaxPctUtil%\t$LOGMaxStatus");
         
         if ( $LOGerrorcollector > 0 ) {
-            push ( @printable, " STATUS\t=> \tFAILED");
+            push ( @printable, " Status\t=> \t".&colorString( "Failed!", "BOLD RED"));
         }
         else {
-            push ( @printable, " Status\t=>\t[OK]");
+            push ( @printable, " Status\t=>\t [OK]");
         }
         
     }
@@ -475,25 +486,25 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
 
         push ( @printable, " FreeSpace\t$dbFreeSpace\t");
 
-        my $DBCacheStatus = "Ok";
+        my $DBCacheStatus = "  Ok";
         if ( $dbCacheHitPct < $DBHITMIN ) {
-            $DBCacheStatus = "Failed";
+            $DBCacheStatus = &colorString( "Failed!", "BOLD RED");
             $DBerrorcollector++;
         }
         push ( @printable, " Cache Hit\t$dbCacheHitPct%\t$DBCacheStatus") if ( defined $dbCacheHitPct );
         
-        my $DBPkgStatus = "Ok";
+        my $DBPkgStatus = "  Ok";
         if ( $dbPkgHitPct < $DBHITMIN ) {
-            $DBPkgStatus = "Failed";
+            $DBPkgStatus = &colorString( "Failed!", "BOLD RED");
             $DBerrorcollector++;
         }
         push ( @printable, " Pkg Hit\t$dbPkgHitPct%\t$DBPkgStatus") if ( defined $dbPkgHitPct );
 
         if ( $DBerrorcollector > 0 ) {
-            push ( @printable, " STATUS\t  =>\tFAILED");
+            push ( @printable, " Status\t  =>\t".&colorString( "Failed!", "BOLD RED"));
         }
         else {
-            push ( @printable, " Status\t=> \t[OK]");
+            push ( @printable, " Status\t=> \t [OK]");
         }
         push ( @printable, "\t\t" );   
         
@@ -512,10 +523,10 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         push ( @printable, " ArchiveLogFail\t$logArchFailLog\t");
         
         if ( $LOGerrorcollector > 0 ) {
-            push ( @printable, " STATUS\t=> \tFAILED");
+            push ( @printable, " Status\t=> \t".&colorString( "Failed!", "BOLD RED"));
         }
         else {
-            push ( @printable, " Status\t=>\t[OK]");
+            push ( @printable, " Status\t=>\t [OK]");
         }
         
     }
@@ -524,13 +535,14 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     # READ-ONLY volumes
     @query = &runTabdelDsmadmc( "select count(*) from volumes" );
     my $AllVolumes = ( defined $query[0] ) ? $query[0] : '0';
+    
     @query = &runTabdelDsmadmc( "select count(*) from volumes where access like '%READO%'" );
     return 0 if ( $LastErrorcode );
     
-    my $ReadOnlyStatus = "Ok";
+    my $ReadOnlyStatus = "  Ok";
     $query[0] = 0 if (! defined $query[0] );
     if ( $query[0] > 0 ) {
-        $ReadOnlyStatus = "Failed";
+        $ReadOnlyStatus = &colorString( "Failed!", "BOLD RED");
     }
     push ( @printable, "ReadOnly Vol(s)\t$AllVolumes/$query[0]\t$ReadOnlyStatus" );
     
@@ -538,20 +550,21 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     @query = &runTabdelDsmadmc( "select count(*) from volumes where access like '%UNAVA%'" );
     return 0 if ( $LastErrorcode );
     
-    my $UnavaStatus = "Ok";
+    my $UnavaStatus = "  Ok";
     $query[0] = 0 if ( ! defined $query[0] );
     if ( $query[0] > 0 ) {
-        $UnavaStatus = "Failed";
+        $UnavaStatus = &colorString( "Failed!", "BOLD RED");
     }
     push ( @printable, "Unavailable Vol(s)\t$AllVolumes/$query[0]\t$UnavaStatus" );
+    
     # SUSPICIOUS volumes
     @query = &runTabdelDsmadmc( "select count(*) from volumes where WRITE_ERRORS>0 or READ_ERRORS>0" );
     return 0 if ( $LastErrorcode );
     
-    my $SusStatus = "Ok";
+    my $SusStatus = "  Ok";
     $query[0] = 0 if ( ! defined $query[0] );
     if ( $query[0] > 0 ) {
-        $SusStatus = "Warning!";
+        $SusStatus = &colorString( "Warning!", "BOLD YELLOW" );
     }
     push ( @printable, "Suspicious Vol(s)\t$AllVolumes/$query[0]\t$SusStatus" );
   
@@ -566,10 +579,10 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     @query = &runTabdelDsmadmc( "select count(*) from drives where online='NO'" );
     return 0 if ( $LastErrorcode );
     
-    my $DriveStatus = "Ok";
+    my $DriveStatus = "  Ok";
     $query[0] = 0 if ( ! defined $query[0] );
     if ( $query[0] > 0 ) {
-      $DriveStatus = "Failed /* Use 's drives' command! */";
+      $DriveStatus = &colorString( "Failed!", "BOLD RED")." /* Use 'show drives' command! */";
     }
     push ( @printable, "Offline Drive(s)\t$OnlineDrives/$query[0]\t$DriveStatus");
     # PATHS
@@ -580,13 +593,46 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     @query = &runTabdelDsmadmc( "select count(*) from paths where online='NO'");
     return 0 if ( $LastErrorcode );
     
-    my $PathStatus = "Ok";
+    my $PathStatus = "  Ok";
     $query[0] = 0 if ( ! defined $query[0] );
     if ( $query[0] > 0 ) {
-      $PathStatus = "Failed /* Use 's drives' command! */";
+      $PathStatus = &colorString( "Failed!", "BOLD RED")." /* Use 'show path' command! */";
     }
     push ( @printable, "Offline Path(s)\t$OnlinePaths/$query[0]\t$PathStatus");
 
+    push ( @printable, "\t\t" );
+
+    # EVENTS
+    push ( @printable, "Event Summary\t\t");
+    
+    @query = &runTabdelDsmadmc( "select result, count(1) from events where status='Completed' group by result" );
+    return 0 if ( $LastErrorcode );
+
+    foreach ( @query ) {
+        my @line = split(/\t/);
+        
+        if ( $line[0] eq 0 ) {
+            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t  Ok" );
+        }
+        elsif ( $line[0] eq 4 ) {
+            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t".&colorString( "Warning!", "BOLD YELLOW" ) );
+        }
+        else {
+            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t"..&colorString( "Failed!", "BOLD RED") );
+        }
+        
+    }
+
+    @query = &runTabdelDsmadmc( "select count(1) from events where status='Missed'" );
+    my $MissedEvents = ( defined $query[0] ) ? $query[0] : '0';
+   
+    if ( $MissedEvents eq 0 ) {
+        push ( @printable, " Missed\t$MissedEvents\t  Ok" );
+    }
+    else {
+        push ( @printable, " Missed\t$MissedEvents\t".&colorString( "Failed!", "BOLD RED") );
+    }
+    
     &setSimpleTXTOutput();
     &universalTextPrinter( "Item\tValue{RIGHT}\tResult", @printable );
     

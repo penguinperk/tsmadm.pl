@@ -890,25 +890,25 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
         
         if ( $line[6] =~ m/completed/i ) {
             if ( $line[7] == 4 || $line[7] == 8 ) {
-                $line[7] = colorString( $line[7], "BOLD YELLOW" );
+                $line[7] = &colorString( $line[7], "BOLD YELLOW" );
             }
         }
         elsif ( $line[6] =~ m/missed/i ) {
-            $line[6] = colorString( $line[6], "BOLD YELLOW" );
+            $line[6] = &colorString( $line[6], "BOLD YELLOW" );
         }
         elsif ( $line[6] =~ m/failed/i ) {
-            $line[6] = colorString( $line[6], "BOLD RED" );
-            $line[7] = colorString( $line[7], "BOLD RED" );
+            $line[6] = &colorString( $line[6], "BOLD RED" );
+            $line[7] = &colorString( $line[7], "BOLD RED" );
         }
         elsif ( $line[6] =~ m/severed/i ) {
-            $line[6] = colorString( $line[6], "BOLD RED" );
-            $line[7] = colorString( $line[7], "BOLD RED" );
+            $line[6] = &colorString( $line[6], "BOLD RED" );
+            $line[7] = &colorString( $line[7], "BOLD RED" );
         }
         elsif ( $line[6] =~ m/started/i ) {
-            $line[6] = colorString( $line[6], "BOLD GREEN" );
+            $line[6] = &colorString( $line[6], "BOLD GREEN" );
         }
         elsif ( $line[6] =~ m/pending/i ) {
-            $line[6] = colorString( $line[6], "GREEN" );
+            $line[6] = &colorString( $line[6], "GREEN" );
         }
 
         push ( @printable, join( "\t", @line ) );
@@ -1302,17 +1302,17 @@ $Commands{&commandRegexp( "show", "timing" )} = sub {
         }
 
         if ( ! defined $line[7] ) {
-            $line[7] = colorString( '>', "GREEN" )
+            $line[7] = &colorString( '>', "GREEN" )
         }
         else {
             if ( $line[7] == 0 ) {
-                    $line[7] = colorString( $line[7], "GREEN" );
+                    $line[7] = &colorString( $line[7], "GREEN" );
             }
             elsif ( $line[7] == 4 || $line[7] == 8 ) {
-                    $line[7] = colorString( $line[7], "BOLD YELLOW" );
+                    $line[7] = &colorString( $line[7], "BOLD YELLOW" );
             }
             else {
-                $line[7] = colorString( $line[7], "BOLD RED" );
+                $line[7] = &colorString( $line[7], "BOLD RED" );
             }
         }
         push( @return, join( "\t", ++$i, $line[1], $line[2], '|'.join("", @bar).'|', $line[7] ));
