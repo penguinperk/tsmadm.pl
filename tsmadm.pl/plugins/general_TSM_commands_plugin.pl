@@ -534,7 +534,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
 
     $LastCommandType = 'DRIVE';
 
-    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'online='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,VOLUME_NAME,ALLOCATED_TO from drives" );
+    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'ONL='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,VOLUME_NAME,ALLOCATED_TO from drives" );
     return if ( $#query < 0 || $LastErrorcode );
 
     # István added it
@@ -581,34 +581,39 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
             
             # my @query_sess = &runTabdelDsmadmc( "select SESSION_ID from sessions where INPUT_MOUNT_WAIT like '%$line[6]%' or INPUT_VOL_WAIT like '%$line[6]%' or INPUT_VOL_ACCESS like '%$line[6]%' or OUTPUT_MOUNT_WAIT like '%$line[6]%' or OUTPUT_VOL_WAIT like '%$line[6]%' or OUTPUT_VOL_ACCESS like '%$line[6]%'" );
             # this select doesn't work on Lan-FREE
-            my $volumename = 1;
+            my $isSessionMediaW = "";
             my @query_sess = grep( /$line[6]/i, &runTabdelDsmadmc( "q session f=d" ) );
             if ( defined ( $query_sess[0] ) ) {
                 my @tmpline = split ( /\t/, $query_sess[0] );
                 $tmpline[0] =~ s/,//g;
                 $line[10] = "Client Session ($tmpline[0])";
+                $isSessionMediaW = $tmpline[2] if ( $tmpline[2] eq 'MediaW' );
             }
-            else {
-                my @query_pr = &runTabdelDsmadmc( "select PROCESS,PROCESS_NUM from processes where STATUS like '%$line[6]%'" );
-                if ( defined ( $query_pr[0] ) and $query_pr[0] !~ m/^ANR3604E/ ) {
-                    my @tmpline = split ( /\t/, $query_pr[0] );
+            
+            my @query_pr = &runTabdelDsmadmc( "select PROCESS,PROCESS_NUM from processes where STATUS like '%$line[6]%'" );
+            if ( defined ( $query_pr[0] ) and $query_pr[0] !~ m/^ANR3604E/ ) {
+                my @tmpline = split ( /\t/, $query_pr[0] );
+                if ( $isSessionMediaW eq "MediaW" ) {
+                    $line[10] = "$tmpline[0] ($tmpline[1]) + ".$line[10]." MediaW!";
+                }
+                else {
                     $line[10] = "$tmpline[0] ($tmpline[1])";
                 }
                 
-                else {
-                    $line[10] = ' ';
-                }
             }
-            
+                                    
             $line[6] = '['.$line[6].']';
             
         }
         
         # fill
-        $line[6] = " " if ( ! defined ( $line[6] ) );
-        $line[7] = " " if ( ! defined ( $line[7] ) );
-        $line[8] = " " if ( ! defined ( $line[8] ) );
-        $line[9] = " " if ( ! defined ( $line[9] ) );
+        $line[3]  = " " if ( ! defined ( $line[3] ) );
+        $line[4]  = " " if ( ! defined ( $line[4] ) );
+        $line[5]  = " " if ( ! defined ( $line[5] ) );
+        $line[6]  = " " if ( ! defined ( $line[6] ) );
+        $line[7]  = " " if ( ! defined ( $line[7] ) );
+        $line[8]  = " " if ( ! defined ( $line[8] ) );
+        $line[9]  = " " if ( ! defined ( $line[9] ) );
         $line[10] = " " if ( ! defined ( $line[10] ) );
 
         push ( @printable, join ( "\t", @line ) );
@@ -624,10 +629,15 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
         
         if ( defined ( $line[10] ) && $line[10] ne ' ' ) {
             
+            # force \(\) for good regexp matching
+            $line[10] =~ s/\(/\\(/;
+            $line[10] =~ s/\)/\\)/;
+            
             # find pair
             for ( my $index = $i+1; $index <= $#printable; $index++ ) {
                 my @printableline = split ( /\t/, $printable[$index] );
-                if ( defined ( $printableline[10]) && $line[10] eq $printableline[10] ) {
+               
+                if ( defined ( $printableline[10]) && $printableline[10] ne " " && $printableline[10] =~ m/$line[10].*/ ) {
                     # pair found $i start, $index end
                     $printable[$i] .= ( $level == 1 ) ? "\t+" : "+";
                     for ( my $index2 = $i+1; $index2 <= $index-1; $index2++ ) {
@@ -681,7 +691,7 @@ $Commands{&commandRegexp( "show", "paths" )} = sub {
 
     $LastCommandType = 'PATH';
 
-    my @query = &runTabdelDsmadmc( "select SOURCE_NAME,DESTINATION_NAME,'srct='||SOURCE_TYPE,'destt='||DESTINATION_TYPE,LIBRARY_NAME,'device='||DEVICE,'online='||ONLINE from paths where LIBRARY_NAME is null" );
+    my @query = &runTabdelDsmadmc( "select SOURCE_NAME,DESTINATION_NAME,'SRCT='||SOURCE_TYPE,'DESTT='||DESTINATION_TYPE,LIBRARY_NAME,'DEVI='||DEVICE,'ONL='||ONLINE from paths where LIBRARY_NAME is null" );
     if ( $LastErrorcode ) {
         # check valid libraries like ACSLS and override this LastErrorcode and continue
         my @tmpQuery = &runTabdelDsmadmc( "select LIBRARY_NAME from LIBRARIES" );
@@ -690,7 +700,7 @@ $Commands{&commandRegexp( "show", "paths" )} = sub {
         }
     }
 
-    push ( @query, &runTabdelDsmadmc( "select SOURCE_NAME,DESTINATION_NAME,'srct='||SOURCE_TYPE,'destt='||DESTINATION_TYPE,'library='||LIBRARY_NAME,'device='||DEVICE,'online='||ONLINE from paths where LIBRARY_NAME is not null" ) );
+    push ( @query, &runTabdelDsmadmc( "select SOURCE_NAME,DESTINATION_NAME,'SRCT='||SOURCE_TYPE,'DESTT='||DESTINATION_TYPE,'LIBR='||LIBRARY_NAME,'DEVI='||DEVICE,'ONL='||ONLINE from paths where LIBRARY_NAME is not null" ) );
     return if ( $#query < 0 || $LastErrorcode );
 
     &setSimpleTXTOutput();

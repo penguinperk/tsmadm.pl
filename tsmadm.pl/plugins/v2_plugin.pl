@@ -483,7 +483,8 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         return 0 if ( $#query < 0 || $LastErrorcode );
         
         my ( $dbFreeSpace, $dbCacheHitPct, $dbPkgHitPct, $dbLastBackupDay ) = ( split( /\t/, $query[0] ) );
-
+        
+        $dbFreeSpace = &byteFormatter ( $dbFreeSpace, 'MB' );
         push ( @printable, " FreeSpace\t$dbFreeSpace\t");
 
         my $DBCacheStatus = "  Ok";
@@ -516,6 +517,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         
         my ( $logFreeSpace, $logActLogDir, $logArchLogDir, $logMirrorDir, $logArchFailLog ) = ( split( /\t/, $query[0] ) );
         
+        $logFreeSpace = &byteFormatter ( $logFreeSpace, 'MB' );
         push ( @printable, " FreeSpace\t$logFreeSpace\t");
         push ( @printable, " ActiveLog\t$logActLogDir\t");
         push ( @printable, " ArchiveLog\t$logArchLogDir\t");
@@ -605,7 +607,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     # EVENTS
     push ( @printable, "Event Summary\t\t");
     
-    @query = &runTabdelDsmadmc( "select result, count(1) from events where status='Completed' group by result" );
+    @query = &runTabdelDsmadmc( "select result, count(1) from events where status='Completed' and (SCHEDULED_START >= current_timestamp - 1 day) group by result" );
     return 0 if ( $LastErrorcode );
 
     foreach ( @query ) {
@@ -623,7 +625,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         
     }
 
-    @query = &runTabdelDsmadmc( "select count(1) from events where status='Missed'" );
+    @query = &runTabdelDsmadmc( "select count(1) from events where status='Missed' and (SCHEDULED_START >= current_timestamp - 1 day)" );
     my $MissedEvents = ( defined $query[0] ) ? $query[0] : '0';
    
     if ( $MissedEvents eq 0 ) {

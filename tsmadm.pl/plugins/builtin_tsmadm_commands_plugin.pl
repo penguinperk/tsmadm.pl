@@ -142,12 +142,19 @@ $Commands{&commandRegexp( 'show', 'commands' )} = sub {
 
     my @printable;
 
-    for my $key ( sort( keys %Commands ) ) {
-        push( @printable, "$1" ) if ( $key =~ m/\((\w+)\).*?\(*(\w*)\)*/ );
+    for my $key ( keys %Commands ) {
+        
+        if ( $key =~ m/\((\w+).*\((\w+)/ ) {
+            push( @printable, "$1\t$2" );
+        
+        }
+        else {        
+            push( @printable, "$1" ) if ( $key =~ m/\((\w+).*/ );
+        }
     }
-
+    
     &setSimpleTXTOutput();
-    &universalTextPrinter( "Commands{RIGHT}", &grepIt ( @printable ) );
+    &universalTextPrinter( "#{RIGHT}\tCommands\t ", &addLineNumbers( sort ( @printable ) ) );
 
     return 0; # matched
 
