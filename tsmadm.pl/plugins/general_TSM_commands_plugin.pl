@@ -877,7 +877,7 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
 
     $LastCommandType = 'EVENTS';
 
-    my @query = &runTabdelDsmadmc('q event * * begind=-1 begint=07:00 endd=today endt=now f=d '.$3.' '.$4.' '.$5);
+    my @query = &runTabdelDsmadmc('q event * * begint=-24 endd=today endt=now f=d'.$3.' '.$4.' '.$5);
     return if ( $#query < 0 || $LastErrorcode );
 
     @query = deleteColumn( 8, @query);
@@ -928,12 +928,92 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
     }
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "Domain\tScheduleName\tNodeName\tScheduledStart\tActStart{RIGHT}\tCompleted{RIGHT}\tStatus\tRC{RIGHT}", @printable );
+    &universalTextPrinter( "#{RIGHT}\tDomain\tScheduleName\tNodeName\tScheduledStart\tActStart{RIGHT}\tCompleted{RIGHT}\tStatus\tRC{RIGHT}", &addLineNumbers( @printable ) );
 
     return 0;
 
 };
 &defineAlias( 'sh exc', 'show events exc=yes' );
+
+########################################################################################################################
+
+###############
+# SHow ADMINEVEnts ##########################################################################################################
+###############
+&msg( '0110D', 'SHow ADMINEVEnts' );
+$Commands{&commandRegexp( "show", "adminevents", 2, 8)} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow ADMINEVEnts Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    $LastCommandType = 'EVENTS';
+
+    my @query = &runTabdelDsmadmc('q event * begint=-24 endd=today endt=now t=a f=d'.$3.' '.$4.' '.$5);
+    return if ( $#query < 0 || $LastErrorcode );
+
+    @query = deleteColumn( 8, @query);
+
+    &pbarInit( "PREPARATION |", scalar( @query ), "|");
+
+    my $i = 1;
+    my @printable;
+    
+    foreach ( deleteColumn( 6, @query ) ) {
+        my @line = split(/\t/);
+
+        $line[5] = '' if  ( ! defined ( $line[5] ) );
+
+        if ( $line[1] =~ m/(\d\d\/\d\d\/\d\d\d\d\s*)/ ) {
+            my $date = $1;
+            $line[2] =~ s/$date//;
+            $line[3] =~ s/$date//;
+        }
+        
+        if ( $line[4] =~ m/completed/i ) {
+            if ( $line[5] == 4 || $line[5] == 8 ) {
+                $line[5] = &colorString( $line[5], "BOLD YELLOW" );
+            }
+        }
+        elsif ( $line[4] =~ m/missed/i ) {
+            $line[4] = &colorString( $line[4], "BOLD YELLOW" );
+        }
+        elsif ( $line[4] =~ m/failed/i ) {
+            $line[4] = &colorString( $line[4], "BOLD RED" );
+            $line[5] = &colorString( $line[5], "BOLD RED" );
+        }
+        elsif ( $line[4] =~ m/severed/i ) {
+            $line[4] = &colorString( $line[4], "BOLD RED" );
+            $line[5] = &colorString( $line[5], "BOLD RED" );
+        }
+        elsif ( $line[4] =~ m/started/i ) {
+            $line[4] = &colorString( $line[4], "BOLD GREEN" );
+        }
+        elsif ( $line[4] =~ m/pending/i ) {
+            $line[4] = &colorString( $line[4], "GREEN" );
+        }
+
+        push ( @printable, join( "\t", @line ) );
+
+        &pbarUpdate( $i++ );
+
+    }
+
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "#{RIGHT}\tScheduleName\tScheduledStart\tActStart{RIGHT}\tCompleted{RIGHT}\tStatus\tRC{RIGHT}", &addLineNumbers( @printable ) );
+
+    return 0;
+
+};
 
 ########################################################################################################################
 

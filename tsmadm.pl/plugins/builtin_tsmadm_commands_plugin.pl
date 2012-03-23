@@ -305,7 +305,7 @@ $Commands{&commandRegexp( 'debug', '' )} = sub {
         # Put your help message here! #
         ###############################
         print "--------\n";
-        print "show node Help!\n";
+        print "DEBug Help!\n";
         print "--------\n";
         return 0;
     }

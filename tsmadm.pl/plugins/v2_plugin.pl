@@ -111,6 +111,31 @@ $Commands{&commandRegexp( "show", "movedataperformance", 3, 9 )} = sub {
 
 };
 
+############################
+# SHow MIGRATIONPerformance #####################################################################################################
+############################
+&msg( '0110D', 'SHow MIGRATIONPerformance' );
+$Commands{&commandRegexp( "show", "migrationperformance", 2, 10 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow MiGRATIONPerformance Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    &basicPerformanceFromSummary( 'MIGRATION' );
+
+    return 0;
+
+};
+
 ###############################
 # SHow RECLAMATIONPerformance #####################################################################################################
 ###############################
@@ -137,17 +162,17 @@ $Commands{&commandRegexp( "show", "reclamationperformance", 2, 12 )} = sub {
 };
 
 ##########################
-# SHow CLIBACKUPPerformance #####################################################################################################
+# SHow CLIENTBACKUPPerformance #####################################################################################################
 ##########################
-&msg( '0110D', 'SHow CLIBACKUPPerformance' );
-$Commands{&commandRegexp( "show", "clibackupperformance", 2, 10 )} = sub {
+&msg( '0110D', 'SHow CLIENTBACKUPPerformance' );
+$Commands{&commandRegexp( "show", "clientbackupperformance", 2, 13 )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
         # Put your help message here! #
         ###############################
         print "--------\n";
-        print "SHow BACKUPPerformance Help!\n";
+        print "SHow CLIENTBACKUPPerformance Help!\n";
         print "--------\n";
 
         $LastCommandType = "HELP";
@@ -161,22 +186,99 @@ $Commands{&commandRegexp( "show", "clibackupperformance", 2, 10 )} = sub {
 
 };
 
+##########################
+# SHow CLIENTRESTOREPerformance #####################################################################################################
+##########################
+&msg( '0110D', 'SHow CLIENTRESTOREPerformance' );
+$Commands{&commandRegexp( "show", "clientrestoreperformance", 2, 13 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow CLIENTRESTOREPerformance Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    &basicPerformanceFromSummary( 'RESTORE' );
+
+    return 0;
+
+};
+
+##########################
+# SHow CLIENTARCHIVEPerformance #####################################################################################################
+##########################
+&msg( '0110D', 'SHow CLIENTARCHIVEPerformance' );
+$Commands{&commandRegexp( "show", "clientarchiveperformance", 2, 13 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow CLIENTARCHIVEPerformance Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    &basicPerformanceFromSummary( 'ARCHIVE' );
+
+    return 0;
+
+};
+
+##########################
+# SHow CLIENTRETRIEVEPerformance #####################################################################################################
+##########################
+&msg( '0110D', 'SHow CLIENTRETRIEVEPerformance' );
+$Commands{&commandRegexp( "show", "clientretrieveperformance", 2, 13 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow CLIENTRETRIEVEPerformance Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    &basicPerformanceFromSummary( 'RETRIEVE' );
+
+    return 0;
+
+};
+
 sub basicPerformanceFromSummary ( $ ) {
 
-    # ARCHIVE
-    # BACKUP
+    # ARCHIVE           Ok
+    # BACKUP            Ok
     # EXPIRATION
     # FULL_DBBACKUP
     # INCR_DBBACKUP
-    # MIGRATION
-    # MOVE DATA
-    # RECLAMATION
-    # RESTORE
-    # RETRIEVE
-    # STGPOOL BACKUP
+    # MIGRATION         Ok
+    # MOVE DATA         Ok
+    # RECLAMATION       Ok
+    # RESTORE           Ok
+    # RETRIEVE          Ok
+    # STGPOOL BACKUP    Ok
     # TAPE MOUNT
     
-    my @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='".$_[0]."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
+    my $activity = $_[0];
+    
+    my @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='".$activity."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'PERFORMANCE';
@@ -210,10 +312,15 @@ sub basicPerformanceFromSummary ( $ ) {
         
         push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), &timeFormatter ( $line[12], 's' ), $line[13], $success ) );
        
-    }    
+    }
+    
+    my $columntmp = "Pool";
+    if ( $activity eq "BACKUP" || $activity eq "RESTORE" || $activity eq "ARCHIVE" || $activity eq "RETRIEVE" ) {
+        $columntmp = "Node";
+    }
         
-    &setSimpleTXTOutput();
-    &universalTextPrinter( "Start\tEnd\t#Proc\tPool\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc{RIGHT}", @printable );
+    &setSimpleTXTOutput();    
+    &universalTextPrinter( "Start\tEnd{RIGHT}\t#Proc\t$columntmp\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc{RIGHT}", @printable );
     
 }
 
@@ -479,10 +586,10 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         
         # DB v6
         push ( @printable, "DB\t\t");
-        @query = &runTabdelDsmadmc( "select FREE_SPACE_MB, BUFF_HIT_RATIO, PKG_HIT_RATIO, LAST_REORG, hour(current_timestamp-LAST_BACKUP_DATE) from db" );
+        @query = &runTabdelDsmadmc( "select FREE_SPACE_MB, BUFF_HIT_RATIO, PKG_HIT_RATIO, hour(current_timestamp-LAST_REORG), hour(current_timestamp-LAST_BACKUP_DATE) from db" );
         return 0 if ( $#query < 0 || $LastErrorcode );
         
-        my ( $dbFreeSpace, $dbCacheHitPct, $dbPkgHitPct, $dbLastBackupDay ) = ( split( /\t/, $query[0] ) );
+        my ( $dbFreeSpace, $dbCacheHitPct, $dbPkgHitPct, $dbLastReorgHour, $dbLastBackupHour ) = ( split( /\t/, $query[0] ) );
         
         $dbFreeSpace = &byteFormatter ( $dbFreeSpace, 'MB' );
         push ( @printable, " FreeSpace\t$dbFreeSpace\t");
@@ -500,6 +607,29 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
             $DBerrorcollector++;
         }
         push ( @printable, " Pkg Hit\t$dbPkgHitPct%\t$DBPkgStatus") if ( defined $dbPkgHitPct );
+
+        my $DBBackupStatus = "  Ok";
+        if ( $dbLastBackupHour > $DBLASTHOUR ) {
+            $DBBackupStatus = &colorString( "Failed!", "BOLD RED");
+            $DBerrorcollector++;
+        }
+        $dbLastBackupHour = &timeFormatter ( $dbLastBackupHour, "H" );
+        push ( @printable, " Last DBBackup\t$dbLastBackupHour\t$DBBackupStatus") if ( defined $dbLastBackupHour );
+    
+        @query = &runTabdelDsmadmc( "select '['||VOLUME_NAME||']', BACKUP_SERIES, hour(current_timestamp-DATE_TIME) from volhistory where type='BACKUPFULL' order by BACKUP_SERIES desc" );
+        return 0 if ( $#query < 0 || $LastErrorcode );
+        
+        my ( $DBLastFull, $dbLastSeq, $dbLastFullBackupHour ) = ( split( /\t/, $query[0] ) );
+        
+        my $DBFullBackupStatus = "  Ok";
+        if ( $dbLastFullBackupHour > $DBLASTFULLHOUR ) {
+            $DBFullBackupStatus = &colorString( "Failed!", "BOLD RED");
+            $DBerrorcollector++;
+        }
+        $dbLastFullBackupHour = &timeFormatter ( $dbLastFullBackupHour, "H" );
+        push ( @printable, " Last Full DBBackup\t$dbLastFullBackupHour\t$DBFullBackupStatus") if ( defined $dbLastFullBackupHour );
+        
+        push ( @printable, " Last Full Volume\t$DBLastFull\t") if ( defined $DBLastFull );
 
         if ( $DBerrorcollector > 0 ) {
             push ( @printable, " Status\t  =>\t".&colorString( "Failed!", "BOLD RED"));
@@ -534,6 +664,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     }
     push ( @printable, "\t\t" );
 
+    push ( @printable, "VOLs\t\t");
     # READ-ONLY volumes
     @query = &runTabdelDsmadmc( "select count(*) from volumes" );
     my $AllVolumes = ( defined $query[0] ) ? $query[0] : '0';
@@ -546,7 +677,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     if ( $query[0] > 0 ) {
         $ReadOnlyStatus = &colorString( "Failed!", "BOLD RED");
     }
-    push ( @printable, "ReadOnly Vol(s)\t$AllVolumes/$query[0]\t$ReadOnlyStatus" );
+    push ( @printable, " ReadOnly Vol(s)\t$AllVolumes/$query[0]\t$ReadOnlyStatus" );
     
     # UNAVAILABLE volumes
     @query = &runTabdelDsmadmc( "select count(*) from volumes where access like '%UNAVA%'" );
@@ -557,7 +688,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     if ( $query[0] > 0 ) {
         $UnavaStatus = &colorString( "Failed!", "BOLD RED");
     }
-    push ( @printable, "Unavailable Vol(s)\t$AllVolumes/$query[0]\t$UnavaStatus" );
+    push ( @printable, " Unavailable Vol(s)\t$AllVolumes/$query[0]\t$UnavaStatus" );
     
     # SUSPICIOUS volumes
     @query = &runTabdelDsmadmc( "select count(*) from volumes where WRITE_ERRORS>0 or READ_ERRORS>0" );
@@ -568,10 +699,11 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     if ( $query[0] > 0 ) {
         $SusStatus = &colorString( "Warning!", "BOLD YELLOW" );
     }
-    push ( @printable, "Suspicious Vol(s)\t$AllVolumes/$query[0]\t$SusStatus" );
+    push ( @printable, " Suspicious Vol(s)\t$AllVolumes/$query[0]\t$SusStatus" );
   
     push ( @printable, "\t\t" );
   
+    push ( @printable, "HW\t\t");  
     # DRIVES
     @query = &runTabdelDsmadmc( "select count(*) from drives" );
     return 0 if ( $LastErrorcode );
@@ -586,7 +718,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     if ( $query[0] > 0 ) {
       $DriveStatus = &colorString( "Failed!", "BOLD RED")." /* Use 'show drives' command! */";
     }
-    push ( @printable, "Offline Drive(s)\t$OnlineDrives/$query[0]\t$DriveStatus");
+    push ( @printable, " Offline Drive(s)\t$OnlineDrives/$query[0]\t$DriveStatus");
     # PATHS
     @query = &runTabdelDsmadmc( "select count(*) from paths");
     return 0 if ( $LastErrorcode );
@@ -600,32 +732,31 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     if ( $query[0] > 0 ) {
       $PathStatus = &colorString( "Failed!", "BOLD RED")." /* Use 'show path' command! */";
     }
-    push ( @printable, "Offline Path(s)\t$OnlinePaths/$query[0]\t$PathStatus");
+    push ( @printable, " Offline Path(s)\t$OnlinePaths/$query[0]\t$PathStatus");
 
     push ( @printable, "\t\t" );
 
     # EVENTS
-    push ( @printable, "Event Summary\t\t");
+    push ( @printable, "<24 H Client Event Summary\t\t");
     
-    @query = &runTabdelDsmadmc( "select result, count(1) from events where status='Completed' and (SCHEDULED_START >= current_timestamp - 1 day) group by result" );
-    return 0 if ( $LastErrorcode );
-
+    @query = &runTabdelDsmadmc( "select result, count(1) from events where status='Completed' and SCHEDULED_START>'2012-01-01 00:00:00' and (SCHEDULED_START>=current_timestamp-24 hour) and DOMAIN_NAME is not null and NODE_NAME is not null group by result" );
+    
     foreach ( @query ) {
         my @line = split(/\t/);
         
         if ( $line[0] eq 0 ) {
             push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t  Ok" );
         }
-        elsif ( $line[0] eq 4 ) {
+        elsif ( $line[0] eq 4 || $line[0] eq 8 ) {
             push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t".&colorString( "Warning!", "BOLD YELLOW" ) );
         }
         else {
-            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t"..&colorString( "Failed!", "BOLD RED") );
+            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t".&colorString( "Failed!", "BOLD RED") );
         }
         
     }
 
-    @query = &runTabdelDsmadmc( "select count(1) from events where status='Missed' and (SCHEDULED_START >= current_timestamp - 1 day)" );
+    @query = &runTabdelDsmadmc( "select count(1) from events where status='Missed' and SCHEDULED_START>'2012-01-01 00:00:00' and (SCHEDULED_START>=current_timestamp-24 hour) and DOMAIN_NAME is not null and NODE_NAME is not null" );
     my $MissedEvents = ( defined $query[0] ) ? $query[0] : '0';
    
     if ( $MissedEvents eq 0 ) {
@@ -635,10 +766,61 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         push ( @printable, " Missed\t$MissedEvents\t".&colorString( "Failed!", "BOLD RED") );
     }
     
+    @query = &runTabdelDsmadmc( "select count(1) from events where status='Failed' and SCHEDULED_START>'2012-01-01 00:00:00' and (SCHEDULED_START>=current_timestamp-24 hour) and DOMAIN_NAME is not null and NODE_NAME is not null" );
+    my $FailedEvents = ( defined $query[0] ) ? $query[0] : '0';
+   
+    if ( $FailedEvents eq 0 ) {
+        push ( @printable, " Failed\t$FailedEvents\t  Ok" );
+    }
+    else {
+        push ( @printable, " Failed\t$FailedEvents\t".&colorString( "Failed!", "BOLD RED") );
+    }
+    push ( @printable, "\t\t" );
+    
+    push ( @printable, "<24 H Admin Event Summary\t\t");
+    
+    @query = &runTabdelDsmadmc( "select result, count(1) from events where status='Completed' and SCHEDULED_START>'2012-01-01 00:00:00' and (SCHEDULED_START>=current_timestamp-24 hour) and DOMAIN_NAME is null and NODE_NAME is null group by result" );
+    
+    foreach ( @query ) {
+        my @line = split(/\t/);
+        
+        if ( $line[0] eq 0 ) {
+            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t  Ok" );
+        }
+        elsif ( $line[0] eq 4 || $line[0] eq 8 ) {
+            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t".&colorString( "Warning!", "BOLD YELLOW" ) );
+        }
+        else {
+            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t".&colorString( "Failed!", "BOLD RED") );
+        }
+        
+    }
+
+    @query = &runTabdelDsmadmc( "select count(1) from events where status='Missed' and SCHEDULED_START>'2012-01-01 00:00:00' and (SCHEDULED_START>=current_timestamp-24 hour) and DOMAIN_NAME is null and NODE_NAME is null" );
+    $MissedEvents = ( defined $query[0] ) ? $query[0] : '0';
+   
+    if ( $MissedEvents eq 0 ) {
+        push ( @printable, " Missed\t$MissedEvents\t  Ok" );
+    }
+    else {
+        push ( @printable, " Missed\t$MissedEvents\t".&colorString( "Failed!", "BOLD RED") );
+    }
+    
+    @query = &runTabdelDsmadmc( "select count(1) from events where status='Failed' and SCHEDULED_START>'2012-01-01 00:00:00' and (SCHEDULED_START>=current_timestamp-24 hour) and DOMAIN_NAME is null and NODE_NAME is null" );
+    $FailedEvents = ( defined $query[0] ) ? $query[0] : '0';
+   
+    if ( $FailedEvents eq 0 ) {
+        push ( @printable, " Failed\t$FailedEvents\t  Ok" );
+    }
+    else {
+        push ( @printable, " Failed\t$FailedEvents\t".&colorString( "Failed!", "BOLD RED") );
+    }    
+    
     &setSimpleTXTOutput();
     &universalTextPrinter( "Item\tValue{RIGHT}\tResult", @printable );
     
     return 0;
 };
+&defineAlias( 'status', 'show status' );
 
 1;
