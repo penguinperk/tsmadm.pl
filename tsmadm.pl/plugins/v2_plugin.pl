@@ -738,7 +738,6 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
 
     # EVENTS
     push ( @printable, "<24 H Client Event Summary\t\t");
-    
     @query = &runTabdelDsmadmc( "select result, count(1) from events where status='Completed' and SCHEDULED_START>'2012-01-01 00:00:00' and (SCHEDULED_START>=current_timestamp-24 hour) and DOMAIN_NAME is not null and NODE_NAME is not null group by result" );
     
     foreach ( @query ) {
@@ -778,11 +777,10 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     push ( @printable, "\t\t" );
     
     push ( @printable, "<24 H Admin Event Summary\t\t");
-    
     @query = &runTabdelDsmadmc( "select result, count(1) from events where status='Completed' and SCHEDULED_START>'2012-01-01 00:00:00' and (SCHEDULED_START>=current_timestamp-24 hour) and DOMAIN_NAME is null and NODE_NAME is null group by result" );
     
     foreach ( @query ) {
-        my @line = split(/\t/);
+        my @line = split( /\t/ );
         
         if ( $line[0] eq 0 ) {
             push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t  Ok" );
@@ -791,7 +789,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
             push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t".&colorString( "Warning!", "BOLD YELLOW" ) );
         }
         else {
-            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t".&colorString( "Failed!", "BOLD RED") );
+            push ( @printable, " Completed and result \[$line[0]\]\t$line[1]\t".&colorString( "Failed!", "BOLD RED" ) );
         }
         
     }
@@ -803,7 +801,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         push ( @printable, " Missed\t$MissedEvents\t  Ok" );
     }
     else {
-        push ( @printable, " Missed\t$MissedEvents\t".&colorString( "Failed!", "BOLD RED") );
+        push ( @printable, " Missed\t$MissedEvents\t".&colorString( "Failed!", "BOLD RED" ) );
     }
     
     @query = &runTabdelDsmadmc( "select count(1) from events where status='Failed' and SCHEDULED_START>'2012-01-01 00:00:00' and (SCHEDULED_START>=current_timestamp-24 hour) and DOMAIN_NAME is null and NODE_NAME is null" );
@@ -813,7 +811,25 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         push ( @printable, " Failed\t$FailedEvents\t  Ok" );
     }
     else {
-        push ( @printable, " Failed\t$FailedEvents\t".&colorString( "Failed!", "BOLD RED") );
+        push ( @printable, " Failed\t$FailedEvents\t".&colorString( "Failed!", "BOLD RED" ) );
+    }    
+    
+    push ( @printable, "\t\t" );
+
+    # ACTLOG
+    push ( @printable, "<24 H Activity Summary\t\t");
+    @query = &runTabdelDsmadmc( "select severity,count(1) from actlog where (DATE_TIME>=current_timestamp-24 hour) and severity in ('E','W') group by severity" );
+    
+    foreach ( @query ) {
+        my @line = split( /\t/ );
+        
+        if ( $line[0] eq 'W' ) {
+            push ( @printable, " Warnings\t$line[1]\t".&colorString( "Warning!", "BOLD YELLOW" ) );
+        }
+        elsif ( $line[0] eq 'E' ) {
+            push ( @printable, " Errors\t$line[1]\t".&colorString( "Failed!", "BOLD RED" ) );
+        }
+        
     }    
     
     &setSimpleTXTOutput();
@@ -822,5 +838,116 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
     return 0;
 };
 &defineAlias( 'status', 'show status' );
+
+#######################
+# SHow LICences ########################################################################################################
+#######################
+&msg( '0110D', 'SHow LICences' );
+my %PVU_licensing = &loadFileToHash( File::Spec->canonpath( "$Dirname/plugins/ProcessorValueUnit_licensing.txt" ) );
+$Commands{&commandRegexp( "show", "LICences", 2, 3 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow LICences Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    $LastCommandType = 'LICENCES';
+
+    my @query;
+    my @printable;
+
+    my $csv = ( defined( $_[3] ) && lc( $_[3] ) eq "csv=yes" ) ? "YES" : "NO";
+  
+    # Servers
+    @query = &runTabdelDsmadmc( "select '!SERVER!',SERVER_NAME,HL_ADDRESS,DESCRIPTION,date(days(CURRENT_DATE))-date(LASTACC_TIME) from servers where LOCKED='NO'" );
+      
+    # Clients
+    push ( @query, &runTabdelDsmadmc( "select PLATFORM_NAME,NODE_NAME,TCP_ADDRESS,CONTACT,date(days(CURRENT_DATE))-date(LASTACC_TIME) from nodes where LOCKED='NO' order by PLATFORM_NAME" ) );
+      
+    foreach my $i ( @query ) {
+        my @line = split( /\t/, $i );
+    
+        my $PVU = 0;
+        my $remark = "";
+    
+        if ( $line[3] =~ m/\[(\w*):*(\d*\.*\d*):*(\d*\.*\d*)\]/ ) {
+            my $CPU_Type   = ( $1 ne "" ) ? uc( $1 ) : "default";
+            my $CPU_Number = ( $2 ne "" ) ? $2 : 1;
+            my $CPU_Core   = $3;
+    
+          if ( uc( $CPU_Type ) eq "NOCPU" ) {
+            $PVU = 0;
+            $remark = "PVU NOT needed.";
+          }
+          elsif ( uc( $CPU_Type ) eq "ARCHIVE" ) {
+            $PVU = 0;
+            $remark = "PVU NOT needed. ARCHIVE DATA ONLY!";
+          }
+          elsif ( uc( $CPU_Type ) eq "CLUSTER" ) {
+            $PVU = 0;
+            $remark = "PVU NOT needed. Cluster resource!";
+          }
+          elsif ( uc( $CPU_Type ) eq "SERVER" ) {
+            $PVU = 0;
+            $remark = "PVU NOT needed. TSM server or LAN-Free!";
+          }
+          elsif ( uc($CPU_Type) eq "VMS" ) {
+            $PVU = 0;
+            $remark = "PVU NOT needed. VMS with ABC client!";
+          }
+          elsif ( defined $PVU_licensing{$CPU_Type} ) {
+            if ( $PVU_licensing{$CPU_Type} =~ m/(\d+)\s*\*\s*(\d+)/i ) {
+    
+               my $core = $1;
+               my $PVUpercore = $2;
+    
+              $CPU_Core = ( $CPU_Core ne "" ) ? $CPU_Core : $core;
+              $remark = "Worng core [$CPU_Core] specified! Only [$0] allowed." if ( $CPU_Core ne $core );
+    
+              $PVU = $CPU_Number * $CPU_Core * $PVUpercore ;
+              
+              $remark = "PVU calculation is OK."
+              
+            }
+          }
+          else {
+            $PVU = "n/a";
+            $remark = "CPU type [$CPU_Type] not found!"
+          }
+        }
+        else {
+          $PVU = "n/a";
+          $remark = &colorString( "No CPU definition!", , "BOLD RED" );
+        }
+        
+        if ( $line[3] =~ /\[(.+)\]/ ) {
+            my $colored = &colorString( "$1", "BOLD GREEN" );
+            $line[3] =~ s/\[.+\]/\[$colored\]/;
+        }
+        
+        push( @printable, "$line[0]\t$line[1]\t$line[2]\t$line[4]\t$PVU\t$remark\t$line[3]");
+    }
+  
+    if ( $csv eq "NO" ) {
+        setSimpleTXTOutput();
+        &universalTextPrinter( "PLATFORM\tNODENAME\tIPADDRESS\tLASTACCESS\tPVU\tREMARK\tCONTACT", @printable);
+    }
+    else {
+      for ( @printable ) {
+        my @line = split(/,/);
+        print "$line[1],$line[4],$line[5]\n";
+      }
+    }  
+        
+    return 0;
+};
 
 1;

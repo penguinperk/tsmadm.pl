@@ -454,7 +454,7 @@ sub universalTextPrinter ( @ )
     if ( defined( $ParameterRegExpValues{OUTPUT} )
          && $ParameterRegExpValues{OUTPUT} ne "" )
     {
-        open my $OUTFILE, ">$ParameterRegExpValues{OUTPUT}" or die;
+        open my $OUTFILE, ">$ParameterRegExpValues{OUTPUT}" or die ( "Can not open output file: $ParameterRegExpValues{OUTPUT}!!!" );
         print $OUTFILE @toPrint;
         close $OUTFILE or die;
     }

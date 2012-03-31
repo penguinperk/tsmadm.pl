@@ -320,6 +320,12 @@ if (! -r $Settings{CONFIGFILE} ) {
 
 %Settings = &loadFileToHash($configfileOption);
 
+if ($OS_win) {
+    $Settings{HOMEDIRECTORY} = $ENV{HOMEDRIVE} . $ENV{HOMEPATH};
+} else {
+    $Settings{HOMEDIRECTORY} = $ENV{HOME};
+}
+
 $Settings{CONFIGFILE} = $configfileOption;
 
 # put it to the right place and use from here

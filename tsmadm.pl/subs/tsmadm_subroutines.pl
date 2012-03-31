@@ -251,9 +251,9 @@ sub reLoadPlugins () {
 
     %Commands = ();
 
-    for ( glob("$Dirname/plugins/*.pl") ) {
+    for ( glob( "$Dirname/plugins/*.pl" ) ) {
         &msg( '0111D', $_ );
-        do $_ || die("TOTAL FATAL: $!, check this file: [$_] generated");
+        do $_ || die( "TOTAL FATAL: $!, check this file: [".File::Spec->canonpath( $_ )."] generated" );
     }
 
 }
@@ -288,12 +288,7 @@ sub loadFileToHash ( $ ) {
     
     my $filename = $_[0];
     my %returnHash;
-    if ($OS_win) {
-	$returnHash{HOMEDIRECTORY} = $ENV{HOMEDRIVE} . $ENV{HOMEPATH};
-    } else {
-	$returnHash{HOMEDIRECTORY} = $ENV{HOME};
-    }
-    
+            
     open my $HASHFILE, "+<:encoding(utf-8)", "$filename"
       or die "File ($filename) open error: $!";
 

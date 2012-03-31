@@ -877,7 +877,7 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
 
     $LastCommandType = 'EVENTS';
 
-    my @query = &runTabdelDsmadmc('q event * * begint=-24 endd=today endt=now f=d'.$3.' '.$4.' '.$5);
+    my @query = &runTabdelDsmadmc('q event * * begint=-24 endd=today endt=now f=d '.$3.' '.$4.' '.$5);
     return if ( $#query < 0 || $LastErrorcode );
 
     @query = deleteColumn( 8, @query);
@@ -958,7 +958,7 @@ $Commands{&commandRegexp( "show", "adminevents", 2, 8)} = sub {
 
     $LastCommandType = 'EVENTS';
 
-    my @query = &runTabdelDsmadmc('q event * begint=-24 endd=today endt=now t=a f=d'.$3.' '.$4.' '.$5);
+    my @query = &runTabdelDsmadmc('q event * begint=-24 endd=today endt=now t=a f=d '.$3.' '.$4.' '.$5);
     return if ( $#query < 0 || $LastErrorcode );
 
     @query = deleteColumn( 8, @query);
@@ -1304,7 +1304,7 @@ $Commands{&commandRegexp( "show", "timing" )} = sub {
 
     $LastCommandType = 'GENERAL';
 
-    my @query = &runTabdelDsmadmc('q event * * begind=-1 begint=16:00 endd=today endt=now f=d '.$3.' '.$4.' '. $5);
+    my @query = &runTabdelDsmadmc('q event * * begint=-24 endd=today endt=now f=d '.$3.' '.$4.' '. $5);
     return if ( $#query < 0 || $LastErrorcode );
 
     my @line;
@@ -1313,18 +1313,22 @@ $Commands{&commandRegexp( "show", "timing" )} = sub {
     @line = split( /\t/, $query[0] );
     $first_time = &convert_date( $line[3] );
 
-    my $last_time;
-    @line = split( /\t/, $query[$#query] );
-    if ( $line[5] ne '' ) {
-        $last_time = &convert_date( $line[5] );
-    }
-    else {
-        $last_time = &convert_date( $line[3] );
-    }
+    my $last_time = $first_time;
+    #@line = split( /\t/, $query[$#query] );
+    #if ( $line[5] ne '' ) {
+    #    $last_time = &convert_date( $line[5] );
+    #}
+    #else {
+    #    $last_time = &convert_date( $line[3] );
+    #}
 
     &pbarInit( "PASS 1 |", scalar( @query ), "|");
 
-    my @maxlength; $maxlength[0]=$maxlength[1]=$maxlength[2]=$maxlength[3]=0;
+    my @maxlength;
+    $maxlength[0] = $maxlength[3] = 1;
+    $maxlength[1] = length( "ScheduleName" );
+    $maxlength[2] = length( "NodeName" );
+    
     my $i = 0;
     foreach ( @query ) {
 
@@ -1346,16 +1350,26 @@ $Commands{&commandRegexp( "show", "timing" )} = sub {
         #
         $length = colorLength( "$line[7]" );
         $maxlength[3] = $length if ( $length > $maxlength[3] );
-        
+     
+        # find the oldest time
+        my $tmpLast_time;
+        if ( $line[5] ne '' ) {
+            $tmpLast_time = &convert_date( $line[5] );
+        }
+        else {
+            $tmpLast_time = &convert_date( $line[3] );
+        }
+        $last_time = $tmpLast_time if ( $tmpLast_time > $last_time );
+             
         &pbarUpdate( ++$i );
 
     }
     
-    my $size = $Settings{TERMINALCOLS} - $maxlength[0] - $maxlength[1] - $maxlength[2] - $maxlength[3] - 9;
+    my $size = $Settings{TERMINALCOLS} - $maxlength[0] - $maxlength[1] - $maxlength[2] - $maxlength[3] - 6 - 2 - 1; # ? 10
 
     my $quantum = $size;
     $quantum = $quantum / ( $last_time - $first_time ) if ( $last_time - $first_time > 0 );
-        
+
     &pbarInit( "PASS 2 |", $size, "|");
 
     # create an empty bar line
@@ -1373,7 +1387,7 @@ $Commands{&commandRegexp( "show", "timing" )} = sub {
 
         my @bar = @emptybar;
 
-        $bar[int((&convert_date($line[3])-$first_time)*$quantum)] = 'S';
+        $bar[int( ( &convert_date( $line[3] ) - $first_time ) * $quantum )] = 'S';
 
         if ( $line[6] =~ m/Future/i ) {
             &fill_bar(\@bar, int((&convert_date($line[3])-$first_time)*$quantum), $size, 'f')
@@ -1405,6 +1419,7 @@ $Commands{&commandRegexp( "show", "timing" )} = sub {
                 $line[7] = &colorString( $line[7], "BOLD RED" );
             }
         }
+        
         push( @return, join( "\t", ++$i, $line[1], $line[2], '|'.join("", @bar).'|', $line[7] ));
 
         &pbarUpdate( $i );

@@ -21,8 +21,8 @@ use warnings;
 &defineAlias( 'itsm1',    'reach ssh://flex@itsm1' );
 &defineAlias( 'itsm2',    'reach ssh://flex@itsm2' );
 
-&defineAlias( 'tsm1',     'reach ssh://flex@tsm1' );
-&defineAlias( 'tsm2',     'reach ssh://flex@tsm2' );
+&defineAlias( 'tsm1',     'reach ssh://u200495@tsm1' );
+&defineAlias( 'tsm2',     'reach ssh://u200495@tsm2' );
 
 &defineAlias( 'itmrep',   'reach ssh://u200495@itmrep' );
 
