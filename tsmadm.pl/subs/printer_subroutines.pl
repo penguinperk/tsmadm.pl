@@ -474,7 +474,7 @@ sub universalTextPrinter ( @ )
 sub HTMLPrinter ( @ )
 {    #
     &setHTMLOutput;
-    $ParameterRegExpValues{NOCOLOR} = 1;
+    $ParameterRegExpValues{NOCOLOR} = 0;
     my @result = @_;
 
     my $startTable       = $Separators{startTable};

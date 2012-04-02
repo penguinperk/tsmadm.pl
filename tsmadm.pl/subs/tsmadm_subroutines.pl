@@ -460,12 +460,16 @@ sub colorString( $$ ) {
 	$color  = $_[1];
     };
 
+
     if ( !$Settings{NOCOLOR} && !$ParameterRegExpValues{NOCOLOR} && $color ne "" ) {
 
         # color engine V1.0
         my $tmp = colored( "", $color );
         $string =~ s/\e\[0m/$tmp/g;
-
+	if ($ParameterRegExpValues{HTML}){
+	    $color =~ s/BOLD//i; 
+	    return &colorHTMLtag($string,$color); 
+	}
         # return  colored( $string, $color );
         if ( defined( $Settings{DEFAULTCOLOR} ) ) {
             return colored( $string, $color )
