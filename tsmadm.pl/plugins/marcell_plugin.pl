@@ -102,22 +102,6 @@ $Commands{qr/^(debug)\s*(\S*)/i} = sub {
     return 0;
 };
 
-$Commands{qr/^(edit)\s*(script)\s*(\S*)/i} = sub {
-    print "Script: $2\n";
-
-    # my $scrName = "ADM_DAILY_DBFULLBACKUP";
-    my $scrName = "XXX";
-    my $file    = "$Dirname/scripts/tmp_$scrName";
-    my @content =
-      &runTabdelDsmadmc("select COMMAND from SCRIPTS where NAME='$scrName'");
-    open( FILE, ">", $file ) or die;
-    $, = "\n";    ## Set OutputFile record separator char
-    print FILE @content;
-    close(FILE) or die;
-    system("start /b $Settings{EDITOR} $file");
-    return 0;
-};
-
 $Commands{qr/^(terminal)\s*(\S*)/i} = sub {
     if ( $2 eq "" ) {
         &msg( "0019I", $Settings{TERMINAL} );

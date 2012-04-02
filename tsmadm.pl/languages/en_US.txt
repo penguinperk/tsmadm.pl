@@ -12,6 +12,7 @@ XXXXX=ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP - árvíztűrő tükörfúrógép
 0043I=Average time between samples is %d seconds (%s).
 0044I= ?
 0045I= ?
+0046I=Script %s already exist. Would like to overwrite? (Yes/No) 
 0050I=Trying to reach "%s"...
 0060I=Alias %s="%s" defined.
 9900I=You have used our program this time for %s.
@@ -32,6 +33,10 @@ XXXXX=ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP - árvíztűrő tükörfúrógép
 0032E=Out of range!
 0033E=OS not supported!
 0034E=Wrong parameter!
+0035E=No saved scripts from server: %s, with name: %s. Try to use save script command first.
+0036E=TSM script %s does not exist.
+0037E=In the %s. line was a mistake, please see activity log.
+0038E=TSM script %s load failed.
 0050E=No URL found for node %s!
 0099E=%s
 
