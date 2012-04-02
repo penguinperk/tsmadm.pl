@@ -191,10 +191,9 @@ sub loadScript($){
         &msg("0035E", $TSMSeverStatus{SERVERNAME}, $scrName);
         return 0;
     }
-    
     my @content = &runTabdelDsmadmc("select command from scripts where NAME='$scrName'");
     my $wasIt = 0;
-    if ( $#content > 0  ){
+    if ( $#content >= 0  ){
         &msg("0046I", $scrName);
         my $answer = <STDIN>;
         if ($answer !~ m/yes/i){
@@ -221,7 +220,7 @@ sub loadScript($){
     }
     &runDsmadmc("rename script tsmadm.pl_tmp_$scrName $scrName");
     if ( $LastErrorcode ){
-        &msg("0038E");
+        &msg("0038E", $scrName);
     }
     $LastCommandType = 'LOADSCRIPT';
     return 0;
