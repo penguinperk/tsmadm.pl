@@ -818,7 +818,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
 
     # ACTLOG
     push ( @printable, "<24 H Activity Summary\t\t");
-    @query = &runTabdelDsmadmc( "select severity,count(1) from actlog where (DATE_TIME>=current_timestamp-24 hour) and severity in ('E','W') group by severity" );
+    @query = &runTabdelDsmadmc( "select severity,count(1) from actlog where (DATE_TIME>=current_timestamp-24 hour) and severity in ('E','W') and and MSGNO not in (2034) group by severity" );
     
     foreach ( @query ) {
         my @line = split( /\t/ );
@@ -864,8 +864,9 @@ $Commands{&commandRegexp( "show", "LICences", 2, 3 )} = sub {
     my @query;
     my @printable;
 
-    my $csv = ( defined( $_[3] ) && lc( $_[3] ) eq "csv=yes" ) ? "YES" : "NO";
-  
+    my $csv = ( defined( $3 ) && lc( $3 ) eq "csv" ) ? "YES" : "NO";
+    my $justcpu = ( defined( $3 ) && lc( $3 ) eq "justcpu" ) ? "YES" : "NO";
+      
     # Servers
     @query = &runTabdelDsmadmc( "select '!SERVER!',SERVER_NAME,HL_ADDRESS,DESCRIPTION,date(days(CURRENT_DATE))-date(LASTACC_TIME) from servers where LOCKED='NO'" );
       
@@ -883,25 +884,33 @@ $Commands{&commandRegexp( "show", "LICences", 2, 3 )} = sub {
             my $CPU_Number = ( $2 ne "" ) ? $2 : 1;
             my $CPU_Core   = $3;
     
-          if ( uc( $CPU_Type ) eq "NOCPU" ) {
+          if ( $CPU_Type eq "NOCPU" ) {
             $PVU = 0;
             $remark = "PVU NOT needed.";
           }
-          elsif ( uc( $CPU_Type ) eq "ARCHIVE" ) {
+          elsif ( $CPU_Type eq "ARCHIVE" ) {
             $PVU = 0;
             $remark = "PVU NOT needed. ARCHIVE DATA ONLY!";
           }
-          elsif ( uc( $CPU_Type ) eq "CLUSTER" ) {
+          elsif ( $CPU_Type eq "CLUSTER" ) {
             $PVU = 0;
             $remark = "PVU NOT needed. Cluster resource!";
           }
-          elsif ( uc( $CPU_Type ) eq "SERVER" ) {
+          elsif ( $CPU_Type eq "SERVER" ) {
             $PVU = 0;
-            $remark = "PVU NOT needed. TSM server or LAN-Free!";
+            $remark = "PVU NOT needed. ";
           }
-          elsif ( uc($CPU_Type) eq "VMS" ) {
+          elsif ( $CPU_Type eq "VMS" ) {
             $PVU = 0;
             $remark = "PVU NOT needed. VMS with ABC client!";
+          }
+          elsif ( $CPU_Type eq "VMGUEST" ) {
+            $PVU = 0;
+            $remark = "PVU NOT needed. VM guest!";
+          }
+          elsif ( $CPU_Type eq "ILMT" ) {
+            $PVU = 0;
+            $remark = "PVU NOT needed. ILMT counts it!";
           }
           elsif ( defined $PVU_licensing{$CPU_Type} ) {
             if ( $PVU_licensing{$CPU_Type} =~ m/(\d+)\s*\*\s*(\d+)/i ) {
@@ -928,21 +937,28 @@ $Commands{&commandRegexp( "show", "LICences", 2, 3 )} = sub {
           $remark = &colorString( "No CPU definition!", , "BOLD RED" );
         }
         
+        # highlight
         if ( $line[3] =~ /\[(.+)\]/ ) {
             my $colored = &colorString( "$1", "BOLD GREEN" );
-            $line[3] =~ s/\[.+\]/\[$colored\]/;
+            if ( $justcpu eq "YES" ) {
+                $line[3] =~ s/.*\[.+\].*/\[$colored\]/;
+            }
+            else {
+                $line[3] =~ s/\[.+\]/\[$colored\]/;
+            }
         }
         
-        push( @printable, "$line[0]\t$line[1]\t$line[2]\t$line[4]\t$PVU\t$remark\t$line[3]");
+        push( @printable, "$line[0]\t$line[1]\t$line[2]\t$line[4]\t$PVU\t$remark\t$line[3]" );
+        
     }
   
     if ( $csv eq "NO" ) {
         setSimpleTXTOutput();
-        &universalTextPrinter( "PLATFORM\tNODENAME\tIPADDRESS\tLASTACCESS\tPVU\tREMARK\tCONTACT", @printable);
+        &universalTextPrinter( "PLATFORM\tNODENAME\tIPADDRESS\tLASTACCESS\tPVU\tREMARK\tCONTACT", @printable );
     }
     else {
       for ( @printable ) {
-        my @line = split(/,/);
+        my @line = split( /\t/ );
         print "$line[1],$line[4],$line[5]\n";
       }
     }  

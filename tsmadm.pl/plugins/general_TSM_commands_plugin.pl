@@ -586,7 +586,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
             if ( defined ( $query_sess[0] ) ) {
                 my @tmpline = split ( /\t/, $query_sess[0] );
                 $tmpline[0] =~ s/,//g;
-                $line[10] = "Client Session ($tmpline[0])";
+                $line[10] = "Client ($tmpline[0])";
                 $isSessionMediaW = $tmpline[2] if ( $tmpline[2] eq 'MediaW' );
             }
             
@@ -615,6 +615,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
         $line[8]  = " " if ( ! defined ( $line[8] ) );
         $line[9]  = " " if ( ! defined ( $line[9] ) );
         $line[10] = " " if ( ! defined ( $line[10] ) );
+        $line[10] =~ s/Storage Pool/Stgp/;
 
         push ( @printable, join ( "\t", @line ) );
         
