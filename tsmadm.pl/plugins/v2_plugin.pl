@@ -90,7 +90,7 @@ $Commands{&commandRegexp( "show", "backupperformance", 2, 7 )} = sub {
 # SHow MOVEDATAPerformance #####################################################################################################
 ############################
 &msg( '0110D', 'SHow MOVEDATAPerformance' );
-$Commands{&commandRegexp( "show", "movedataperformance", 3, 9 )} = sub {
+$Commands{&commandRegexp( "show", "movedataperformance", 2, 9 )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
@@ -288,8 +288,17 @@ sub basicPerformanceFromSummary ( $ ) {
     my $i = 1;
     my @printable;
     
+    my $max = 0;
     foreach ( @query ) {
-        my @line = split(/\t/);
+        my @line = split( /\t/ );
+        
+        $line[5] =~ m/(.+) ->/;
+        $max = length( $1 ) if ( length( $1 ) > $max );
+        
+    }
+    
+    foreach ( @query ) {
+        my @line = split( /\t/ );
         
         &pbarUpdate( $i++ );
         
@@ -309,6 +318,11 @@ sub basicPerformanceFromSummary ( $ ) {
         my $speed   = ( $line[15] > 0 ) ? int( ( $line[10]/1024/1024 ) / $line[15] )." MB/s" : "n/a";
         my $failed  = ( $line[9] > 0 ) ? &colorString( $line[9], 'BOLD RED') : $line[9];
         my $success = ( $line[14] eq 'NO' ) ? &colorString( $line[14], 'BOLD RED') : $line[14];
+        
+        $line[5] =~ m/(.+) ->/;
+        $line[5] = ( ' ' x ( $max - length( $1 ) ) ).$line[5];
+        
+        $line[5] =~ s/(\w+) ->/\[$1\] ->/ if ( $activity eq "MOVE DATA" ) ;
         
         push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), &timeFormatter ( $line[12], 's' ), $line[13], $success ) );
        
@@ -818,7 +832,7 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
 
     # ACTLOG
     push ( @printable, "<24 H Activity Summary\t\t");
-    @query = &runTabdelDsmadmc( "select severity,count(1) from actlog where (DATE_TIME>=current_timestamp-24 hour) and severity in ('E','W') and and MSGNO not in (2034) group by severity" );
+    @query = &runTabdelDsmadmc( "select severity,count(1) from actlog where (DATE_TIME>=current_timestamp-24 hour) and severity in ('E','W') and MSGNO not in (2034) group by severity" );
     
     foreach ( @query ) {
         my @line = split( /\t/ );
@@ -964,6 +978,84 @@ $Commands{&commandRegexp( "show", "LICences", 2, 3 )} = sub {
     }  
         
     return 0;
+};
+
+#######################
+# SHow MOVEAble ########################################################################################################
+#######################
+&msg( '0110D', 'SHow MOVEAble' );
+my %moveable;
+$Commands{&commandRegexp( "show", "moveable", 2, 5 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow MOVEAble Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    my ($stg, $pct) = split ( / /, $3 );
+    $stg = '' if ( ! defined $stg );
+    $pct = 20 if ( ! defined $pct );
+   
+    my @query = &runTabdelDsmadmc( "select stgpool_name, volume_name, pct_utilized, status from volumes where access='READWRITE' and stgpool_name like upper\('$stg%'\) and pct_utilized \<= $pct and \(\(status='FILLING' and 1 \< \(select count(*) from volumes where access='READWRITE' and status='FILLING' and stgpool_name like upper\('$stg%'\)\)\) or \(status='FULL' and 0 \< \(select count(*) from volumes where access='READWRITE' and status='FILLING' and stgpool_name like upper\('$stg%'\)\)\)\) order by pct_utilized desc" );
+    return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'MOVEABLE';
+
+    my @printable;
+    # add the deltas
+    for ( @query ) {
+        my @line = split( /\t/ );
+    
+        # for PctUtilMigr
+        splice( @line, 2, 0, '' );
+        &different( \%moveable, \@line, 1, 2, 3 );
+    
+        $line[1] = "[".$line[1]."]";
+    
+        push( @printable, join( "\t", @line ) )
+    }
+   
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "#{RIGHT}\tStgpoolName\tVolumeName{RIGHT}\td\tPct\tStatus", &addLineNumbers( @printable ) );
+    
+    return 0;
+};
+
+#############
+# different
+#############
+sub different ($$$$$) {
+  my $r_hash    = $_[0];
+  my $r_array   = $_[1];
+  my $index_poz = $_[2];
+  my $diff_poz  = $_[3];
+  my $value_poz = $_[4];
+
+ if ( defined $r_hash->{@$r_array[$index_poz]} ) {
+    if ( $r_hash->{@$r_array[$index_poz]} > @$r_array[$value_poz] ) {
+      @$r_array[$diff_poz] = '-';
+    }
+    elsif ( $r_hash->{@$r_array[$index_poz]} < @$r_array[$value_poz] ) {
+      @$r_array[$diff_poz] = '+';
+    }
+    elsif ( $r_hash->{@$r_array[$index_poz]} = @$r_array[$value_poz] ) {
+      @$r_array[$diff_poz] = '=';
+    }
+    else {
+      @$r_array[$diff_poz] = '';
+    }
+  }
+
+  $r_hash->{@$r_array[$index_poz]} = @$r_array[$value_poz];
+
 };
 
 1;

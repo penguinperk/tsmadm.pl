@@ -1235,6 +1235,9 @@ $Commands{&commandRegexp( "moveit", "" )} = sub {
         return 0;
     }
 
+    # ignore it if 'move data' is supposed to be used
+    return 1 if ( $2 =~ m/dat|data/i );
+
     my $number = $2;
 
     if ( $number eq '' ) {
