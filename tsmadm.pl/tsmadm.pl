@@ -84,6 +84,8 @@ use File::Basename;
 use Pod::Usage;
 use utf8;
 
+use Net::SMTP;
+
 # load perl subroutines
 require "$Dirname/subs/tsmadm_subroutines.pl";
 require "$Dirname/subs/dsmadmc_subroutines.pl";

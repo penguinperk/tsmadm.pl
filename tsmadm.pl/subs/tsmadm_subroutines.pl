@@ -1544,4 +1544,26 @@ sub readCommand()
 
 }
 
+sub sendSMTPmail() {
+
+    my $server = 'yoursmtp.hu';
+    my $to     = 'gyorgy.fleischmann@userrendszerhaz.hu';
+    my $from   = 'gyorgy.fleischmann@userrendszerhaz.hu';
+    
+    my $smtp = Net::SMTP->new($server);
+    $smtp->mail("$from");
+    $smtp->to("$to");
+    $smtp->data();
+    $smtp->datasend("Subject: This is a test\n");
+    $smtp->datasend("Content-Type: text/html; charset=UTF-8\n");
+    $smtp->datasend("\n");
+    $smtp->datasend("\n");
+    $smtp->datasend("Ez egy <B>Perl</B>bõl küldött teszt üzenet, és <I>HTML</I> tageket is tartalmaz <BR>");
+    $smtp->datasend("árvíztûrõ tükörfúrógép ÁRVÍZTÛRÕ TÜKÖRFÚRÓGÉP<BR><BR>");
+    
+    $smtp->dataend();
+    $smtp->quit;
+
+}
+
 1;
