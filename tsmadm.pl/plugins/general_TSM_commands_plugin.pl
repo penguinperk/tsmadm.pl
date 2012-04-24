@@ -577,7 +577,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
             
             # route the command if it necessary
             $ParameterRegExpValues{SERVERCOMMANDROUTING1} = '';
-            $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $line[7] if ( $TSMSeverStatus{SERVERNAME} ne $line[7] );
+            $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $line[7] if ( defined ($line[7]) && $TSMSeverStatus{SERVERNAME} ne $line[7] );
             
             # my @query_sess = &runTabdelDsmadmc( "select SESSION_ID from sessions where INPUT_MOUNT_WAIT like '%$line[6]%' or INPUT_VOL_WAIT like '%$line[6]%' or INPUT_VOL_ACCESS like '%$line[6]%' or OUTPUT_MOUNT_WAIT like '%$line[6]%' or OUTPUT_VOL_WAIT like '%$line[6]%' or OUTPUT_VOL_ACCESS like '%$line[6]%'" );
             # this select doesn't work on Lan-FREE
