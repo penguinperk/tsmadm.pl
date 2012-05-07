@@ -80,7 +80,7 @@ sub commandSplitterParserExecuter ( $ ) {
 
 	    $command =~ s/(grep\s+")([a-zA-z0-9\|]+)"/$1$regexp/;
 	}
-
+		
 	# quoted commands
         my $quotedCommand = "";
         if ( $command =~ s/^\s*('|")(.+)('|")// ) {
@@ -138,6 +138,7 @@ sub commandSplitterParserExecuter ( $ ) {
 #        }
 
         $command =~ s/\s*$//;                                     # cut the end
+	$command =~ s/"([\w\s:-]+)"/'$1'/g;                       # change quotes " to '?
         $command .= ' ';                                          # extra space to separate wrong commands
 
 #Debug

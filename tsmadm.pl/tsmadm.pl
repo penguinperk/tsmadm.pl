@@ -216,9 +216,9 @@ $OS_win = ( $^O eq "MSWin32" ) ? 1 : 0;                     # Is it MS Windows?
     SERVERCOMMANDROUTING1 => '(^\s*)([\w_\-\.]+):\s*',      # if you change thsese two regexps don't forget to change in the tsmadm_subroutine.pl
     SERVERCOMMANDROUTING2 => '(^\s*)\(([\w_\-\.]+)\)\s*',   # command routing reservation section
 
-    INVGREP   => '\|\s*(invgrep)\s+"*([^$|]*|)"*',          #
-    PGREP     => '\|\s*(pgrep)\s+"*([^$|]*|)"*',            #
-    GREP      => '\|\s*(grep)\s+"*([^$|]*|)"*',             #
+    INVGREP   => '\|\s*(invgrep)\s+["\']*([^$|"\']*)["\']*',          #
+    PGREP     => '\|\s*(pgrep)\s+["\']*([^$|"\']*)["\']*',            #
+    GREP      => '\|\s*(grep)\s+["\']*([^$|"\']*)["\']*',             #
     MORE      => '\|\s*(more)',                             #
 
     OUTPUT    => '(\>)\s*(.+)',                             # 
@@ -232,7 +232,7 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     # errors and warnings
 #    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'                       => 'BOLD BLUE',
 #    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'                       => 'BOLD YELLOW',
-    '(ANR\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}]*)'                          => 'BOLD RED',
+    '(AN[ER]\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}]*)'                       => 'BOLD RED',
     '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}]*)'                          => 'BOLD YELLOW',
 
     # volumes
