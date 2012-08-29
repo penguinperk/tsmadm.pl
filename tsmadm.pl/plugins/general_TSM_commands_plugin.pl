@@ -147,7 +147,7 @@ $Commands{&commandRegexp( "show", "processes" )} = sub {
     foreach ( @query ) {
         my @line = split ( /\t/ );
 
-        $line[3] = &byteFormatter ( $line[3], 'B' );
+        $line[3] = &byteFormatter ( $line[3], 'B' ) if ( defined( $line[3] ) and $line[3] ne '' );        
 
         push ( @printable, join( "\t", @line ) )
     }

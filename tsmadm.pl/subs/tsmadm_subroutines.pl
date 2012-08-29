@@ -95,7 +95,7 @@ sub commandSplitterParserExecuter ( $ ) {
 	    while ( $command =~ s/$value1// ) {
 
 		#
-		if ( defined($2) ) {
+		if ( defined( $2 ) ) {
 		    my $parameter = $2;
 		    $parameter =~ s/\s+$//;
 		    $ParameterRegExpValues{$key} .= ( !defined( $ParameterRegExpValues{$key} ) || $ParameterRegExpValues{$key} eq "" ) ? $parameter : '&ANDGREP&'.$parameter;
@@ -1547,24 +1547,29 @@ sub readCommand()
 
 sub sendSMTPmail() {
 
-    my $server = 'yoursmtp.hu';
-    my $to     = 'gyorgy.fleischmann@userrendszerhaz.hu';
-    my $from   = 'gyorgy.fleischmann@userrendszerhaz.hu';
-    
-    my $smtp = Net::SMTP->new($server);
-    $smtp->mail("$from");
-    $smtp->to("$to");
+    my $server = 'mail.budapest.mkb.hu';
+    my $from   = 'fleischmann.gyorgy@mkb.hu';
+    my $to     = 'gyorgy.fleischmann@userrendszerhaz.hu,fleischmann.gyorgy@mkb.hu';
+
+    my $smtp = Net::SMTP->new( $server );
+    $smtp->mail( "$from" );
+    $smtp->to( "$to" );
     $smtp->data();
-    $smtp->datasend("Subject: This is a test\n");
-    $smtp->datasend("Content-Type: text/html; charset=UTF-8\n");
-    $smtp->datasend("\n");
-    $smtp->datasend("\n");
-    $smtp->datasend("Ez egy <B>Perl</B>bõl küldött teszt üzenet, és <I>HTML</I> tageket is tartalmaz <BR>");
-    $smtp->datasend("árvíztûrõ tükörfúrógép ÁRVÍZTÛRÕ TÜKÖRFÚRÓGÉP<BR><BR>");
-    
+    $smtp->datasend( "Subject: This is a test\n" );
+    $smtp->datasend( "Content-Type: text/html; charset=UTF-8\n" );
+    $smtp->datasend( "\n" );
+    $smtp->datasend( "\n" );
+    $smtp->datasend( "<html><head></head>" );
+    $smtp->datasend( "<body>" );
+    $smtp->datasend( "Ez egy <B>Perl</B>bõl küldött teszt üzenet, és <I>HTML</I> tageket is tartalmaz <BR>" );
+    $smtp->datasend( "árvíztûrõ tükörfúrógép ÁRVÍZTÛRÕ TÜKÖRFÚRÓGÉP<BR><BR>" );
+    $smtp->datasend( "</body>" );
+    $smtp->datasend( "</html>" );
     $smtp->dataend();
     $smtp->quit;
 
 }
+
+#sendSMTPmail();
 
 1;

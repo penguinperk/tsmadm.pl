@@ -1000,11 +1000,11 @@ $Commands{&commandRegexp( "show", "moveable", 2, 5 )} = sub {
         return 0;
     }
 
-    my ($stg, $pct) = split ( / /, $3 );
+    my ( $stg, $pct ) = split ( / /, $3 );
     $stg = '' if ( ! defined $stg );
-    $pct = 20 if ( ! defined $pct );
+    $pct = 30 if ( ! defined $pct );
    
-    my @query = &runTabdelDsmadmc( "select stgpool_name, volume_name, pct_utilized, status from volumes where access='READWRITE' and stgpool_name like upper\('$stg%'\) and pct_utilized \<= $pct and \(\(status='FILLING' and 1 \< \(select count(*) from volumes where access='READWRITE' and status='FILLING' and stgpool_name like upper\('$stg%'\)\)\) or \(status='FULL' and 0 \< \(select count(*) from volumes where access='READWRITE' and status='FILLING' and stgpool_name like upper\('$stg%'\)\)\)\) order by pct_utilized desc" );
+    my @query = &runTabdelDsmadmc( "select stgpool_name, volume_name, pct_utilized, status from volumes where stgpool_name in (select stgpool_name from stgpools where devclass in (select DEVCLASS_NAME from DEVCLASSES where WORM='NO' and DEVCLASS_NAME!='DISK')) and access='READWRITE' and stgpool_name like upper('$stg%') and pct_utilized <= $pct and ((status='FILLING' and 1 < (select count(*) from volumes where access='READWRITE' and status='FILLING' and stgpool_name like upper('$stg%'))) or (status='FULL' and 0 < (select count(*) from volumes where access='READWRITE' and status='FILLING' and stgpool_name like upper('$stg%')))) order by pct_utilized desc" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'MOVEABLE';

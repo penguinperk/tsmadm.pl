@@ -212,6 +212,7 @@ $OS_win = ( $^O eq "MSWin32" ) ? 1 : 0;                     # Is it MS Windows?
     HISTORY   => '\s+-*(archive|archiv|archi|arch|arc)',    #
     VERBOSE   => '\s+-*(verbose|verbos|verbo|verb)',        #
     LISTMODE  => '\s+-*(list)',                             #
+    TABMODE   => '\s+-*(tab)',                              #
         
     SERVERCOMMANDROUTING1 => '(^\s*)([\w_\-\.]+):\s*',      # if you change thsese two regexps don't forget to change in the tsmadm_subroutine.pl
     SERVERCOMMANDROUTING2 => '(^\s*)\(([\w_\-\.]+)\)\s*',   # command routing reservation section
@@ -258,7 +259,7 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     '(WAITING FOR VOLUME)'                                             => 'BOLD RED',
     
     # PATHs
-    '(online=NO)'                                                      => 'BOLD RED',
+    '(ONL=NO)'                                                      => 'BOLD RED',
 );
 
 ##########################################################################################

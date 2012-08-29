@@ -62,8 +62,9 @@ Xeon            = 1 * 100
 
 Xeon2           = 2 *  50
 Xeon4           = 4 *  50
-XeonNehalem4    = 4 *  70
-XeonNehalem6    = 6 *  70
+XeonNehalem4    = 4 *  100
+XeonNehalem6    = 6 *  120
+XeonNehalem8    = 8 *  120
 
 CoreDuo         = 2 *  50
 Core2Duo        = 2 *  50
