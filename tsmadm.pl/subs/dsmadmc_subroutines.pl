@@ -43,7 +43,10 @@ sub runTabdelDsmadmc ( $$ ) {
 sub runDsmadmc ( $ ) {
 
     if ( ! $ParameterRegExpValues{TABMODE} ) {
-	$extraParameters = ( $_[0] =~ m/(\s*q\w*\s+sta\w*|f=d)/ || $ParameterRegExpValues{LISTMODE} ) ? "-DISPLaymode=list" : "";
+	$extraParameters = ( $_[0] =~ m/(\s*q\w*\s+sta\w*|f=d)/ || $ParameterRegExpValues{LISTMODE} ) ? "-DISPLaymode=LISt" : "";
+    }
+    else {
+	$extraParameters = "-DISPLaymode=TABle";
     }
 
     &Dsmadmc( $_[0] );

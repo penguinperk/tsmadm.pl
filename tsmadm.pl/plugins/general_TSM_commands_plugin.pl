@@ -583,7 +583,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
             # this select doesn't work on Lan-FREE
             my $isSessionMediaW = "";
             my @query_sess = grep( /$line[6]/i, &runTabdelDsmadmc( "q session f=d" ) );
-            if ( defined ( $query_sess[0] ) ) {
+            if ( $LastErrorcode == 0 && defined ( $query_sess[0] ) ) {
                 my @tmpline = split ( /\t/, $query_sess[0] );
                 $tmpline[0] =~ s/,//g;
                 $line[10] = "Client ($tmpline[0])";
@@ -591,7 +591,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
             }
             
             my @query_pr = &runTabdelDsmadmc( "select PROCESS,PROCESS_NUM from processes where STATUS like '%$line[6]%'" );
-            if ( defined ( $query_pr[0] ) and $query_pr[0] !~ m/^ANR3604E/ ) {
+            if ( $LastErrorcode == 0 && defined ( $query_pr[0] ) and $query_pr[0] !~ m/^ANR3604E/ ) {
                 my @tmpline = split ( /\t/, $query_pr[0] );
                 if ( $isSessionMediaW eq "MediaW" ) {
                     $line[10] = "$tmpline[0] ($tmpline[1]) + ".$line[10]." MediaW!";
