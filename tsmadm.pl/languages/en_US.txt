@@ -38,6 +38,7 @@ XXXXX=ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP - árvíztűrő tükörfúrógép
 0037E=In the %s. line was a mistake, please see activity log.
 0038E=TSM script %s load failed.
 0050E=No URL found for node %s!
+0051E=This command is available on a version %s TSM Server!
 0099E=%s
 
 # Debug messages

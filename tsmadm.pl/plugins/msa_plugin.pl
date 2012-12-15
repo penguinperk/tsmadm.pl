@@ -122,10 +122,14 @@ $Commands{&commandRegexp( "show", "transverrate" )} = sub {
     }
 
   $LastCommandType = 'ATRANSVERRATE';
-
+  if ( $TSMSeverStatus{VERSION} > 5 ) {
+    &msg("0051E", "5");
+    return 0;
+  }
+    
   my @query = &runTabdelDsmadmc("select entity, schedule_name, SUM(AFFECTED) as NUM_OF_FILES, cast(SUM((END_TIME - START_TIME)) seconds as decimal) as BACKUP_WINDOW_SEC, SUM(CAST((BYTES) as DECIMAL )) as M_BYTES, cast(((SUM(CAST((BYTES/1024/1024 ) as DECIMAL(18,5)))) / (cast(SUM((END_TIME - START_TIME)) seconds as decimal (18,5)))) as DECIMAL(18,0)) as MBsec from summary where schedule_name in (select schedule_name from associations) and (start_time >= current_timestamp - 1 day) and (END_TIME <= current_timestamp - 0 day) group by entity, schedule_name order by MBsec desc", "select_client_speed_from_summary");
   return if ( $#query < 0 );
-    
+  
   if ( $ParameterRegExpValues{HISTORY} ) {
 
         my @archive = &initArchiveRetriever ( 'select_client_speed_from_summary' );

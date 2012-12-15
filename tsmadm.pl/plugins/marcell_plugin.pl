@@ -36,8 +36,11 @@ $Commands{qr/^(show|^sho|^sh)\s+(nodes|node|nod|no)\b\s*(\S*)$/i} = sub {
         # Put your help message here! #
         ###############################
         print "--------\n";
-        print "show node Help!\n";
+        print "show node\n";
         print "--------\n";
+        print "This command creates a simple query with the following columns: Number, NODE_NAME, PLATFORM_NAME, DOMAIN_NAME, TCP_NAME, TCP_ADDRESS\n";
+        print "If you want, you can use this command as a sample to new commands\n";
+        print "\n";
         return 0;
     }
 
@@ -77,7 +80,7 @@ $Commands{qr/^(debug)\s*(\S*)/i} = sub {
         # Put your help message here! #
         ###############################
         print "--------\n";
-        print "show node Help!\n";
+        print "Turn debug messages ON or OFF\n";
         print "--------\n";
         return 0;
     }

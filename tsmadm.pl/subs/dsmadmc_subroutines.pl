@@ -69,6 +69,9 @@ sub Dsmadmc ( $$ ) {
 #Debug
 #print &colorString(  &textLine( "DEBUG: QUERY: [$_[0]] + extra:[$extraParameters]. ", "-" ), "bold red" );
     &msg( "0006D", "$_[0]", "$extraParameters" );
+    if ( defined( $Settings{'DEBUG'} ) && $Settings{'DEBUG'} ) {
+            &universalTextPrinter( "TADM0006D\tCOMMAND DETAILS[CYAN]", "         \t".$_[0] );
+    }
 
     print "<->\r" if ( !defined( $Settings{QUIET} ) );
 
