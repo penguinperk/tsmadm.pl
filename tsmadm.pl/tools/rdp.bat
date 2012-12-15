@@ -4,8 +4,8 @@ echo RDP:// HyperLink - James Clements - james@jjclements.co.uk
 echo ----------------------------------------------------------
 echo.
 echo.
-echo 1. Install SSH Association
-echo 2. Uninstall SSH Association
+echo 1. Install RDP Association
+echo 2. Uninstall RDP Association
 echo 3. Quit
 echo.
 set choice=
