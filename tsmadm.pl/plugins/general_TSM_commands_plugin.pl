@@ -1288,7 +1288,7 @@ $Commands{&commandRegexp( "moveit", "" )} = sub {
 ###############
 # Show TIMIng ##########################################################################################################
 ###############
-&msg( '0110D', 'SHow DISks' );
+&msg( '0110D', 'SHow TIMIng' );
 $Commands{&commandRegexp( "show", "timing" )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
