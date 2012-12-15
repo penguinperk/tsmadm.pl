@@ -278,7 +278,12 @@ sub basicPerformanceFromSummary ( $ ) {
     
     my $activity = $_[0];
     
-    my @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='".$activity."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
+    my @query;
+    if ( $TSMSeverStatus{VERSION} <= 5 ) {
+       @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='".$activity."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
+    } else {
+       @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast(timestampdiff(2,char((END_TIME-START_TIME))) as decimal) from summary where ACTIVITY='".$activity."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
+    }
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'PERFORMANCE';
