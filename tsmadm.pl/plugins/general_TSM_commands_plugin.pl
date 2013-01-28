@@ -486,7 +486,7 @@ $Commands{&commandRegexp( "show", "stgpools" )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select STGPOOL_NAME,DEVCLASS,COLLOCATE,EST_CAPACITY_MB,PCT_UTILIZED,PCT_MIGR,HIGHMIG,LOWMIG,NEXTSTGPOOL from STGPOOLS", 'select_x_from_stgpools' );
+    my @query = &runTabdelDsmadmc( "select STGPOOL_NAME,DEVCLASS,COLLOCATE,EST_CAPACITY_MB,PCT_UTILIZED,PCT_MIGR,HIGHMIG,LOWMIG,RECLAIM,NEXTSTGPOOL from STGPOOLS", 'select_x_from_stgpools' );
     return if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'GENERAL';
@@ -500,11 +500,17 @@ $Commands{&commandRegexp( "show", "stgpools" )} = sub {
       $line[6] = " " if ( ! defined ( $line[6] ) );
       $line[7] = " " if ( ! defined ( $line[7] ) );
       $line[8] = " " if ( ! defined ( $line[8] ) );
-      push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7], $line[8] ) );
+      $line[9] = " " if ( ! defined ( $line[9] ) );
+      
+      $line[5] = "------" if ( $line[5] eq '' );
+      $line[6] = "----" if ( $line[6] eq '' );
+      $line[7] = "---" if ( $line[7] eq '' );
+      
+      push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7], $line[8], $line[9] ) );
     }
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tStgPoolName\tDeviceClass\tColl\tEstCap{RIGHT}\tPctUtil{RIGHT}\tPctMig{RIGHT}\tHigh{RIGHT}\tLow{RIGHT}\tNextStgPool", &addLineNumbers( @printable ) );
+    &universalTextPrinter( "#{RIGHT}\tStgPoolName\tDeviceClass\tColl\tEstCap{RIGHT}\tPctUtil{RIGHT}\tPctMig{RIGHT}\tHigh{RIGHT}\tLow{RIGHT}\tRecl{RIGHT}\tNextStgPool{RIGHT}", &addLineNumbers( @printable ) );
 
     return 0;
 
@@ -1288,7 +1294,7 @@ $Commands{&commandRegexp( "moveit", "" )} = sub {
 ###############
 # Show TIMIng ##########################################################################################################
 ###############
-&msg( '0110D', 'SHow TIMIng' );
+&msg( '0110D', 'SHow DISks' );
 $Commands{&commandRegexp( "show", "timing" )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
@@ -1458,6 +1464,41 @@ sub fill_bar ( $$$$ ) {
         @$r_array[$i] = $value;
     }
 }
+
+########################################################################################################################
+
+#################
+# SHow INActive ########################################################################################################
+#################
+&msg( '0110D', 'SHow INActive' );
+$Commands{&commandRegexp( "show", "inactive" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow INActive Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    $LastCommandType = 'GENERAL';
+
+    my $days = 15;
+    $days = $1 if ( defined $3 && $3 =~ m/(\d+)/ );    
+    
+    my @query = &runTabdelDsmadmc('select domain_name, node_name,locked,date(lastacc_time),date(days(CURRENT_DATE))-date(LASTACC_TIME) from nodes where cast((current_timestamp-lastacc_time)days as decimal) >= '.$days.' order by 5 desc');
+    return if ( $#query < 0 || $LastErrorcode );
+    
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "DomainName\tNodeName\tLocked?\tLastAccessTime\tDays", @query );
+
+    return 0;
+};
 
 ########################################################################################################################
 
