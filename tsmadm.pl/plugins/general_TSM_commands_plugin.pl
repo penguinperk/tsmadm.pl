@@ -181,7 +181,7 @@ $Commands{&commandRegexp( "show", "scratches" )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME, count(*) from libvolumes where upper(status)='SCRATCH' group by LIBRARY_NAME", "select_lib_scratches_from_libvolumes" );
+    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME, MEDIATYPE, count(*) from libvolumes where upper(status)='SCRATCH' group by LIBRARY_NAME,MEDIATYPE", "select_lib_scratches_from_libvolumes" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'GENERAL';
@@ -193,9 +193,32 @@ $Commands{&commandRegexp( "show", "scratches" )} = sub {
 
         while ( 1 ) {
 
+            my $i = 1;
+            my @printable;
+            my %librarysumma;
+            
+            foreach ( @archive ) {
+                my @line = split ( /\t/ );
+                              
+                $librarysumma{$line[0]} += $line[2];
+                
+                &pbarUpdate( $i++ );
+            }    
+        
+            &pbarInit( "PREPARATION 2|", scalar( @query ), "|");    
+            $i = 1;
+        
+            foreach ( @archive ) {
+                my @line = split ( /\t/ );
+                       
+                push ( @printable, join( "\t", $line[0], $line[1], $librarysumma{$line[0]}."/".$line[2] ) );
+                
+                &pbarUpdate( $i++ );
+            }        
+            
             &setSimpleTXTOutput();
-            &universalTextPrinter( "LibraryName\t#Scratch{RIGHT}", @archive );
-
+            &universalTextPrinter( "LibraryName\tType\t#Scratch{RIGHT}", @printable );
+                    
             @archive = &archiveRetriever();
             last if ( $#archive < 0 );
 
@@ -204,8 +227,33 @@ $Commands{&commandRegexp( "show", "scratches" )} = sub {
     }
     else {
 
+        &pbarInit( "PREPARATION 1|", scalar( @query ), "|");
+    
+        my $i = 1;
+        my @printable;
+        my %librarysumma;
+        
+        foreach ( @query ) {
+            my @line = split ( /\t/ );
+                          
+            $librarysumma{$line[0]} += $line[2];
+            
+            &pbarUpdate( $i++ );
+        }    
+    
+        &pbarInit( "PREPARATION 2|", scalar( @query ), "|");    
+        $i = 1;
+    
+        foreach ( @query ) {
+            my @line = split ( /\t/ );
+                   
+            push ( @printable, join( "\t", $line[0], $line[1], $librarysumma{$line[0]}."/".$line[2] ) );
+            
+            &pbarUpdate( $i++ );
+        }        
+        
         &setSimpleTXTOutput();
-        &universalTextPrinter( "LibraryName\t#Scratch{RIGHT}", @query );
+        &universalTextPrinter( "LibraryName\tType\t#Scratch{RIGHT}", @printable );
 
     }
 
