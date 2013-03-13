@@ -337,7 +337,7 @@ sub msg ( $@ ) {
                 "$Dirname/languages/" . $Settings{LANGUAGE} . ".txt" );
         }
         splice( @_, 0, 1 );
-        @messageParameters = @_ if ( defined(@_) );
+        @messageParameters = @_ if ( @_ );
     }
     else {
         &msg( "0001E", "&msg" );
@@ -1295,7 +1295,7 @@ sub getPassword ()
 sub addLineNumbers(@)
 {
     &msg( "0004D", "addLineNumbers" );
-    if ( !defined(@_) )
+    if ( ! @_ )
     {
         &msg( "0001E", "addLineNumbers" );
         return 1;
