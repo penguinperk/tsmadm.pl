@@ -90,6 +90,8 @@ sub Dsmadmc ( $$ ) {
     $serverCommandRouting .= $ParameterRegExpValues{SERVERCOMMANDROUTING2} if ( defined $ParameterRegExpValues{SERVERCOMMANDROUTING2} );
     $serverCommandRouting = '('.$serverCommandRouting.') ' if ( $serverCommandRouting ne '' );
 
+    &msg( "0020D", $serverCommandRouting );
+    
     if ( $OS_win ) {
         $ENV{"DSM_DIR"} = $Settings{DSM_DIR}
           if ( defined( $Settings{DSM_DIR} ) );

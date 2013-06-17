@@ -80,7 +80,7 @@ $Commands{&commandRegexp( "show", "backupperformance", 2, 7 )} = sub {
         return 0;
     }
 
-    &basicPerformanceFromSummary( 'STGPOOL BACKUP' );
+    &basicPerformanceFromSummary( 'STGPOOL BACKUP', $3, $4 );
 
     return 0;
 
@@ -105,7 +105,7 @@ $Commands{&commandRegexp( "show", "movedataperformance", 2, 9 )} = sub {
         return 0;
     }
 
-    &basicPerformanceFromSummary( 'MOVE DATA' );
+    &basicPerformanceFromSummary( 'MOVE DATA', $3, $4 );
 
     return 0;
 
@@ -130,7 +130,7 @@ $Commands{&commandRegexp( "show", "migrationperformance", 2, 10 )} = sub {
         return 0;
     }
 
-    &basicPerformanceFromSummary( 'MIGRATION' );
+    &basicPerformanceFromSummary( 'MIGRATION', $3, $4 );
 
     return 0;
 
@@ -155,7 +155,7 @@ $Commands{&commandRegexp( "show", "reclamationperformance", 2, 12 )} = sub {
         return 0;
     }
 
-    &basicPerformanceFromSummary( 'RECLAMATION' );
+    &basicPerformanceFromSummary( 'RECLAMATION', $3, $4 );
 
     return 0;
 
@@ -180,7 +180,7 @@ $Commands{&commandRegexp( "show", "clientbackupperformance", 2, 13 )} = sub {
         return 0;
     }
 
-    &basicPerformanceFromSummary( 'BACKUP' );
+    &basicPerformanceFromSummary( 'BACKUP', $3, $4 );
 
     return 0;
 
@@ -205,7 +205,7 @@ $Commands{&commandRegexp( "show", "clientrestoreperformance", 2, 13 )} = sub {
         return 0;
     }
 
-    &basicPerformanceFromSummary( 'RESTORE' );
+    &basicPerformanceFromSummary( 'RESTORE', $3, $4 );
 
     return 0;
 
@@ -230,7 +230,7 @@ $Commands{&commandRegexp( "show", "clientarchiveperformance", 2, 13 )} = sub {
         return 0;
     }
 
-    &basicPerformanceFromSummary( 'ARCHIVE' );
+    &basicPerformanceFromSummary( 'ARCHIVE', $3, $4 );
 
     return 0;
 
@@ -255,13 +255,13 @@ $Commands{&commandRegexp( "show", "clientretrieveperformance", 2, 13 )} = sub {
         return 0;
     }
 
-    &basicPerformanceFromSummary( 'RETRIEVE' );
+    &basicPerformanceFromSummary( 'RETRIEVE', $3, $4 );
 
     return 0;
 
 };
 
-sub basicPerformanceFromSummary ( $ ) {
+sub basicPerformanceFromSummary ( $$$ ) {
 
     # ARCHIVE           Ok
     # BACKUP            Ok
@@ -277,12 +277,18 @@ sub basicPerformanceFromSummary ( $ ) {
     # TAPE MOUNT
     
     my $activity = $_[0];
+       
+    my $today = $_[1];
+    my $fromday = $_[2];
     
+    $today = 1 if ( ! defined $today || $today eq '' );
+    $fromday = 0 if ( ! defined $fromday || $fromday eq '' );
+        
     my @query;
     if ( $TSMSeverStatus{VERSION} <= 5 ) {
-       @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='".$activity."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
+       @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast((END_TIME-START_TIME) seconds as decimal) from summary where ACTIVITY='".$activity."' and (start_time >= current_timestamp - $today day) and (end_time <= current_timestamp - $fromday day)" );
     } else {
-       @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast(timestampdiff(2,char((END_TIME-START_TIME))) as decimal) from summary where ACTIVITY='".$activity."' and (start_time >= current_timestamp - 1 day) and (end_time <= current_timestamp - 0 day)" );
+       @query = &runTabdelDsmadmc( "select date(START_TIME),time(START_TIME),date(END_TIME),time(END_TIME),NUMBER,ENTITY,SCHEDULE_NAME,EXAMINED,AFFECTED,FAILED,BYTES,IDLE,MEDIAW,PROCESSES,SUCCESSFUL,cast(timestampdiff(2,char((END_TIME-START_TIME))) as decimal) from summary where ACTIVITY='".$activity."' and (start_time >= current_timestamp - $today day) and (end_time <= current_timestamp - $fromday day)" );
     }
     return 0 if ( $#query < 0 || $LastErrorcode );
 
@@ -324,12 +330,14 @@ sub basicPerformanceFromSummary ( $ ) {
         my $failed  = ( $line[9] > 0 ) ? &colorString( $line[9], 'BOLD RED') : $line[9];
         my $success = ( $line[14] eq 'NO' ) ? &colorString( $line[14], 'BOLD RED') : $line[14];
         
+        $line[12] = ( $line[12] > 600 ) ? &colorString( &timeFormatter ( $line[12], 's' ), 'BOLD RED') : &timeFormatter ( $line[12], 's' );
+        
         $line[5] =~ m/(.+) ->/;
         $line[5] = ( ' ' x ( $max - length( $1 ) ) ).$line[5];
         
         $line[5] =~ s/(\w+) ->/\[$1\] ->/ if ( $activity eq "MOVE DATA" ) ;
         
-        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), &timeFormatter ( $line[12], 's' ), $line[13], $success ) );
+        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), $line[12], $line[13], $success ) );
        
     }
     
@@ -548,7 +556,8 @@ $Commands{&commandRegexp( "show", "status", 2, 3 )} = sub {
         $dbLastBackupHour = &timeFormatter ( $dbLastBackupHour, "H" );
         push ( @printable, " Last DBBackup\t$dbLastBackupHour\t$DBBackupStatus") if ( defined $dbLastBackupHour );
     
-        @query = &runTabdelDsmadmc( "select '['||VOLUME_NAME||']', BACKUP_SERIES, hour(current_timestamp-DATE_TIME) from volhistory where type='BACKUPFULL' order by BACKUP_SERIES desc" );
+        #@query = &runTabdelDsmadmc( "select '['||VOLUME_NAME||']', BACKUP_SERIES, hour(current_timestamp-DATE_TIME) from volhistory where type='BACKUPFULL' order by BACKUP_SERIES desc" );
+        @query = &runTabdelDsmadmc( "select VOLUME_NAME, BACKUP_SERIES, hour(current_timestamp-DATE_TIME) from volhistory where type='BACKUPFULL' order by BACKUP_SERIES desc" );
         return 0 if ( $#query < 0 || $LastErrorcode );
         
         my ( $DBLastFull, $dbLastSeq, $dbLastFullBackupHour ) = ( split( /\t/, $query[0] ) );
@@ -1005,9 +1014,11 @@ $Commands{&commandRegexp( "show", "moveable", 2, 5 )} = sub {
         return 0;
     }
 
-    my ( $stg, $pct ) = split ( / /, $3 );
+    my $stg = $3;
+    my $pct = $4;
+    
     $stg = '' if ( ! defined $stg );
-    $pct = 30 if ( ! defined $pct );
+    $pct = 30 if ( ! defined $pct || $pct eq '' );
    
     my @query = &runTabdelDsmadmc( "select stgpool_name, volume_name, pct_utilized, status from volumes where stgpool_name in (select stgpool_name from stgpools where devclass in (select DEVCLASS_NAME from DEVCLASSES where WORM='NO' and DEVCLASS_NAME!='DISK')) and access='READWRITE' and stgpool_name like upper('$stg%') and pct_utilized <= $pct and ((status='FILLING' and 1 < (select count(*) from volumes where access='READWRITE' and status='FILLING' and stgpool_name like upper('$stg%'))) or (status='FULL' and 0 < (select count(*) from volumes where access='READWRITE' and status='FILLING' and stgpool_name like upper('$stg%')))) order by pct_utilized desc" );
     return 0 if ( $#query < 0 || $LastErrorcode );

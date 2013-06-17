@@ -38,7 +38,6 @@ XXXXX=ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP - árvíztűrő tükörfúrógép
 0037E=In the %s. line was a mistake, please see activity log.
 0038E=TSM script %s load failed.
 0050E=No URL found for node %s!
-0051E=This command is available on a version %s TSM Server!
 0099E=%s
 
 # Debug messages
@@ -60,6 +59,8 @@ XXXXX=ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP - árvíztűrő tükörfúrógép
 #0018I=Debug flag is turned %s.
 0018I=Debug turned %s.
 0019I=Your terminal is: %s.
+0020D=DSMADMC Command routing to: %s
+0050D=REGEXP: %s.
 0060D=Alias %s="%s" defined.
 0110D=COMMAND: '%s' defined.
 0111D=LOADING: [%s] plugin.

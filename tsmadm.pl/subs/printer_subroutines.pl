@@ -332,8 +332,10 @@ sub universalTextPrinter ( @ )
     foreach ( &grepIt(@result) )
     {
         chomp;
-        
-        my @line = split( /\t/, $_ );
+
+        # message based highlight 
+        my @line = split( /\t/, &globalHighlighter( $_ ) );
+               
         my $j = 0;
         my $beforeLast      = "" ;
         my $beforeLastEmpty = "" ;
@@ -360,11 +362,9 @@ sub universalTextPrinter ( @ )
 
 #			if ($printableField =~ m/$grep/ ) {$printableField = colorString($printableField,"RED");} ## whole line grep
 #			if ($printableField =~ m/$grep/ ) {my $cgrep = colorString($grep,"RED") ;$printableField =~ s/$grep/$cgrep/;} ## highlighter GREP
-            if (    defined( $ParameterRegExpValues{HIGHLIGHT} )
-                 && $ParameterRegExpValues{HIGHLIGHT} ne ""
-                 && $printableField =~ m/$ParameterRegExpValues{HIGHLIGHT}/ )
+            
+            if (    defined( $ParameterRegExpValues{HIGHLIGHT} ) && $ParameterRegExpValues{HIGHLIGHT} ne "" && $printableField =~ m/$ParameterRegExpValues{HIGHLIGHT}/ )
             {
-
                 #				my $chighlighter = sprintf (colorString($1,"RED"));
                 my $chighlighter =
                   &colorString( $ParameterRegExpValues{HIGHLIGHT}, $Settings{HIGHLIGHTCOLOR} );

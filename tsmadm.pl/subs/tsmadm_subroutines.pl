@@ -473,8 +473,7 @@ sub colorString( $$ ) {
 	}
         # return  colored( $string, $color );
         if ( defined( $Settings{DEFAULTCOLOR} ) ) {
-            return colored( $string, $color )
-              . sprintf( color $Settings{DEFAULTCOLOR} );
+            return colored( $string, $color ).sprintf( color $Settings{DEFAULTCOLOR} );
         }
         else {
             return colored( $string, $color );
@@ -954,27 +953,50 @@ sub colorizeLine ( $$$ ) {
 	 # find the previous color
 	my $previousColor = "";
 
-#print "LINE: $line".&colorLength($line)."\n";
-#print "PATT: $pattern".&colorLength($pattern)."\n";
-
+	&msg( "0050D", "LINE1: $line ".&colorLength($line) );
+	&msg( "0050D", "REGEXP: $regexp" );
+	&msg( "0050D", "PATT: $pattern ".&colorLength($pattern) );
+	
+        if ( $pattern =~ m/\@COLORIZE\[\d+\]/ ) {
+           last;
+        }
+	
 	# fix the regexp path with '\' and the escape sec \[
 	$pattern =~ s/\\/\\\\/g;
 	$pattern =~ s/\[/\\\[/g;
 
-	if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*$pattern/ )
+	#if ( $line =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*$pattern/ )
+	#{
+	#    $previousColor = $1;
+	#}
+
+	# ez itt nem jó, mert nem csak a pattern-t kell kicserélni, hanem rendesen a regexp alapján
+	#$line =~ s/$pattern/\@COLORIZE\[$i\]/;
+	# ez lett helyette 20130614
+	my $tmpregexp = $regexp;
+	&msg( "0050D", "TMPREGEXP1: $tmpregexp" );
+	$tmpregexp =~ s/^(.*?)\(/\($1\)\(/;
+	$tmpregexp =~ s/^(.*)\)(.*)$/$1\)\($2\)/;
+	&msg( "0050D", "TMPREGEXP2: $tmpregexp" );
+	my $tmpstring = "\@COLORIZE\[$i\]";
+	$line =~ s/$tmpregexp/$1$tmpstring$3/;
+	&msg( "0050D", "LINE2: $line" );
+		
+	if ( $1 =~ m/(\e\[\d+;*\d*m)([^\e]+|\e(?!\[\d+;*\d*m))*\@COLORIZE\[$i\]/ )
 	{
 	    $previousColor = $1;
 	}
-
-	$line =~ s/$pattern/COLORIZE\[$i\]/;
+	
 	$save[$i] = $coloredString.$previousColor;
 
+	&msg( "0050D", "SAVEDPATTERN: $save[$i]" );
+	
 	$i++;
 
     }
 
     # restore everything
-    while ( $line =~ m/COLORIZE\[(\d+)\]/ ) {
+    while ( $line =~ m/\@COLORIZE\[(\d+)\]/ ) {
 
 	my $index=$1;
 
@@ -985,7 +1007,7 @@ sub colorizeLine ( $$$ ) {
 #	$justcolor =~ s/\e\[0m//;
 #	$coloredString =~ s/\e\[0m(.+)/$justcolor$1/g; 
 	
-	$line =~ s/COLORIZE\[$index\]/$coloredString/;
+	$line =~ s/\@COLORIZE\[$index\]/$coloredString/;
 
     }
 	

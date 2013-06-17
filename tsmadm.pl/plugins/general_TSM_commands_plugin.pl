@@ -76,7 +76,9 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
 
     foreach ( @query ) {
         my @line = split ( /\t/ );
-        $line[2] = &timeFormatter ( $line[2], 's' );
+        
+        $line[2] = ( $line[2] > 600 ) ? &colorString( &timeFormatter ( $line[2], 's' ), "BOLD RED" ) : &timeFormatter ( $line[2], 's' );
+        
         $line[3] = &byteFormatter ( $line[3], 'B' );
         $line[4] = &byteFormatter ( $line[4], 'B' );
 
@@ -84,20 +86,22 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
         $line[9] = "" if ( ! defined ( $line[9] ) );
 
         my $mediaAccess = $line[8].$line[9].$line[10].$line[11].$line[12].$line[13].$line[14];
+                
         my $mediaAccessExtra = '';
         
         if ( $line[8] ne '' ) {
             $mediaAccessExtra = 'w';
         }
         elsif ( $line[9].$line[10].$line[11] ne '' ) {
-            $mediaAccessExtra = 'I';
+            $mediaAccessExtra = 'Read';
         }
         elsif ( $line[12].$line[13].$line[14] ne '' ) {
-            $mediaAccessExtra = 'O';
+            $mediaAccessExtra = 'Write';
         }
         
         if ( $mediaAccess =~ m/(\w*),(\w+),(\d+)/ ) {
-            $mediaAccess = "\[$2\] $1, ".&timeFormatter ( $3, 's' );    
+            my $secondmatch = ( $1 eq '' ) ? '' : "+[$1]";
+            $mediaAccess = "\[".&colorString( $2, "BOLD GREEN" )."\]".$secondmatch.", ".&timeFormatter ( $3, 's' );    
         }
         $mediaAccess = $mediaAccessExtra.$mediaAccess;
         
@@ -180,7 +184,11 @@ $Commands{&commandRegexp( "show", "scratches" )} = sub {
 
         return 0;
     }
-
+  
+    if ( defined( $Settings{LIBRARYMANAGER} ) ) {
+        $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $Settings{LIBRARYMANAGER};
+    } 
+        
     my @query = &runTabdelDsmadmc( "select LIBRARY_NAME, MEDIATYPE, count(*) from libvolumes where upper(status)='SCRATCH' group by LIBRARY_NAME,MEDIATYPE", "select_lib_scratches_from_libvolumes" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
@@ -491,7 +499,7 @@ $Commands{&commandRegexp( "show", "disks" )} = sub {
         return 0;
     }
 
-    my @query = grep( /DISK/, &runTabdelDsmadmc( "select STGPOOL_NAME,DEVCLASS,EST_CAPACITY_MB,PCT_UTILIZED,PCT_MIGR,HIGHMIG,LOWMIG,NEXTSTGPOOL from STGPOOLS", 'select_x_from_stgpools' ) );
+    my @query = &runTabdelDsmadmc( "select STGPOOL_NAME,DEVCLASS,EST_CAPACITY_MB,PCT_UTILIZED,PCT_MIGR,HIGHMIG,LOWMIG,NEXTSTGPOOL from STGPOOLS where DEVCLASS='DISK'", 'select_x_from_stgpools' );
     return if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'GENERAL';
@@ -502,6 +510,14 @@ $Commands{&commandRegexp( "show", "disks" )} = sub {
       my @line = split ( /\t/ );
       $line[1] = &byteFormatter ( $line[1], 'MB' );
       $line[6] = " " if ( ! defined ( $line[6] ) );
+      
+      if ( $line[3] >= 40 && $line[3] <= 80 ) {
+        $line[3] = &colorString( "$line[3]", "BOLD YELLOW" );
+      }
+      elsif ( $line[3] > 80 ) {
+        $line[3] = &colorString( "$line[3]", "BOLD RED" );
+      }
+            
       push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6] ) );
     }
 
@@ -549,6 +565,27 @@ $Commands{&commandRegexp( "show", "stgpools" )} = sub {
       $line[7] = " " if ( ! defined ( $line[7] ) );
       $line[8] = " " if ( ! defined ( $line[8] ) );
       $line[9] = " " if ( ! defined ( $line[9] ) );
+      
+      if ( $line[1] eq 'DISK' ) {
+
+        if ( $line[5] >= 40 && $line[5] <= 80 ) {
+          $line[5] = &colorString( "$line[5]", "BOLD YELLOW" );
+        }
+        elsif ( $line[5] > 80 ) {
+          $line[5] = &colorString( "$line[5]", "BOLD RED" );
+        }
+        
+      }
+      else {
+        
+        if ( $line[4] >= 80 && $line[4] <= 90 ) {
+          $line[4] = &colorString( "$line[4]", "BOLD YELLOW" );
+        }
+        elsif ( $line[4] > 90 ) {
+          $line[4] = &colorString( "$line[4]", "BOLD RED" );
+        }
+        
+      }
       
       $line[5] = "------" if ( $line[5] eq '' );
       $line[6] = "----" if ( $line[6] eq '' );
@@ -631,8 +668,8 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
             
             # route the command if it necessary
             $ParameterRegExpValues{SERVERCOMMANDROUTING1} = '';
-            $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $line[7] if ( defined ($line[7]) && $TSMSeverStatus{SERVERNAME} ne $line[7] );
-            
+            $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $line[7] if ( defined ( $line[7]) && $TSMSeverStatus{SERVERNAME} ne $line[7] );
+
             # my @query_sess = &runTabdelDsmadmc( "select SESSION_ID from sessions where INPUT_MOUNT_WAIT like '%$line[6]%' or INPUT_VOL_WAIT like '%$line[6]%' or INPUT_VOL_ACCESS like '%$line[6]%' or OUTPUT_MOUNT_WAIT like '%$line[6]%' or OUTPUT_VOL_WAIT like '%$line[6]%' or OUTPUT_VOL_ACCESS like '%$line[6]%'" );
             # this select doesn't work on Lan-FREE
             my $isSessionMediaW = "";
@@ -655,8 +692,9 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
                 }
                 
             }
-                                    
-            $line[6] = '['.$line[6].']';
+             
+            # message based highlighter v3
+            #$line[6] = '['.$line[6].']';
             
         }
         
@@ -665,6 +703,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
         $line[4]  = " " if ( ! defined ( $line[4] ) );
         $line[5]  = " " if ( ! defined ( $line[5] ) );
         $line[6]  = " " if ( ! defined ( $line[6] ) );
+        
         $line[7]  = " " if ( ! defined ( $line[7] ) );
         $line[8]  = " " if ( ! defined ( $line[8] ) );
         $line[9]  = " " if ( ! defined ( $line[9] ) );

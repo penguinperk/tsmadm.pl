@@ -233,18 +233,20 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     # errors and warnings
 #    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'                       => 'BOLD BLUE',
 #    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'                       => 'BOLD YELLOW',
-    '(AN[ER]\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}]*)'                       => 'BOLD RED',
-    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}]*)'                          => 'BOLD YELLOW',
+    '(AN[ER]\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'                       => 'BOLD RED',
+    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'                          => 'BOLD YELLOW',
+#    '(AN[ER]\d\d\d\dE)'                       => 'BOLD RED',
+#    '(ANR\d\d\d\dW)'                          => 'BOLD YELLOW',
 
     # volumes
-    '[^A-Z0-9]([A-Z]{1}[0-9]{5})[^A-Z0-9_]'                            => 'BOLD GREEN',
-    '[^A-Z0-9]([A-Z]{3}[0-9]{3})[^A-Z0-9_]'                            => 'BOLD GREEN',
-    '[^A-Z0-9]([A-Z,0-9]{6}J[ABXW])[^A-Z0-9_]'                         => 'BOLD GREEN',
-    '[^A-Z0-9]([A-Z,0-9]{6}L[12345])[^A-Z0-9_]'                        => 'BOLD GREEN',
+    #'[^A-Z0-9]([A-Z]{1}[0-9]{5})[^A-Z0-9_]'                            => 'BOLD GREEN',
+    #'[^A-Z0-9]([A-Z]{3}[0-9]{3})[^A-Z0-9_]'                            => 'BOLD GREEN',
+    #'[^A-Z0-9]([A-Z,0-9]{6}J[ABXW])[^A-Z0-9_]'                         => 'BOLD GREEN',
+    #'[^A-Z0-9]([A-Z,0-9]{6}L[12345])[^A-Z0-9_]'                        => 'BOLD GREEN',
     
-    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.BFS\.?[0-9]{0,9})' => 'BOLD GREEN',
-    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.DBB\.?[0-9]{0,9})' => 'BOLD GREEN',
-    '[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.DBV\.?[0-9]{0,9})' => 'BOLD GREEN',
+    #'[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.BFS\.?[0-9]{0,9})' => 'BOLD GREEN',
+    #'[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.DBB\.?[0-9]{0,9})' => 'BOLD GREEN',
+    #'[^A-Za-z0-9\.\\\/]([A-Za-z_\.\-0-9:\\\/\e\[\;]+\.DBV\.?[0-9]{0,9})' => 'BOLD GREEN',
 
     # sessions
     '(MediaW)'                                                         => 'BOLD RED',
@@ -252,14 +254,32 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     '(Waiting for multiple mount points in device class \w*)'          => 'BOLD YELLOW',
     '(Waiting for mount point in device class \w*)'                    => 'BOLD YELLOW',
     '(Waiting for mount of output volume \w*)'                         => 'BOLD YELLOW',
+    '(Waiting for mount of input volume \w*)'                         => 'BOLD YELLOW',
     
     # mounts
     '(RESERVED)'                                                       => 'BOLD YELLOW',
     '(DISMOUNTING)'                                                    => 'BOLD YELLOW',
     '(WAITING FOR VOLUME)'                                             => 'BOLD RED',
-    
+
     # PATHs
-    '(ONL=NO)'                                                      => 'BOLD RED',
+    '(ONL=NO)'                                                         => 'BOLD RED',
+
+    # message based highlighting v3
+    'Last Full Volume\t(\w{6,8})\t'                                    => 'BOLD GREEN',
+
+    #'\d+\t\w+\t\w+\tONL=\w+\t\d+\t\w+\t\d+\t(\w{6,8})'                 => 'BOLD GREEN',
+    '\d+\t\w+\t\w+\tONL=\w+\t\d+\t\w+\t\d+\t(\w{6,8})\t'               => 'BOLD GREEN',
+    #'\d\d\d\d\-\d\d\-\d\d\t\d\d\:\d\d\:\d\d\t(\w)' => 'BOLD GREEN',
+    
+    'Current output volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'              => 'BOLD GREEN',
+    'Current input volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'               => 'BOLD GREEN',
+    'Volume ([A-Za-z_\.\-0-9:\\\/{}]+)'                                => 'BOLD GREEN',
+    
+    
+    'Examined (\d+) objects, deleting'                                 => 'BOLD GREEN',
+    'objects, deleting (\d+) backup objects,'                          => 'BOLD GREEN',
+    'backup objects, (\d+) archive objects,'                           => 'BOLD GREEN',
+        
 );
 
 ##########################################################################################
