@@ -184,9 +184,10 @@ $Commands{&commandRegexp( "show", "scratches" )} = sub {
 
         return 0;
     }
-  
-    if ( defined( $Settings{LIBRARYMANAGER} ) ) {
+      
+    if ( defined( $Settings{LIBRARYMANAGER} ) && $TSMSeverStatus{SERVERNAME} ne $Settings{LIBRARYMANAGER} ) {
         $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $Settings{LIBRARYMANAGER};
+        &msg( '0040I', $Settings{LIBRARYMANAGER} );
     } 
         
     my @query = &runTabdelDsmadmc( "select LIBRARY_NAME, MEDIATYPE, count(*) from libvolumes where upper(status)='SCRATCH' group by LIBRARY_NAME,MEDIATYPE", "select_lib_scratches_from_libvolumes" );
@@ -625,9 +626,17 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
 
     $LastCommandType = 'DRIVE';
 
+    if ( defined( $Settings{LIBRARYMANAGER} ) && $TSMSeverStatus{SERVERNAME} ne $Settings{LIBRARYMANAGER} ) {
+        $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $Settings{LIBRARYMANAGER};
+    }
+        
     my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'ONL='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,VOLUME_NAME,ALLOCATED_TO from drives" );
     return if ( $#query < 0 || $LastErrorcode );
 
+    if ( defined( $Settings{LIBRARYMANAGER} ) && $TSMSeverStatus{SERVERNAME} ne $Settings{LIBRARYMANAGER} ) {
+        $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $Settings{LIBRARYMANAGER};
+    }
+    
     # István added it
     my @query_m = &runDsmadmc( "q mount" );
     chomp( @query_m );
@@ -695,6 +704,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
              
             # message based highlighter v3
             #$line[6] = '['.$line[6].']';
+            $line[6] = &colorString( $line[6], "BOLD GREEN" );;
             
         }
         

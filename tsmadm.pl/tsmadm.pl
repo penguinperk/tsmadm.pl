@@ -8,13 +8,17 @@
 #    \__|___/_| |_| |_|\__,_|\__,_|_| |_| |_| (_) | .__/|_|
 #                                                 |_|
 #              Visit at: http://www.tsmadm.pl/
-#
+#              FYI: I stopped paying for the domain so there is no webpage from 201306. Sorry fro this.
 
 # tsmadm.pl is an open source multi platform really task oriented IBM Tivoli Storage Manager command line interface
 #
 # Designed by _flex and Marcell
 # Written by _flex from FleXoft and Marcell.
 #   (flex@tsmadm.pl) (marcell@tsmadm.pl)
+#
+# v3.00, 2013.06.18. Budapest, FleXoft
+#	Add:	improved version
+#       Txt:    start v3
 #
 # v2.00, 2012.01.01. Budapest, FleXoft
 #	Add:	improved version
@@ -76,7 +80,8 @@ our $HistoryPointer = 0;
 
 # load perl modules
 use Time::Local;
-use Getopt::Long;
+#use Getopt::Long;
+use Getopt::Long qw(GetOptionsFromArray);
 use File::Path;
 use File::Spec;
 use File::Spec::Functions;
@@ -233,8 +238,8 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     # errors and warnings
 #    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'                       => 'BOLD BLUE',
 #    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'                       => 'BOLD YELLOW',
-    '(AN[ER]\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'                       => 'BOLD RED',
-    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'                          => 'BOLD YELLOW',
+    '(AN[ER]\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'        => 'BOLD RED',
+    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'           => 'BOLD YELLOW',
 #    '(AN[ER]\d\d\d\dE)'                       => 'BOLD RED',
 #    '(ANR\d\d\d\dW)'                          => 'BOLD YELLOW',
 
@@ -268,13 +273,19 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     'Last Full Volume\t(\w{6,8})\t'                                    => 'BOLD GREEN',
 
     #'\d+\t\w+\t\w+\tONL=\w+\t\d+\t\w+\t\d+\t(\w{6,8})'                 => 'BOLD GREEN',
-    '\d+\t\w+\t\w+\tONL=\w+\t\d+\t\w+\t\d+\t(\w{6,8})\t'               => 'BOLD GREEN',
+    #'\d+\t\w+\t\w+\tONL=\w+\t\d+\t\w+\t\d+\t(\w{6,8})\t'               => 'BOLD GREEN',
     #'\d\d\d\d\-\d\d\-\d\d\t\d\d\:\d\d\:\d\d\t(\w)' => 'BOLD GREEN',
-    
+        
     'Current output volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'              => 'BOLD GREEN',
+    'Current output volume(s): ([A-Za-z_\.\-0-9:\\\/{}]+)\.'           => 'BOLD GREEN',    
     'Current input volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'               => 'BOLD GREEN',
-    'Volume ([A-Za-z_\.\-0-9:\\\/{}]+)'                                => 'BOLD GREEN',
     
+    'ANR8329I .+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) is mounted'         => 'BOLD GREEN',
+    'ANR8330I .+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) is mounted'         => 'BOLD GREEN',
+    'ANR8331I .+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) is mounted'         => 'BOLD GREEN',
+    
+        
+    'Volume ([A-Za-z_\.\-0-9:\\\/{}]+)'                                => 'BOLD GREEN',
     
     'Examined (\d+) objects, deleting'                                 => 'BOLD GREEN',
     'objects, deleting (\d+) backup objects,'                          => 'BOLD GREEN',
@@ -478,7 +489,7 @@ $LastCommandType = 'NOCOMMANDS';
 
 # Welcome message
 print colorString( "", $Settings{DEFAULTCOLOR} );
-&msg( '0000C', &colorString( "tsmadm.pl v" . $tsmadmplVersion, 'BOLD WHITE' ) );
+&msg( '0000C', &colorString( "tsmadm.pl ", 'WHITE' ).&colorString( 'v'.$tsmadmplVersion, 'BOLD WHITE' ) );
 
 # colortest only
 if ( defined($colortestFlag) ) {
@@ -527,6 +538,8 @@ if ( defined($colortestFlag) ) {
     exit 99;
 }
 
+Getopt::Long::Configure("pass_through");
+
 # load plugins
 &reLoadPlugins();
 
@@ -570,7 +583,7 @@ else {
 
 # End summary
 &msg( '9900I', &colorString( &msgSpentTime( time - $starttime ), 'BOLD WHITE' ) );
-&msg( '9901I', &colorString( 'http://tsmadm.pl/', 'BOLD BLUE ON_WHITE' ) );
+&msg( '9901I', &colorString( 'http://tsmadm.pl/', 'BOLD GREEN' ) );
 &msg( '9999I' );
 
 __END__

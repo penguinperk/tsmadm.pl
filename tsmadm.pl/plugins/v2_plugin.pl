@@ -370,7 +370,40 @@ $Commands{&commandRegexp( "show", "activity" )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( 'q actlog '.$3.' '.$4.' '.$5.' '.$6.' '.$7.' '.$8 );
+    # prepare options for Getopt
+    my $errorsFlag;
+    my $warningsFlag;
+    #
+    my %commandlineParameters = ( "errors"              => \$errorsFlag,
+                                  "warnings"            => \$warningsFlag,
+                                );
+
+    my @myopts = ( $3,$4,$5,$6,$7,$8 );
+
+    if ( !GetOptionsFromArray( \@myopts, %commandlineParameters ) ) {
+      print "GetOptionsFromArray Error!\n";
+    }
+      
+    GetOptionsFromArray( \@myopts, %commandlineParameters );    
+    
+    my @query;
+    if ( ( defined ( $errorsFlag ) && $errorsFlag ne '' ) || ( defined ( $warningsFlag ) && $warningsFlag ne '' ) ) {
+        
+        if ( $errorsFlag ) {
+            @query = &runTabdelDsmadmc( 'q actlog search=ANR????E '.join( ' ', @myopts ) );
+        }
+        
+        if ( $warningsFlag ) {
+            @query = ( @query, &runTabdelDsmadmc( 'q actlog search=ANR????W '.join( ' ', @myopts ) ) );
+        }
+    
+        @query = sort ( grep ( !/QUERY ACTLOG search=ANR/, @query ) );
+        
+    }
+    else {
+      @query = &runTabdelDsmadmc( 'q actlog '.join( ' ', @myopts ) );
+    }
+    
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'ACTIVITY';
@@ -476,13 +509,27 @@ $Commands{&commandRegexp( "show", "dbbackup", 2, 3 )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,'['||VOLUME_NAME||']' from volhistory where type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
+    my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,VOLUME_NAME from volhistory where type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'BACKUP';
    
+    my @printable;
+
+    foreach ( @query ) {
+        my @line = split ( /\t/ );
+
+        if ( $line[2] eq 'BACKUPFULL' ) {
+            $line[2] = &colorString( $line[2], "BOLD GREEN");
+        }
+        
+        $line[7] = &colorString( $line[7], "BOLD GREEN");
+
+        push ( @printable, join( "\t", @line ) )
+    }   
+   
     &setSimpleTXTOutput();
-    &universalTextPrinter( "Date\tTime\tType\tSerie{RIGHT}\t#{RIGHT}\tSeq{RIGHT}\tDeviceClass\tVolume{RIGHT}", @query );
+    &universalTextPrinter( "Date\tTime\tType\tSerie{RIGHT}\t#{RIGHT}\tSeq{RIGHT}\tDeviceClass\tVolume{RIGHT}", @printable );
 
     return 0;
 };

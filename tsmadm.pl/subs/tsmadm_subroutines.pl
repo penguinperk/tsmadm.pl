@@ -561,7 +561,7 @@ sub showRuler () {
     for ( $x = 1, $c = 1; $Settings{TERMINALCOLS} - 1 >= $x; $x++ ) {
         if ( $x % 100 == 0 ) {
             $c = 0 if ( $c == 10 );
-            print "$c";
+            print &colorString( "$c", "BOLD GREEN" );
             $c++;
         }
         else {
@@ -574,7 +574,7 @@ sub showRuler () {
     for ( $x = 1, $c = 1; $Settings{TERMINALCOLS} - 1 >= $x; $x++ ) {
         if ( $x % 10 == 0 ) {
             $c = 0 if ( $c == 10 );
-            print "$c";
+            print &colorString( "$c", "BOLD GREEN" );
             $c++;
         }
         else {

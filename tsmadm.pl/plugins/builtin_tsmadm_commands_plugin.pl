@@ -154,7 +154,7 @@ $Commands{&commandRegexp( 'show', 'commands' )} = sub {
     }
     
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tCommands\t ", &addLineNumbers( sort ( @printable ) ) );
+    &universalTextPrinter( "#{RIGHT}\tCommands{RIGHT}\t ", &addLineNumbers( sort ( @printable ) ) );
 
     return 0; # matched
 
