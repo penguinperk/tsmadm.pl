@@ -554,6 +554,46 @@ sub textLine ($$) {
 sub showRuler () {
 #print &colorString( &textLine( "DEBUG: OUR TERMINAL PARAMETER IS: [Settings{TERMINALCOLS} x Settings{TERMINALROWS}] ", "-" ), "bold red" );
     &msg( "0010D", $Settings{TERMINALCOLS}, $Settings{TERMINALROWS} );
+    
+    # prepare options for Getopt
+    my $mirrorFlag;
+    #
+    my %commandlineParameters = ( "mirror"              => \$mirrorFlag,
+                                );
+    my @myopts = ( $3,$4,$5,$6,$7,$8 );
+
+    if ( !GetOptionsFromArray( \@myopts, %commandlineParameters ) ) {
+      print "GetOptionsFromArray Error!\n";
+    }
+      
+    GetOptionsFromArray( \@myopts, %commandlineParameters );    
+       
+    my $x;
+    my $c;
+
+    if ( !$mirrorFlag ) {
+      &ruler100();
+      &ruler10();
+    }
+
+    # 1
+    #&ruler1();
+    for ( $x = 1; $Settings{TERMINALCOLS} - 1  >= $x; $x++ ) {
+
+	$c = $x % 10;
+	( $c == 0 ) ? print &colorString( "$c", "BOLD GREEN" ) : print "$c" ;
+    }
+    print "\n";
+
+    if ( $mirrorFlag ) {
+      &ruler100();
+      &ruler10();
+    }
+    
+}
+
+sub ruler100 {
+
     my $x;
     my $c;
 
@@ -570,6 +610,13 @@ sub showRuler () {
     }
     print "\n";
 
+}
+    
+sub ruler10 {
+    
+    my $x;
+    my $c;
+    
     # 10
     for ( $x = 1, $c = 1; $Settings{TERMINALCOLS} - 1 >= $x; $x++ ) {
         if ( $x % 10 == 0 ) {
@@ -582,13 +629,6 @@ sub showRuler () {
         }
     }
     print "\n";
-
-    # 1
-    for ( $x = 1; $Settings{TERMINALCOLS} - 1  >= $x; $x++ ) {
-        print $x % 10;
-    }
-    print "\n";
-
 }
 
 #######################################################################################################################

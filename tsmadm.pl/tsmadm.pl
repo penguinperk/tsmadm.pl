@@ -8,13 +8,14 @@
 #    \__|___/_| |_| |_|\__,_|\__,_|_| |_| |_| (_) | .__/|_|
 #                                                 |_|
 #              Visit at: http://www.tsmadm.pl/
-#              FYI: I stopped paying for the domain so there is no webpage from 201306. Sorry fro this.
+#              FYI: I stopped paying for the domain so there is no webpage from 201306. Sorry for this! :-(
 
 # tsmadm.pl is an open source multi platform really task oriented IBM Tivoli Storage Manager command line interface
 #
 # Designed by _flex and Marcell
 # Written by _flex from FleXoft and Marcell.
 #   (flex@tsmadm.pl) (marcell@tsmadm.pl)
+# Use this one from 201306: tsmadmpl@fleischmann.hu
 #
 # v3.00, 2013.06.18. Budapest, FleXoft
 #	Add:	improved version
@@ -32,17 +33,31 @@
 #
 #      Perl:
 #
+#      tested on:
+#        ActivePerl 5.16.3 Build 1603 MS Windwos + Command Line Administrative Interface - Version 6, Release 2, Level 4.7
+#
+#  not working on:
+#
+#    HP-UX: missing GetOptionsFromArray
+#       This is perl, v5.8.8 built for IA64.ARCHREV_0-thread-multi on HP-UX
+#
 # Documentation:
 # --------------
 #
 #      Tested on:
 #        HPUX (B.11.11)
+#        HP-UX tsm1 B.11.31 U ia64 2778331787 unlimited-user license
+
 #        MS Windows (Version 5.1 (Build 2600.xpsp_sp2_gdr.050301-1519 : Service Pack 2))
+#        systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+#        Microsoft Windows XP Professional 5.1.2600 Service Pack 3 Build 2600
 #        Sun Solaris 9 ()
 #        Debian Linux ()
 #
 #      with TSM servers:
 #        Server Version 5, Release 5, Level 5.2
+#        Server Version 6, Release 2, Level x
+#        Server Version 6, Release 3, Level x
 #
 # TODO:
 # -----
@@ -238,8 +253,8 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     # errors and warnings
 #    '([[:print:]\e]*ANR\d\d\d\dE[[:print:]\e]*)'                       => 'BOLD BLUE',
 #    '([[:print:]\e]*ANR\d\d\d\dW[[:print:]\e]*)'                       => 'BOLD YELLOW',
-    '(AN[ER]\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'        => 'BOLD RED',
-    '(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'           => 'BOLD YELLOW',
+    '^(AN[ER]\d\d\d\dE[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'        => 'BOLD RED',
+    '^(ANR\d\d\d\dW[A-Za-z _\.\-0-9:\\\/{}\e\[\];,:\(\)\']+)'           => 'BOLD YELLOW',
 #    '(AN[ER]\d\d\d\dE)'                       => 'BOLD RED',
 #    '(ANR\d\d\d\dW)'                          => 'BOLD YELLOW',
 
@@ -275,22 +290,50 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     #'\d+\t\w+\t\w+\tONL=\w+\t\d+\t\w+\t\d+\t(\w{6,8})'                 => 'BOLD GREEN',
     #'\d+\t\w+\t\w+\tONL=\w+\t\d+\t\w+\t\d+\t(\w{6,8})\t'               => 'BOLD GREEN',
     #'\d\d\d\d\-\d\d\-\d\d\t\d\d\:\d\d\:\d\d\t(\w)' => 'BOLD GREEN',
-        
+    
     'Current output volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'              => 'BOLD GREEN',
     'Current output volume(s): ([A-Za-z_\.\-0-9:\\\/{}]+)\.'           => 'BOLD GREEN',    
     'Current input volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'               => 'BOLD GREEN',
+    
+    'ANR8468I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) dismounted from drive' => 'BOLD GREEN',
+    'ANR8336I Verifying label of \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) in drive'=> 'BOLD GREEN',
+    'ANR8337I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) in drive'          => 'BOLD GREEN',
+
+    'ANR0511I Session \d+ opened output volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
+    'ANR0512I Process \d+ opened input volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.'  => 'BOLD GREEN',
+    'ANR0513I Process \d+ opened output volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
+    
+    'ANR0514I Session \d+ closed volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.'  => 'BOLD GREEN',
+    'ANR0515I Process \d+ closed volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.'  => 'BOLD GREEN',
+    
+    'ANR1157I Removable volume ([A-Za-z_\.\-0-9:\\\/{}]+) is required for move process\.' => 'BOLD GREEN',
+    'ANR1228I Removable volume ([A-Za-z_\.\-0-9:\\\/{}]+) is required for storage pool backup\.' => 'BOLD GREEN',
+
+    'ANR1140I Move data process started for volume ([A-Za-z_\.\-0-9:\\\/{}]+) ' => 'BOLD GREEN',
+    'ANR1141I Move data process ended for volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
+
+    'ANR8337I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) mounted in drive ' => 'BOLD GREEN',
     
     'ANR8329I .+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) is mounted'         => 'BOLD GREEN',
     'ANR8330I .+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) is mounted'         => 'BOLD GREEN',
     'ANR8331I .+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) is mounted'         => 'BOLD GREEN',
     
-        
+    'ANR1360I Output volume ([A-Za-z_\.\-0-9:\\\/{}]+) opened '        => 'BOLD GREEN',
+    'ANR1361I Output volume  ([A-Za-z_\.\-0-9:\\\/{}]+) closed\.'      => 'BOLD GREEN',
+    
+    'ANR8340I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) mounted\.'         => 'BOLD GREEN',
+    
+    'ANR1340I Scratch volume ([A-Za-z_\.\-0-9:\\\/{}]+) is now defined in storage pool ' => 'BOLD GREEN',
+    'ANR1341I Scratch volume ([A-Za-z_\.\-0-9:\\\/{}]+) has been deleted from storage pool ' => 'BOLD GREEN',
+    
     'Volume ([A-Za-z_\.\-0-9:\\\/{}]+)'                                => 'BOLD GREEN',
     
     'Examined (\d+) objects, deleting'                                 => 'BOLD GREEN',
     'objects, deleting (\d+) backup objects,'                          => 'BOLD GREEN',
     'backup objects, (\d+) archive objects,'                           => 'BOLD GREEN',
-        
+    'Full backup: (\d+) pages of '                                     => 'BOLD GREEN',
+    'pages of (\d+) backed up.'                                        => 'BOLD GREEN',
+
 );
 
 ##########################################################################################

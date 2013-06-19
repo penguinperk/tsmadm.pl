@@ -329,7 +329,7 @@ sub universalTextPrinter ( @ )
       }
 
     #BODY
-    foreach ( &grepIt(@result) )
+    foreach ( &grepIt( @result ) )
     {
         chomp;
 
@@ -339,8 +339,8 @@ sub universalTextPrinter ( @ )
         my $j = 0;
         my $beforeLast      = "" ;
         my $beforeLastEmpty = "" ;
-        my $last = "";
-        $printableLine = "";
+        my $last            = "";
+        $printableLine      = "";
         foreach (@line)
         {
             $printableField = $_;
