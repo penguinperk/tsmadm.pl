@@ -292,13 +292,14 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     #'\d\d\d\d\-\d\d\-\d\d\t\d\d\:\d\d\:\d\d\t(\w)' => 'BOLD GREEN',
     
     'Current output volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'              => 'BOLD GREEN',
-    'Current output volume(s): ([A-Za-z_\.\-0-9:\\\/{}]+)\.'           => 'BOLD GREEN',    
+    'Current output volume\(s\): ([A-Za-z_\.\-0-9:\\\/{}]+)\.'         => 'BOLD GREEN',
     'Current input volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'               => 'BOLD GREEN',
     
     'ANR8468I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) dismounted from drive' => 'BOLD GREEN',
     'ANR8336I Verifying label of \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) in drive'=> 'BOLD GREEN',
     'ANR8337I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) in drive'          => 'BOLD GREEN',
 
+    'ANR0510I Session \d+ opened input volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
     'ANR0511I Session \d+ opened output volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
     'ANR0512I Process \d+ opened input volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.'  => 'BOLD GREEN',
     'ANR0513I Process \d+ opened output volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
@@ -322,6 +323,7 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     'ANR1361I Output volume  ([A-Za-z_\.\-0-9:\\\/{}]+) closed\.'      => 'BOLD GREEN',
     
     'ANR8340I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) mounted\.'         => 'BOLD GREEN',
+    'ANR8341I End-of-volume reached for \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
     
     'ANR1340I Scratch volume ([A-Za-z_\.\-0-9:\\\/{}]+) is now defined in storage pool ' => 'BOLD GREEN',
     'ANR1341I Scratch volume ([A-Za-z_\.\-0-9:\\\/{}]+) has been deleted from storage pool ' => 'BOLD GREEN',
