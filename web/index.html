@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <title>tsmadm.pl - Tivoli Storage Manager command line ADMinistration tool v2</title>
+
+  <meta name="keywords" content="tivoli storage manager, dsmadmc, free, script, tsm, administration, api, perl, mac os x, aix, windows, solaris, historical, export pdf, app, software, application, command line">
+
+<link href="Styles/styles.css" rel="stylesheet" type="text/css">
+
+<!-- Copy code below -->
+<link type="text/css" rel="stylesheet" href="Styles/multiBox.css" />
+<!--[if lte IE 6]>
+    <link type="text/css" rel="stylesheet" href="./Styles/multiBoxIE6.css" />
+<![endif]-->
+
+<script type="text/javascript" src="Scripts/mootools-1.2.4-core-yc.js"></script>
+<script type="text/javascript" src="Scripts/mootools-1.2.4.4-more-yc.js"></script>
+<script type="text/javascript" src="Scripts/overlay.js"></script>
+<script type="text/javascript" src="Scripts/multibox.js"></script>
+
+<script type="text/javascript">
+window.addEvent('domready', function(){
+
+	//call multiBox
+	var initMultiBox = new multiBox({
+		mbClass: '.mb',//class you need to add links that you want to trigger multiBox with (remember and update CSS files)
+		container: $(document.body),//where to inject multiBox
+		descClassName: 'multiBoxDesc',//the class name of the description divs
+		path: 'Files/',//path to mp3 and flv players
+		useOverlay: false,//use a semi-transparent background. default: false;
+		maxSize: {w:600, h:400},//max dimensions (width,height) - set to null to disable resizing
+		addDownload: false,//do you want the files to be downloadable?
+		pathToDownloadScript: 'Scripts/forceDownload.asp',//if above is true, specify path to download script (classicASP and ASP.NET versions included)
+		addRollover: false,//add rollover fade to each multibox link
+		addOverlayIcon: false,//adds overlay icons to images within multibox links
+		addChain: false,//cycle through all images fading them out then in
+		recalcTop: true,//subtract the height of controls panel from top position
+		addTips: false,//adds MooTools built in 'Tips' class to each element (see: http://mootools.net/docs/Plugins/Tips)
+		autoOpen: 0//to auto open a multiBox element on page load change to (1, 2, or 3 etc)
+	});
+	
+});
+</script>
+<!-- Copy code above -->
+																		
+<script onclicktype="text/javascript" src="Scripts/MooFlow.js"></script>
+<link rel="stylesheet" href="Scripts/MooFlow.css" type="text/css" media="screen">
+ 			
+<style type="text/css" media="screen">
+
+a, a:visited {
+  color: #009d00;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #000000;
+  text-decoration: none;
+}
+
+a:active {
+  color: #ff0000;
+  text-decoration: none;
+}
+
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-color: #050505;
+	color: #009a00;
+	
+	margin-left:auto;
+	margin-right:auto;
+	
+	font-family: Courier;
+	font-size:13px;
+	line-height:1.5em;
+	
+	width:900px;
+	text-align: center;
+}
+
+.header .screenshots table {
+	text-align: center;
+	position: absolute;
+}
+
+a:link {
+	color: #00cf00;
+}
+a:visited {
+	color: #00cf00;
+}
+a:hover {
+	color: #00ff00;
+}
+a:active {
+	color: #FFF;
+}
+  
+.screenshots
+{
+	margin-top:auto;
+	margin-left:auto;
+	text-align: center;
+	border: 2px solid;	
+}
+  
+.fill
+{
+	width:900px;
+
+	margin-left:auto;
+	margin-right:auto;
+}  
+  
+.textbox3
+{
+	float: left;
+	width:300px;
+	margin-left:100px;
+	text-align: justify;
+	border: 0px solid;
+	
+}
+
+.textbox4
+{
+	float: right;
+	width:300px;
+	margin-right:100px;
+	text-align: justify;
+	
+	border: 0px solid;
+}
+    
+#textheadlinewhite
+{
+	color: #00ff00;
+	font-family: Courier;
+	font-weight: bold;
+	font-size:15px;
+	line-height:1.5em;
+	text-shadow: 0px -1px 1px black;
+	text-align: left;
+}
+
+#textheadlinegrey
+{
+	color: #009a00;
+	font-family: Courier;
+	font-size:15px;
+	line-height:1.5em;
+	text-shadow: 0px -1px 1px black;
+	text-align: left;
+	text-decoration: underline;
+}
+
+#text
+{
+	color: #009a00;
+	font-family: Courier;
+	font-size:13px;
+	line-height:1.5em;
+	
+	
+	text-align: justify;
+	
+}
+         
+.footer 
+{
+	position: relative;
+	
+	width:auto;
+	margin-left:auto;
+	margin-right:auto;
+	z-index:1;
+	text-align:center;
+	color: #008e00;
+	font-family: Courier;
+	font-size:11px;
+	line-height:1.5em;
+
+}
+
+.footertext
+{
+	color: #008e00;
+	font-family: Courier;
+	font-size:11px;
+	line-height:1.5em;
+	
+}
+
+.footertext:hover
+{
+	color: #00ff00;
+	font-family: Courier;
+	font-size:11px;
+	line-height:1.5em;
+	
+}
+ 
+.firstLetter{
+  padding      : 0px;
+  display      : block;
+  float        : left;
+  margin-top   : 0px;
+  margin-left  : 0px;
+  margin-right : 5px;
+  margin-bottom: 0px;
+  height       : 115px;
+  color: #009a00;
+  border       : 0px solid;
+}
+
+.firstLetter span{
+  font-size    : 160px;
+  line-height  : 115px;
+  border-color : Blue;
+  border       : 0px solid;  
+}
+
+.firstLetter + span{
+  margin-left  : -5px;
+} 
+
+p{
+  text-align   : justify;
+}
+          
+</style>	
+		
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-1485101-4']);
+  _gaq.push(['_setDomainName', 'none']);
+  _gaq.push(['_setAllowLinker', true]);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>		
+			
+<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>			
+				
+</head>
+
+<body >
+
+<br>
+
+<a href="http://tsmadm.pl/"<strong>tsmadm.pl</strong></a> | <a href="http://code.google.com/p/tsmadmpl/downloads/list">download</a> / <a href="http://code.google.com/p/tsmadmpl/source/checkout">svn</a> | <a href="http://code.google.com/p/tsmadmpl/w/list">faq/wiki</a> | forum | <a href="mailto:subscribe@tsmadm.pl?subject=Subscribe">mailing list</a> | <a href="#donate">donate</a> | <a href="mailto:support@tsmadm.pl">contact</a> | <g:plusone size="small"></g:plusone><br>
+  
+<br clear=all>
+
+<hr color=#00FF00 width=90%>
+
+<br clear=all>
+
+“Best user experience I've had since I started to administer TSM.”<br>
+“Truly task oriented.”<br>
+“Colorful, widescreen, real HD.”<br>
+“Scriptable.”<br>
+“Multi platform.”<br>
+“Free.”<br>
+“May the <a src="http://tsmadm.pl/">tsmadm.pl</a> be with you.”<br>
+
+<br>
+
+Personal thanks from the Team for trying <strong>tsmadm.pl</strong>. Now, if you liked/disliked it, will you tell us about it?<br>
+
+<br>
+
+<a href="mailto:subscribe@tsmadm.pl?subject=Subscribe">SIGNUP FOR NEWSLETTER | </a>
+USE OUR FORUM (disabled) |
+<a href="http://twitter.com/tsmadmpl" target="_blank">FOLLOW US ON TWITTER | </a>
+<a href="http://www.facebook.com/tsmadm" target="_blank">JOIN OUR FACEBOOK FANPAGE |</a> 
+<a href="mailto:support@tsmadm.pl">SUPPORT</a><br>
+
+<br clear=all>
+<hr color=#003000 width=80%>   
+
+<table border="0" align="center" width="80%"><tr><td> 
+
+<p><span class="firstLetter"><a href="http://code.google.com/p/tsmadmpl/downloads/list"><span>v2</span></a></span><span>Hello <a src="http://tsmadm.pl/">tsmadm.pl</a> users!<br>
+
+<p>Can you believe this, it's been for almost a year since we last "met" here?</p> 
+<p>Meanwhile we were at TSM Symposium 2011 in Dresden, worked a lot with our clients, many things happened in our private life as well so it's really no surprise you haven't heard from us lately.</p>
+<p>I’m a bit disappointed because nobody sent any money via PayPal. It’s really not for the money but it meant for me nobody considered seriously to use <a src="http://tsmadm.pl/">tsmadm.pl</a>…<br> 
+I’d have liked to measure somehow how many people use this tool and I had no other idea how to do this. So please think it over again! ;-)<br>
+Just to inform you, this domain <a src="http://tsmadm.pl/">tsmadm.pl</a> costs me about 24.000,- HUF(about 80. EUR)/year. So if you can help me to keep this site online, please do something!</p>
+
+<p>Another thing to mention is the Forum. Nobody has used it except trolls so I’m closing it right now. I’m thinking to create a simple forum topic at adsm.org for us in the future.</p>
+
+<p>I don’t want to mourn for these things so let’s jump to what has changed, what's new and what are our future plans!</p> 
+
+<p># <span id="textheadlinewhite">Done</span> #</p>
+ 
+<p>Several minor fixes were done (password 'encryption', global color highlighter, grep, regexp, bla, bla ...) but the most important change for those who didn’t followed the development via SVN repository is the tsmadm.conf file simplification. We dropped the two-section idea (Windows&Unix) and use only one section as per the start-up of Wizard. If you plan to migrate from v1 to v2 consider this and migrate your tsmadm.conf file first or simply delete the old one and follow the Wizard.</p>
+
+<p># <span id="textheadlinewhite">Added/recreated commands</span> #</p>
+ 
+<p>show backupp (remastered version, I finally used the summary table instead of collecting the necessary info from the activity log) It is faster.</p>
+
+<p>show status</p>
+
+<p>show drives</p>
+
+<p>show timing</p>
+<p>edit script command</p>
+
+<p># <span id="textheadlinewhite">In progress</span> #</p>
+
+<p>edit cloptsets</p>
+<p>and of course documentation at:</p>  
+
+<p># <span id="textheadlinewhite">Future, maybe we’ll call it v3 ;-)</span> #</p>
+
+<p>Summarization and pruning solution for archived historical data.</p>
+
+<p>And last (but not least), I’d like to thank YOU for sending any emails, comments or issues to me. 
+Keep on doing so guys!</p>
+
+<p>Thanks for reading,
+ _flex. Founder of <a src="http://tsmadm.pl/">tsmadm.pl</a> ;-)</p> 
+
+<p>For those who wish to contribute to <a src="http://tsmadm.pl/">tsmadm.pl</a>: the project is on Google code and we’re waiting for your help so just send your application to tsmadm@tsmadm.pl. Let's make it the best free command line administration tool for IBM Tivoli Storage Manager that can possibly exist!!!</p>
+</span></p>
+
+</td></tr></table>
+
+<hr color=#003000 width=80%>  
+ 
+<table border="0" align="center" width="80%"><tr><td> 
+  
+<!-- Copy code below -->
+<a href="./Images/screen0.PNG" id="mb1" class="mb" title="mtsm.pl" rel="[mtsm.pl images]"><img src="./Images/screen0_thumb.png" alt="mtsm.pl" title="This is the old version A.K.A. mtsm.pl." /></a>
+<div class="multiBoxDesc mb1 mbHidden">This is the original version called mtsm.pl. It has almost the same functionality without coloring, archive/history and more...</div>
+
+<a href="./Images/screen1.PNG" id="mb2" class="mb" title="tsmadm.pl #1" rel="[tsmadm.pl images]"><img src="./Images/screen1_thumb.png" alt="tsmadm.pl #1" title="tsmadm.pl #1" /></a>
+<div class="multiBoxDesc mb2 mbHidden">tsmadm.pl: general view with "show processes" and "show sessions". You can notice the nice headers, and the text/volume highlighter features.</div>
+
+<a href="./Images/screen2.PNG" id="mb3" class="mb" title="tsmadm.pl #2" rel="[tsmadm.pl images]"><img src="./Images/screen2_thumb.png" alt="tsmadm.pl #2" title="tsmadm.pl #2" /></a>
+<div class="multiBoxDesc mb3 mbHidden">tsmadm.pl: other views. Commands: "show environment", "show scrateches" and "show scratches -acrhive" which also demonstrates the archive/historical function.</div>
+
+<a href="./Images/screen3.PNG" id="mb4" class="mb" title="tsmadm.pl #3" rel="[tsmadm.pl images]"><img src="./Images/screen3_thumb.png" alt="tsmadm.pl #3" title="tsmadm.pl #3" /></a>
+<div class="multiBoxDesc mb4 mbHidden">tsmadm.pl: "show timing" command shows this nice one day timing diagram.</div>
+
+<br clear=all>
+
+<a href="./Images/screen4.PNG" id="mb5" class="mb" title="tsmadm.pl #4" rel="[tsmadm.pl images]"><img src="./Images/screen4_thumb.png" alt="tsmadm.pl #4" title="tsmadm.pl #4" /></a>
+<div class="multiBoxDesc mb5 mbHidden">tsmadm.pl: "show backups" command helps to check the performance of backup storgape pools. More to in v2...</div>
+
+<a href="./Images/screen5.PNG" id="mb6" class="mb" title="tsmadm.pl #5" rel="[tsmadm.pl images]"><img src="./Images/screen5_thumb.png" alt="tsmadm.pl #5" title="tsmadm.pl #5" /></a>
+<div class="multiBoxDesc mb6 mbHidden">tsmadm.pl: "show sesions" and the "kill" commands and a very visible(RED) error message.</div>
+
+<a href="./Images/screen6.PNG" id="mb7" class="mb" title="tsmadm.pl #6" rel="[tsmadm.pl images]"><img src="./Images/screen6_thumb.png" alt="tsmadm.pl #6" title="tsmadm.pl #6" /></a>
+<div class="multiBoxDesc mb7 mbHidden">tsmadm:pl: Shows how easy to use the "reach" command. After that putty starting and you can reach the client machine just from the place of your TSM administration...</div>
+
+<a href="./Files/youtube.htm" id="mb8" class="mb" title="tsmadm.pl movie #1" rel="[movie]"><img src="./Images/screen1movie_thumb.png" alt="tsmadm.pl movie #1" title="tsmadm.pl movie #1" /></a>
+<div class="multiBoxDesc mb8 mbHidden">This is a short RAW movie about the features implemented in the v1 beta version.</div>
+
+<!-- Copy code above -->
+
+</td></tr></table>
+
+<br clear=all>
+
+<hr color=#003000 width=80%>   
+   
+<br clear=all>
+
+<div class="fill">
+
+  <div class="textbox3">
+    <span id="textheadlinewhite">ABOUT</span><br><br>
+	<span id="text">With <a href="http://tsmadm.pl/">tsmadm.pl</a> you can do your daily TSM chores in a truly task oriented way.<br>
+	</span><br><br><br>
+		
+    <span id="textheadlinewhite">IDEA and STORY</span><br><br>
+	<span id="text">The idea itself and the previous version of this program was prepared when I started to work with TSM seven years ago.<br>
+	<br>
+	At that time the program was called <a href="http://adsm.org/forum/showthread.php?6917-NEW-TSM-Admin-client-development!">mtsm.pl</a> and you can still find a copy at adsm.org.<br>
+	<br>
+	We strated to write this enhanced version at the end of 2010 when Marcell joined the team. Based on day-to-day experience with TSM we had some new ideas we wanted to incorporate into the code.<br>
+	<br>
+	While we were writing the program my old pal Zoltán joined us for a short period of time to help us with some minor cosmetic changes.<br>		
+    <br>
+    Finaly v1.0beta was ready by the end of May, 2011.</span><br><br><br>		
+	
+	<a href="#donate"></a>
+	<span id="textheadlinewhite">WHY DONATE?</span><br><br>
+	<span id="text">If you enjoy this program and would like to support us, please take a moment to donate!<br>
+	By this you can also notify us that you are seriously interested in this project.<br>
+	<br>
+	<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+	<input type="hidden" name="cmd" value="_s-xclick">
+	<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
+	">
+	<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+	<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+	</form>
+	</span><br><br><br>
+			
+    <span id="textheadlinewhite">THE TEAM</span><br><br>
+    <span id="text">• FLEISCHMANN György (_flex)<br>
+    &nbsp;&nbsp;<img src="pics/_flex.png"></span><br>
+    <span id="text">• SZABÓ Marcell (Marcell)<br>
+    &nbsp;&nbsp;<img src="pics/Marcell.png"></span><br>
+    <span id="text">• SOÓS Zoltán (Perec)<br>
+    &nbsp;&nbsp;<img src="pics/ZSoos.png"></span><br><br><br>			
+  </div>
+            
+  <div class="textbox4">
+
+	<span id="textheadlinewhite">v1 FEATURES</span><br><br>
+ 	<span id="text">• full sized terminal window support<br>
+ 	• intelligent printing (word wrap, colorize, indent, ...) <br>
+ 	• built in data history handling (with "-archive" option)<br>
+ 	• overall perl scriptable with your own plugins, because it is written in perl<br>
+ 	• command aliases<br>
+ 	• multiserver support<br>
+ 	• faster node access with the <i>reach</i> command and node URL field<br>
+ 	• command for performace analysis<br>
+ 	• wizard based installation<br>
+ 	<br>
+ 	• v1 command list (20110630):<br>
+	&nbsp;+ show version<br>
+	&nbsp;+ show lasterror<br>
+	&nbsp;+ show environment<br>
+	&nbsp;+ show ruler<br>
+	&nbsp;+ reload <br>
+	&nbsp;+ alias <br>
+	&nbsp;+ set server<br>
+	&nbsp;+ console<br>
+	&nbsp;+ debug<br>
+	&nbsp;+ fooooo<br>
+	&nbsp;+ show sessions<br>
+	&nbsp;+ show processes<br>
+	&nbsp;+ show scratches<br>
+	&nbsp;+ kill<br> 
+	&nbsp;+ reach<br> 
+	&nbsp;+ show disks<br>
+	&nbsp;+ show stgpools<br>
+	&nbsp;+ show drives<br>
+	&nbsp;+ show paths<br>
+	&nbsp;+ online<br>
+	&nbsp;+ offline<br>
+	&nbsp;+ start dsmadmc<br>
+	&nbsp;+ show events<br>
+	&nbsp;+ show libvolume<br>
+	&nbsp;+ show schedules<br>
+	&nbsp;+ show expiration<br>
+	&nbsp;+ show fillings<br>
+	&nbsp;+ show backup<br>
+	&nbsp;+ show timing<br>  	 
+	&nbsp;+ start dsmadmc<br>
+	&nbsp;+ start console<br> 	
+ 	</span><br><br><br>
+  	
+	<span id="textheadlinewhite">PLANNED NEW FEATURES IN v2 (ETA 2012 Q2 ;-)</span><br><br>
+	<span id="text">• command-line completion<br>
+	 • overall command helps<br> 
+	 • more flexible config file handling<br>
+	 • push/pop feature<br>
+	 • PDF output for reports<br>
+	 • TSM admin script editor<br>
+	 • TSM optionset editor<br>
+	 • faq/wiki implemantation<br>
+	 • TSM licenece calculator<br>	 
+	 • archive summarization function<br>
+	 • and more...<br>
+	 <br>
+ 	 • planned v2 command list:<br>
+  	 &nbsp;+ print text<br>
+	 &nbsp;+ show adminschedules<br>
+	 &nbsp;+ show serverstatus<br>
+	 &nbsp;+ show full bdbackups<br>
+	 &nbsp;+ show incremental dbbackups<br>
+	 &nbsp;+ show moveablevolumes<br>
+	 &nbsp;+ show fillingvolumes<br>
+	 &nbsp;+ show occupancy<br>
+	 &nbsp;+ moveit<br>
+	 &nbsp;+ show nodes<br>
+	 &nbsp;+ show suspiciousvolumes<br>
+	 &nbsp;+ show inactivenodes<br>
+	 &nbsp;+ show STGSCRatch<br>
+	 &nbsp;+ show licence<br>
+	 &nbsp;+ show migration<br>
+	 &nbsp;+ show moveprocess<br>
+	 &nbsp;+ show stgphist<br>
+	 &nbsp;+ show exceptionsonly<br>
+	 &nbsp;+ show associations<br>
+	 &nbsp;+ delete association<br>	 
+	 </span>
+  </div>
+
+</div>
+  	 	
+<br clear=all>
+<br>
+<hr color=#003000 width=80%>   
+<br clear=all>   
+
+<div class="fill">
+     
+  <div class="textbox3">
+    <span id="textheadlinewhite">Technical Specifications</span><br><br>
+    <span id="textheadlinegrey">System Requirements</span><br><br>
+	<span id="text">
+     • IBM AIX<br>
+     • Apple Mac OS X<br>
+     • HP-UX<br>
+     • Linux<br>
+     • Microsoft Windows<br>
+     • Sun/Oracle Solaris<br>  
+	</span><br>			
+  </div>
+            
+  <div class="textbox4"><br><br>
+    <span id="textheadlinegrey">Technologies</span><br><br>
+	<span id="text">
+	 • <a href="http://perl.org/">Perl</a> >5.8<br>
+	 • <a href="http://www-01.ibm.com/software/tivoli/products/storage-mgr/">Tivoli Storage Manager Client</a> 5.2, 5.3, 5.4, 5.5, 6.1, 6.2<br>
+	 • 32 bit and 64 bit supported<br>
+	 <br>
+	 • <a href="http://www.liamsmart.co.uk/Downloads/multiBox/">multiBox</a> 2.0.6<br>
+	 • <a href="http://mootools.net/">MooTools</a> 1.2<br>
+	</span>
+  </div>                  
+
+</div>               
+   
+<br clear=all>
+  
+<hr color=#00FF00 width=90%>  
+
+<br clear=all>
+  
+<div class="footer">
+  <a href="mailto:subscribe@tsmadm.pl?subject=Subscribe"><span class="footertext">SIGNUP FOR NEWSLETTER | </span></a>
+  USE OUR FORUM (disabled) |
+  <a href="http://twitter.com/tsmadmpl" target="_blank"><span class="footertext">FOLLOW US ON TWITTER | </span></a>
+  <a href="http://www.facebook.com/tsmadm" target="_blank"><span class="footertext">JOIN OUR FACEBOOK FANPAGE |</span></a> 
+  <a href="mailto:support@tsmadm.pl"><span class="footertext">SUPPORT</span></a><br><br>
+  © Copyright 2011 FleXoft, <a href="mailto:flex@tsmadm.pl" target="_blank">György FLEISCHMANN(_flex)</a>, <a href="mailto:marcell@tsmadm.pl" target="_blank">Marcell SZABÓ</a>, <a href="mailto:zsoos@tsmadm.pl" target="_blank">Zoltán SOÓS(Perec)</a> Budapest, HUNGARY,  All&nbsp;Rights&nbsp;Reserved.<br>
+</div>
+
+<br clear=all>
+				 		 							
+</body>
+
+</html>
