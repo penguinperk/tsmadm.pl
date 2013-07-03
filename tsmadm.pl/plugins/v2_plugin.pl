@@ -440,21 +440,59 @@ $Commands{&commandRegexp( "show", "nodeoccuopancy", 2, 5 )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select node_name, sum(logical_mb), sum(num_files) from occupancy where node_name like upper('$3%') group by node_name order by 2 desc" );
+    my @query = &runTabdelDsmadmc( "select node_name, type, sum(logical_mb), sum(num_files) from occupancy where node_name like upper('$3%') group by node_name,type order by 1,2 desc" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'NODEOCCU';
     
     my @printable;
-    
+    my $nodename = "";
+
     foreach ( @query ) {
         my @line = split ( /\t/ );
-        push ( @printable, join( "\t", $line[0], &byteFormatter( $line[1], 'MB'), $line[2] ) );
+        
+        my @perviousline;
+        @perviousline = split ( /\t/, $printable[$#printable] ) if ( defined ( $printable[$#printable] ) ); # get the last line
+        
+        if ( defined ( $perviousline[0] ) && $perviousline[0] eq $line[0] && $line[1] eq "Arch" ) {
+          $printable[$#printable] = join( "\t", $printable[$#printable], $line[2], $line[3] );
+        }
+        elsif ( $line[1] eq "Bkup" ) {
+          push ( @printable, join( "\t", $line[0], $line[2], $line[3] ) );
+        }
+        elsif ( $line[1] eq "Arch" ) {
+          push ( @printable, join( "\t", $line[0], , ,$line[2], $line[3] ) );
+        }
+        
+    }
+    
+    my @printable2;
+    foreach ( @printable ) {
+        my @line = split ( /\t/ );
+        
+        $line[1] = 0 if ( ! defined( $line[1] ) );
+        $line[2] = 0 if ( ! defined( $line[2] ) );
+        $line[3] = 0 if ( ! defined( $line[3] ) );
+        $line[4] = 0 if ( ! defined( $line[4] ) );
+
+        my $sumData = $line[1] + $line[3];
+        my $sumFiles = $line[2] + $line[4];
+
+        push ( @printable2, join( "\t", $line[0], ( $line[1] > 0 ) ? &byteFormatter( $line[1], 'MB') : "", ( $line[2] > 0 ) ? $line[2] : "", ( $line[3] > 0 ) ? &byteFormatter( $line[3], 'MB') : "", ( $line[4] > 0 ) ? $line[4] : "", $sumData, ( $sumFiles > 0 ) ? $sumFiles : "" ) );
+
     }
 
-    &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tNodeName\tData{RIGHT}\tFile#{RIGHT}", &addLineNumbers( @printable ) );
+    my @printable3;
+    foreach ( sort { (split "\t", $a)[5] <=> (split "\t", $b)[5] } @printable2 ) {
+        my @line = split ( /\t/ );
+        
+        push ( @printable3, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], ( $line[5]> 0 ) ? &byteFormatter( $line[5], 'MB') : "", $line[6] ) );
+        
+    }
     
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "#{RIGHT}\tNodeName\tBData{RIGHT}\tBFile#{RIGHT}\tAData{RIGHT}\tAFile#{RIGHT}\tSumData{RIGHT}\tSumFile#{RIGHT}", &addLineNumbers( @printable3 ) );
+  
     return 0;
 };
 
