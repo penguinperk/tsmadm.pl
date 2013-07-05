@@ -63,7 +63,7 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select SESSION_ID,STATE,WAIT_SECONDS,BYTES_SENT,BYTES_RECEIVED,SESSION_TYPE,CLIENT_PLATFORM,CLIENT_NAME,MOUNT_POINT_WAIT,INPUT_MOUNT_WAIT,INPUT_VOL_WAIT,INPUT_VOL_ACCESS,OUTPUT_MOUNT_WAIT,OUTPUT_VOL_WAIT,OUTPUT_VOL_ACCESS,LAST_VERB,VERB_STATE from sessions","select_x_from_sessions" );
+    my @query = &runTabdelDsmadmc( "select SESSION_ID,STATE,WAIT_SECONDS,BYTES_SENT,BYTES_RECEIVED,SESSION_TYPE,CLIENT_PLATFORM,CLIENT_NAME,MOUNT_POINT_WAIT,INPUT_MOUNT_WAIT,INPUT_VOL_WAIT,INPUT_VOL_ACCESS,OUTPUT_MOUNT_WAIT,OUTPUT_VOL_WAIT,OUTPUT_VOL_ACCESS,LAST_VERB,VERB_STATE from sessions order by 1","select_x_from_sessions" );
     #,OWNER_NAME,MOUNT_POINT_WAIT,INPUT_MOUNT_WAIT,INPUT_VOL_WAIT,INPUT_VOL_ACCESS,OUTPUT_MOUNT_WAIT,OUTPUT_VOL_WAIT,OUTPUT_VOL_ACCESS,LAST_VERB,VERB_STATE
     return 0 if ( $#query < 0 || $LastErrorcode );
 
@@ -99,10 +99,15 @@ $Commands{&commandRegexp( "show", "sessions" )} = sub {
             $mediaAccessExtra = 'Write';
         }
         
-        if ( $mediaAccess =~ m/(\w*),(\w+),(\d+)/ ) {
+        if ( $mediaAccess =~ m/(\w*),(\w+),(\d+)\:(\w*),(\w+),(\d+)/ ) {            
+            $mediaAccess = "\[".&colorString( $2, "BOLD GREEN" )."\]".( $1 eq '' ) ? '' : "+[$1]".", ".&timeFormatter ( $3, 's' );
+            $mediaAccess .= "\[".&colorString( $5, "BOLD GREEN" )."\]".( $4 eq '' ) ? '' : "+[$4]".", ".&timeFormatter ( $6, 's' );
+        }
+        elsif ( $mediaAccess =~ m/(\w*),(\w+),(\d+)/ ) {
             my $secondmatch = ( $1 eq '' ) ? '' : "+[$1]";
             $mediaAccess = "\[".&colorString( $2, "BOLD GREEN" )."\]".$secondmatch.", ".&timeFormatter ( $3, 's' );    
         }
+        
         $mediaAccess = $mediaAccessExtra.$mediaAccess;
         
         push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5], $line[6], $line[7], $mediaAccess, $line[16].'['.$line[15].']' ) );
@@ -141,7 +146,7 @@ $Commands{&commandRegexp( "show", "processes" )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select PROCESS_NUM,PROCESS,FILES_PROCESSED,BYTES_PROCESSED,STATUS from processes","select_x_from_processes" );
+    my @query = &runTabdelDsmadmc( "select PROCESS_NUM,PROCESS,FILES_PROCESSED,BYTES_PROCESSED,STATUS from processes","select_x_from_processes" order by 1 );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = "PROCESS";
@@ -188,8 +193,8 @@ $Commands{&commandRegexp( "show", "scratches" )} = sub {
     if ( defined( $Settings{LIBRARYMANAGER} ) && $TSMSeverStatus{SERVERNAME} ne $Settings{LIBRARYMANAGER} ) {
         $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $Settings{LIBRARYMANAGER};
         &msg( '0040I', $Settings{LIBRARYMANAGER} );
-    } 
-        
+    }
+   
     my @query = &runTabdelDsmadmc( "select LIBRARY_NAME, MEDIATYPE, count(*) from libvolumes where upper(status)='SCRATCH' group by LIBRARY_NAME,MEDIATYPE", "select_lib_scratches_from_libvolumes" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
@@ -628,6 +633,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
 
     if ( defined( $Settings{LIBRARYMANAGER} ) && $TSMSeverStatus{SERVERNAME} ne $Settings{LIBRARYMANAGER} ) {
         $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $Settings{LIBRARYMANAGER};
+        &msg( '0040I', $Settings{LIBRARYMANAGER} );
     }
         
     my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'ONL='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,VOLUME_NAME,ALLOCATED_TO from drives" );
@@ -1041,9 +1047,9 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
 
 ########################################################################################################################
 
-###############
+####################
 # SHow ADMINEVEnts ##########################################################################################################
-###############
+####################
 &msg( '0110D', 'SHow ADMINEVEnts' );
 $Commands{&commandRegexp( "show", "adminevents", 2, 8)} = sub {
 
@@ -1121,8 +1127,11 @@ $Commands{&commandRegexp( "show", "adminevents", 2, 8)} = sub {
 
 ########################################################################################################################
 
+###################
+# SHow LIBVolumes ##########################################################################################################
+###################
 &msg( '0110D', 'SHow LIBVolumes' );
-$Commands{&commandRegexp( "show", "libvolume" )} = sub {
+$Commands{&commandRegexp( "show", "libvolumes" )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
@@ -1137,7 +1146,21 @@ $Commands{&commandRegexp( "show", "libvolume" )} = sub {
         return 0;
     }
 
+    # save
+    my $tmp1 = $ParameterRegExpValues{SERVERCOMMANDROUTING1};
+    my $tmp2 = $ParameterRegExpValues{SERVERCOMMANDROUTING2};
+    
+    if ( defined( $Settings{LIBRARYMANAGER} ) && $TSMSeverStatus{SERVERNAME} ne $Settings{LIBRARYMANAGER} ) {
+        $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $Settings{LIBRARYMANAGER};
+        &msg( '0040I', $Settings{LIBRARYMANAGER} );
+    }
+    
     my @libvolumes = &runTabdelDsmadmc( "select volume_name, library_name from libvolumes", "select_vol_lib_from_libvolumes" );
+    
+    # restore
+    $ParameterRegExpValues{SERVERCOMMANDROUTING1} = $tmp1;
+    $ParameterRegExpValues{SERVERCOMMANDROUTING2} = $tmp2;
+    
     my @volumes    = &runTabdelDsmadmc( "select volume_name, stgpool_name from volumes where devclass_name != 'DISK'" );
 
     my %tmpLibvolumeHash;

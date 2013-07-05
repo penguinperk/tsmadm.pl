@@ -60,6 +60,7 @@ XXXXX=ÁRVÍZTŰRŐ TÜKÖRFÚRÓGÉP - árvíztűrő tükörfúrógép
 0018I=Debug turned %s.
 0019I=Your terminal is: %s.
 0020D=DSMADMC Command routing to: %s
+0021D=DSMADMC Elapsed time: %s
 0040I=Auto command routing to library manager: %s
 0050D=REGEXP: %s.
 0060D=Alias %s="%s" defined.

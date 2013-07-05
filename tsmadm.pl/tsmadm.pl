@@ -328,7 +328,8 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     'ANR1340I Scratch volume ([A-Za-z_\.\-0-9:\\\/{}]+) is now defined in storage pool ' => 'BOLD GREEN',
     'ANR1341I Scratch volume ([A-Za-z_\.\-0-9:\\\/{}]+) has been deleted from storage pool ' => 'BOLD GREEN',
     
-    'Volume ([A-Za-z_\.\-0-9:\\\/{}]+)'                                => 'BOLD GREEN',
+    #???
+    #'Volume ([A-Za-z_\.\-0-9:\\\/{}]+)'                                => 'BOLD GREEN',
     
     'Examined (\d+) objects, deleting'                                 => 'BOLD GREEN',
     'objects, deleting (\d+) backup objects,'                          => 'BOLD GREEN',
@@ -630,6 +631,7 @@ else {
 &msg( '9900I', &colorString( &msgSpentTime( time - $starttime ), 'BOLD WHITE' ) );
 &msg( '9901I', &colorString( 'http://tsmadm.pl/', 'BOLD GREEN' ) );
 &msg( '9999I' );
+sleep (1);
 
 __END__
 

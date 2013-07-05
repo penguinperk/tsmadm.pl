@@ -92,6 +92,8 @@ sub Dsmadmc ( $$ ) {
 
     &msg( "0020D", $serverCommandRouting );
     
+    my $dsmadmcStartTime = time;
+    
     if ( $OS_win ) {
         $ENV{"DSM_DIR"} = $Settings{DSM_DIR}
           if ( defined( $Settings{DSM_DIR} ) );
@@ -141,10 +143,12 @@ sub Dsmadmc ( $$ ) {
     close PIPE;
 
     $LastErrorcode = $? >> 8;         # save the errorcode
-
+    
     &msg( "0008D", $LastErrorcode );
     &msg( "0007D", $#return+1 );
 
+    &msg( '0021D', &msgSpentTime( time - $dsmadmcStartTime ) );
+    
     if ( ! $LastErrorcode ) {
 
         # 0
