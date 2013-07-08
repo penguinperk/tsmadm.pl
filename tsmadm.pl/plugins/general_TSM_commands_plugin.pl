@@ -146,11 +146,7 @@ $Commands{&commandRegexp( "show", "processes" )} = sub {
         return 0;
     }
 
-<<<<<<< .mine
     my @query = &runTabdelDsmadmc( "select PROCESS_NUM,PROCESS,FILES_PROCESSED,BYTES_PROCESSED,STATUS from processes order by 1","select_x_from_processes" );n3
-=======
-    my @query = &runTabdelDsmadmc( "select PROCESS_NUM,PROCESS,FILES_PROCESSED,BYTES_PROCESSED,STATUS from processes order by 1","select_x_from_processes" );
->>>>>>> .r73
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = "PROCESS";
