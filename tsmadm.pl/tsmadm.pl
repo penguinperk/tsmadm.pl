@@ -294,7 +294,8 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     'Current output volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'              => 'BOLD GREEN',
     'Current output volume{{s}}: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'         => 'BOLD GREEN',
     'Current input volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'               => 'BOLD GREEN',
-    
+    'Waiting for access to input volume ([A-Za-z_\.\-0-9:\\\/{}]+) {{\d+ seconds}}\.' => 'BOLD GREEN',
+        
     'ANR8468I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) dismounted from drive' => 'BOLD GREEN',
     'ANR8336I Verifying label of \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) in drive'=> 'BOLD GREEN',
     'ANR8337I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) in drive'          => 'BOLD GREEN',
