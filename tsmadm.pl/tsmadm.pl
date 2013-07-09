@@ -292,7 +292,7 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     #'\d\d\d\d\-\d\d\-\d\d\t\d\d\:\d\d\:\d\d\t(\w)' => 'BOLD GREEN',
     
     'Current output volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'              => 'BOLD GREEN',
-    'Current output volume\(s\): ([A-Za-z_\.\-0-9:\\\/{}]+)\.'         => 'BOLD GREEN',
+    'Current output volume{{s}}: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'         => 'BOLD GREEN',
     'Current input volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'               => 'BOLD GREEN',
     
     'ANR8468I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) dismounted from drive' => 'BOLD GREEN',
@@ -320,7 +320,7 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     'ANR8331I .+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) is mounted'         => 'BOLD GREEN',
     
     'ANR1360I Output volume ([A-Za-z_\.\-0-9:\\\/{}]+) opened '        => 'BOLD GREEN',
-    'ANR1361I Output volume  ([A-Za-z_\.\-0-9:\\\/{}]+) closed\.'      => 'BOLD GREEN',
+    'ANR1361I Output volume ([A-Za-z_\.\-0-9:\\\/{}]+) closed\.'      => 'BOLD GREEN',
     
     'ANR8340I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) mounted\.'         => 'BOLD GREEN',
     'ANR8341I End-of-volume reached for \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
@@ -579,6 +579,9 @@ if ( defined($colortestFlag) ) {
     $ParameterRegExpValues{GREP} = "full";    
     print &grepIt( &globalHighlighter( "01/09/2012 06:04:29      BACKUPFULL            842             0          1     DCFILE_01        /tsmdata/full/26085469.DBB\n" ));
     print &grepIt( &globalHighlighter( "01/09/2012 06:04:29      BACKUPFULL            842             0          1     DCFILE_01        /tsmdata/full/26085469.DBB\n" ));
+        
+    print &globalHighlighter("Primary Pool DB2_VTL, Copy Pool DB2_C_LTO, Files Backed Up: 295, Bytes Backed Up: 666,553,401,841, Unreadable Files: 0, Unreadable Bytes: 0. Current Physical File (bytes): 228,001,965,291 Current input volume: V00359. Current output volume(s): B00252L3."."\n" );
+    print &globalHighlighter("Current input volume: V00359. Current output volume(s): B00252L3."."\n" );
         
     print &textLine( &colorString( "#", $Settings{DEFAULTCOLOR} ).&colorString( " Colortest end ", "BOLD RED" ), '#');
     exit 99;
