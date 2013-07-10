@@ -601,7 +601,7 @@ $Commands{&commandRegexp( "show", "stgpools" )} = sub {
     }
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tStgPoolName\tDeviceClass\tColl\tEstCap{RIGHT}\tPctUtil{RIGHT}\tPctMig{RIGHT}\tHigh{RIGHT}\tLow{RIGHT}\tRecl{RIGHT}\tNextStgPool{RIGHT}", &addLineNumbers( @printable ) );
+    &universalTextPrinter( "#{RIGHT}\tStgPoolName\tDeviceClass\tColl\tEstCap{RIGHT}\tPctUtil{RIGHT}\tPctMig{RIGHT}\tHigh{RIGHT}\tLow{RIGHT}\tRecl{RIGHT}\tNextStgPool{RIGHT}\t ", &addLineNumbers( @printable ) );
 
     return 0;
 

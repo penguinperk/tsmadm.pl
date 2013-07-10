@@ -192,7 +192,9 @@ sub builtinCommandExecuter( $ ) {
     my $command = $_[0];
 
     if ( $command =~ m/^\s*!\s*(.*)/ ) {
+	print &textLine( "--- External command start: ".$1, "-" );
         system($1);
+	print &textLine( "--- External command end: ".$1, "-" );
         return 0;
     }
 
@@ -361,7 +363,7 @@ sub msg ( $@ ) {
             $toprint = substr( $toprint, 0, $Settings{TERMINALCOLS} - 1 );
         }
 
-        $msg = ( &colorString( &textLine( $toprint, "-" ), "CYAN" ) );
+        $msg = &colorString( &textLine( $toprint, "-" ), "CYAN" );
     }
     elsif ( $messageID =~ m/\d\d\d\dE/ ) {
         $toprint = sprintf(
