@@ -89,7 +89,7 @@ require 5.008_000;    # perl 5.10.0... compatible
 my $starttime = time;
 
 # add this command 'svn propset svn:keywords "Revision" tsmadm.pl' to enable it 
-our $SVNRevision = $Rev$;
+our $SVNRevision = '$Rev$';
 
 # and get the starting dir
 our $Dirname = dirname($0);    #
