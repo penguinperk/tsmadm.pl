@@ -88,7 +88,8 @@ require 5.008_000;    # perl 5.10.0... compatible
 # store the starting time
 my $starttime = time;
 
-# add this command 'svn propset svn:keywords "Revision" tsmadm.pl' to enable it 
+# add this command 'svn propset svn:keywords "Revision" tsmadm.pl' to enable it
+# based on this documenttation: http://svnbook.red-bean.com/en/1.0/ch07s02.html#svn-ch-7-sect-2.3.4
 our $SVNRevision = '$Rev$';
 $SVNRevision =~ s/\$Rev: (\d+) \$/$1/;
 
