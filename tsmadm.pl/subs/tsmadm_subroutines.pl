@@ -588,8 +588,8 @@ sub showRuler () {
     print "\n";
 
     if ( $mirrorFlag ) {
-      &ruler100();
       &ruler10();
+      &ruler100();
     }
     
 }
