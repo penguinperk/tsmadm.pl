@@ -298,7 +298,7 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
         
     'ANR8468I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) dismounted from drive' => 'BOLD GREEN',
     'ANR8336I Verifying label of \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) in drive'=> 'BOLD GREEN',
-    'ANR8337I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) in drive'          => 'BOLD GREEN',
+    'ANR8337I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) mounted in drive'  => 'BOLD GREEN',
 
     'ANR0510I Session \d+ opened input volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
     'ANR0511I Session \d+ opened output volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
@@ -336,7 +336,8 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     'objects, deleting (\d+) backup objects,'                          => 'BOLD GREEN',
     'backup objects, (\d+) archive objects,'                           => 'BOLD GREEN',
     'Full backup: (\d+) pages of '                                     => 'BOLD GREEN',
-    'pages of (\d+) backed up.'                                        => 'BOLD GREEN',
+    'pages of (\d+) backed up\.'                                       => 'BOLD GREEN',
+    'Unreadable Bytes: ([\d,]*\d*[123456789])\.'                       => 'BOLD RED',
 
 );
 
