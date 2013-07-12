@@ -17,7 +17,7 @@
 #   (flex@tsmadm.pl) (marcell@tsmadm.pl)
 # Use this one from 201306: tsmadmpl@fleischmann.hu
 #
-# v3.00.$Rev$, 2013.06.18. Budapest, FleXoft
+# v3.00, 2013.06.18. Budapest, FleXoft
 #	Add:	improved version
 #       Txt:    start v3
 #
@@ -87,6 +87,9 @@ require 5.008_000;    # perl 5.10.0... compatible
 
 # store the starting time
 my $starttime = time;
+
+# add this command 'svn propset svn:keywords "Revision" tsmadm.pl' to enable it 
+our $SVNRevision = $Rev$;
 
 # and get the starting dir
 our $Dirname = dirname($0);    #
