@@ -17,7 +17,7 @@
 #   (flex@tsmadm.pl) (marcell@tsmadm.pl)
 # Use this one from 201306: tsmadmpl@fleischmann.hu
 #
-# v3.00, 2013.06.18. Budapest, FleXoft
+# v3.00.$Rev$, 2013.06.18. Budapest, FleXoft
 #	Add:	improved version
 #       Txt:    start v3
 #
