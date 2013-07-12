@@ -90,6 +90,7 @@ my $starttime = time;
 
 # add this command 'svn propset svn:keywords "Revision" tsmadm.pl' to enable it 
 our $SVNRevision = '$Rev$';
+$SVNRevision =~ s/\$Rev: (\d+) \$/$1/;
 
 # and get the starting dir
 our $Dirname = dirname($0);    #
@@ -540,7 +541,7 @@ $LastCommandType = 'NOCOMMANDS';
 
 # Welcome message
 print colorString( "", $Settings{DEFAULTCOLOR} );
-&msg( '0000C', &colorString( "tsmadm.pl ", 'WHITE' ).&colorString( 'v'.$tsmadmplVersion, 'BOLD WHITE' ) );
+&msg( '0000C', &colorString( "tsmadm.pl ", 'WHITE' ).&colorString( 'v'.$tsmadmplVersion, 'BOLD WHITE' ).&colorString( "r$SVNRevision", 'WHITE' ) );
 
 # colortest only
 if ( defined($colortestFlag) ) {
