@@ -336,8 +336,13 @@ sub basicPerformanceFromSummary ( $$$ ) {
         $line[5] =~ m/(.+) ->/;
         $line[5] = ( ' ' x ( $max - length( $1 ) ) ).$line[5];
         
-        $line[5] =~ s/(\w+) ->/\[$1\] ->/ if ( $activity eq "MOVE DATA" ) ;
-        
+        if ( $activity eq "MOVE DATA" ) {
+            $line[5] =~ m/(\w+) ->/;
+            my $volume = $1;
+            my $coloredVolume = &colorString( $1, 'BOLD GREEN' );
+            $line[5] =~ s/($volume) ->/$coloredVolume ->/;
+        }
+                
         push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), $line[12], $line[13], $success ) );
        
     }

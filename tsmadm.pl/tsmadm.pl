@@ -343,6 +343,8 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     'Full backup: (\d+) pages of '                                     => 'BOLD GREEN',
     'pages of (\d+) backed up\.'                                       => 'BOLD GREEN',
     'Unreadable Bytes: ([\d,]*\d*[123456789])\.'                       => 'BOLD RED',
+    
+    'Volume ([A-Za-z_\.\-0-9:\\\/{}]+) {{storage pool '                => 'BOLD GREEN',
 
 );
 
