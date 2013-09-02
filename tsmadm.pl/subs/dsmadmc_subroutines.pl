@@ -156,7 +156,13 @@ sub Dsmadmc ( $$ ) {
             # save history file
             if ( $TSMSeverStatus{SERVERNAME} !~ m/\!NOSERVER\!/ ) {
               my $mode = ( $CommandMode eq 'BATCH' ) ? 'B' : '';
-              &saveArray2File( "$Settings{ARCHIVEDIRECTORY}/$_[1]", $TSMSeverStatus{SERVERNAME}.'_'.$_[1].'_'.&createTimestamp().$mode.'.txt', @return );
+	      if ( $serverCommandRouting =~ m/\((\w+)\)/ ) {
+		my $servername = $1;
+		&saveArray2File( "$Settings{ARCHIVEDIRECTORY}/$_[1]", $servername.'_'.$_[1].'_'.&createTimestamp().$mode.'.txt', @return );
+	      }
+	      else {
+		&saveArray2File( "$Settings{ARCHIVEDIRECTORY}/$_[1]", $TSMSeverStatus{SERVERNAME}.'_'.$_[1].'_'.&createTimestamp().$mode.'.txt', @return );
+	      }
             }
         }
 
