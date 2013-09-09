@@ -1611,11 +1611,21 @@ $Commands{&commandRegexp( "show", "inactive" )} = sub {
     my $days = 15;
     $days = $1 if ( defined $3 && $3 =~ m/(\d+)/ );    
     
-    my @query = &runTabdelDsmadmc('select domain_name, node_name,locked,date(lastacc_time),date(days(CURRENT_DATE))-date(LASTACC_TIME) from nodes where cast((current_timestamp-lastacc_time)days as decimal) >= '.$days.' order by 5 desc');
+    #my @query = &runTabdelDsmadmc('select domain_name, node_name,locked,date(lastacc_time),date(days(CURRENT_DATE))-date(LASTACC_TIME) from nodes where cast((current_timestamp-lastacc_time)days as decimal) >= '.$days.' order by 5 desc');
+    my @query = &runTabdelDsmadmc( 'select n.domain_name,n.node_name,locked,date(n.lastacc_time),date(days(CURRENT_DATE))-date(n.lastacc_time),o.type,sum(logical_mb),sum(o.num_files) from nodes as n, occupancy as o where n.node_name=o.node_name and cast((current_timestamp-n.lastacc_time)days as decimal) >='.$days.' group by n.domain_name,n.node_name,n.locked,n.lastacc_time,o.type order by 7 desc' );
     return if ( $#query < 0 || $LastErrorcode );
     
+    $LastCommandType = 'INACTIVE';
+    
+    my @printable;
+    
+    foreach ( @query ) {
+        my @line = split ( /\t/ );
+         push ( @printable, join( "\t", $line[0], $line[1],  $line[2],  $line[3], $line[4], $line[5], ( $line[6] > 0 ) ? &byteFormatter( $line[6], 'MB') : "", $line[7] ));
+    }
+    
     &setSimpleTXTOutput();
-    &universalTextPrinter( "DomainName\tNodeName\tLocked?\tLastAccessTime\tDays", @query );
+    &universalTextPrinter( "DomainName\tNodeName\tLocked?\tLastAccessTime\tDays\tType\t#Data\tFiles", @printable );
 
     return 0;
 };
