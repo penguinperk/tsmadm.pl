@@ -467,7 +467,7 @@ $Commands{&commandRegexp( "show", "nodeoccuopancy", 2, 5 )} = sub {
           push ( @printable, join( "\t", $line[0], $line[2], $line[3] ) );
         }
         elsif ( $line[1] eq "Arch" ) {
-          push ( @printable, join( "\t", $line[0], "", "", $line[2], $line[3] ) );
+          push ( @printable, join( "\t", $line[0], "0", "0", $line[2], $line[3] ) );
         }
         
     }
