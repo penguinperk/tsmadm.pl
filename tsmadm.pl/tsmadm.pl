@@ -344,6 +344,7 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     'objects, deleting (\d+) backup objects,'                          => 'BOLD GREEN',
     'backup objects, (\d+) archive objects,'                           => 'BOLD GREEN',
     'Full backup: (\d+) pages of '                                     => 'BOLD GREEN',
+    'Incremental backup: (\d+) pages of '                              => 'BOLD GREEN',
     'pages of (\d+) backed up\.'                                       => 'BOLD GREEN',
     'Unreadable Bytes: ([\d,]*\d*[123456789])\.'                       => 'BOLD RED',
     
