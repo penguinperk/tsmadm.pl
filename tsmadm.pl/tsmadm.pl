@@ -296,8 +296,8 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     #'\d+\t\w+\t\w+\tONL=\w+\t\d+\t\w+\t\d+\t(\w{6,8})\t'               => 'BOLD GREEN',
     #'\d\d\d\d\-\d\d\-\d\d\t\d\d\:\d\d\:\d\d\t(\w)' => 'BOLD GREEN',
     
-    'Current output volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'              => 'BOLD GREEN',
-    'Current output volume{{s}}: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'         => 'BOLD GREEN',
+    'Current output volume: ([A-Za-z_\.\-0-9:\\\/{},]+)\.'              => 'BOLD GREEN',
+    'Current output volume{{s}}: ([A-Za-z_\.\-0-9:\\\/{},]+)\.'         => 'BOLD GREEN',
     'Current input volume: ([A-Za-z_\.\-0-9:\\\/{}]+)\.'               => 'BOLD GREEN',
     'Waiting for access to input volume ([A-Za-z_\.\-0-9:\\\/{}]+) {{\d+ seconds}}\.' => 'BOLD GREEN',
         
