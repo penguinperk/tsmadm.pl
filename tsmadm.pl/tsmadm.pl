@@ -327,11 +327,13 @@ $CommandMode = "BATCH";                                     # INTERACTIVE, BATCH
     
     'ANR1360I Output volume ([A-Za-z_\.\-0-9:\\\/{}]+) opened '        => 'BOLD GREEN',
     'ANR1361I Output volume ([A-Za-z_\.\-0-9:\\\/{}]+) closed\.'       => 'BOLD GREEN',
-    
+
     'ANR8325I Dismounting volume ([A-Za-z_\.\-0-9:\\\/{}]+)'           => 'BOLD GREEN',
     'ANR8340I \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+) mounted\.'         => 'BOLD GREEN',
     'ANR8341I End-of-volume reached for \w+ volume ([A-Za-z_\.\-0-9:\\\/{}]+)\.' => 'BOLD GREEN',
-    
+
+    'ANR8810I Volume ([A-Za-z_\.\-0-9:\\\/{}]+) has been labeled in library' => 'BOLD GREEN',
+
     'ANR9791I Volume ([A-Za-z_\.\-0-9:\\\/{}]+) in library \w+ ownership is changing from' => 'BOLD GREEN',
     
     'ANR1340I Scratch volume ([A-Za-z_\.\-0-9:\\\/{}]+) is now defined in storage pool ' => 'BOLD GREEN',
