@@ -1167,16 +1167,52 @@ $Commands{&commandRegexp( "show", "copydifference", 2, 7 )} = sub {
     # add the deltas
     for ( @query1 ) {
         my @line1 = split( /\t/ );
+        my $counter = 0;
+        my $copysummary = 0;
+        
+        my @printabltemp;
     
         for ( grep ( /^$line1[0]\t/, @query2 ) ) {
             my @line2 = split( /\t/ );
             my $delta = $line1[1] - $line2[2];
 
-            push( @printable, join( "\t", $line1[0], $line1[1], $line2[1], $line2[2], $delta = ( $delta != 0 ) ? &colorString( $delta, 'BOLD RED') : $delta ) );
+            push( @printabltemp, join( "\t", $line1[0], $line1[1], $line2[1], $line2[2], $delta ) );
+            
+            $counter++;
+            $copysummary += $line2[2];
         }
     
+        my $delta = $line1[1] - $copysummary;
+        if ( $counter > 1 ) {
+            if ( $delta != 0 ) {
+                for ( @printabltemp ) {
+                    my @line = split( /\t/ );
+                    if ( $line[1] - $line[3] != 0 ) {
+                       push( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], &colorString( $line[1] - $line[3], 'BOLD RED') ) );
+                    }
+                    else {
+                       push( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[1] - $line[3] ) );
+                    }
+                }
+                
+                push( @printable, join( "\t", $line1[0], $line1[1], "=== SUM ===", $copysummary, ( $delta != 0 ) ? &colorString( $delta, 'BOLD RED') : $delta ) );
+            }
+            else {
+                push( @printable, @printabltemp );
+                push( @printable, join( "\t", $line1[0], $line1[1], "=== SUM ===", $copysummary, $delta ) );
+            }
+            
+        }
+        elsif ( defined( $printabltemp[0] ) ) {
+            my @line = split( /\t/, $printabltemp[0] );
+            $delta = $line1[1] - $line[3];
+            push( @printable, join( "\t", $line1[0], $line1[1], $line[2], $line[3], ( $delta != 0 ) ? &colorString( $delta, 'BOLD RED') : $delta ) );
+        }
+        else {
+            push( @printable, join( "\t", $line1[0], $line1[1], "", "",  &colorString( $line1[1], 'BOLD RED') ) );
+        }
     }
-   
+    
     &setSimpleTXTOutput();
     &universalTextPrinter( "NodeName\tPrimary#\tCopyPool\tCopy#\tDiff{RIGHT}", @printable );
     
