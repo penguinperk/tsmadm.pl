@@ -1136,6 +1136,53 @@ $Commands{&commandRegexp( "show", "moveable", 2, 5 )} = sub {
     return 0;
 };
 
+#######################
+# SHow COPYDIFFerence ########################################################################################################
+#######################
+&msg( '0110D', 'SHow COPYDIFFerence' );
+$Commands{&commandRegexp( "show", "copydifference", 2, 7 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow COPYDIFFerence Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+        
+    my @query1 = &runTabdelDsmadmc( "select OCCUPANCY.NODE_NAME,sum(OCCUPANCY.NUM_FILES) from OCCUPANCY,STGPOOLS where OCCUPANCY.STGPOOL_NAME=STGPOOLS.STGPOOL_NAME and STGPOOLS.POOLTYPE='PRIMARY' group by OCCUPANCY.NODE_NAME" );
+    return 0 if ( $#query1 < 0 || $LastErrorcode );
+    my @query2 = &runTabdelDsmadmc( "select OCCUPANCY.NODE_NAME,OCCUPANCY.STGPOOL_NAME,sum(OCCUPANCY.NUM_FILES) from OCCUPANCY,STGPOOLS where OCCUPANCY.STGPOOL_NAME=STGPOOLS.STGPOOL_NAME and STGPOOLS.POOLTYPE='COPY' group by OCCUPANCY.NODE_NAME,OCCUPANCY.STGPOOL_NAME" );
+    return 0 if ( $#query2 < 0 || $LastErrorcode );
+    
+    $LastCommandType = 'COPYDIFF';
+
+    my @printable;
+    
+    # add the deltas
+    for ( @query1 ) {
+        my @line1 = split( /\t/ );
+    
+        for ( grep ( /^$line1[0]\t/, @query2 ) ) {
+            my @line2 = split( /\t/ );
+            my $delta = $line1[1] - $line2[2];
+
+            push( @printable, join( "\t", $line1[0], $line1[1], $line2[1], $line2[2], $delta = ( $delta != 0 ) ? &colorString( $delta, 'BOLD RED') : $delta ) );
+        }
+    
+    }
+   
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "NodeName\tPrimary#\tCopyPool\tCopy#\tDiff{RIGHT}", @printable );
+    
+    return 0;
+};
+
 #############
 # different
 #############
