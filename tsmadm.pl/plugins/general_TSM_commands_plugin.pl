@@ -1612,7 +1612,13 @@ $Commands{&commandRegexp( "show", "inactive" )} = sub {
     $days = $1 if ( defined $3 && $3 =~ m/(\d+)/ );    
     
     #my @query = &runTabdelDsmadmc('select domain_name, node_name,locked,date(lastacc_time),date(days(CURRENT_DATE))-date(LASTACC_TIME) from nodes where cast((current_timestamp-lastacc_time)days as decimal) >= '.$days.' order by 5 desc');
-    my @query = &runTabdelDsmadmc( 'select n.domain_name,n.node_name,locked,date(n.lastacc_time),date(days(CURRENT_DATE))-date(n.lastacc_time),o.type,sum(logical_mb),sum(o.num_files) from nodes as n, occupancy as o where n.node_name=o.node_name and cast((current_timestamp-n.lastacc_time)days as decimal) >='.$days.' group by n.domain_name,n.node_name,n.locked,n.lastacc_time,o.type order by 7 desc' );
+    my @query; 
+    if ( $TSMSeverStatus{VERSION} <= 5 ) {
+       @query = &runTabdelDsmadmc( 'select n.domain_name,n.node_name,locked,date(n.lastacc_time),date(days(CURRENT_DATE))-date(n.lastacc_time),o.type,sum(logical_mb),sum(o.num_files) from nodes as n, occupancy as o where n.node_name=o.node_name and cast((current_timestamp-n.lastacc_time)days as decimal) >='.$days.' group by n.domain_name,n.node_name,n.locked,n.lastacc_time,o.type order by 7 desc' ); 
+    } else {
+       # TIMESTAMPDIFF scalar function: http://publib.boulder.ibm.com/infocenter/db2luw/v9r5/index.jsp?topic=%2Fcom.ibm.db2.luw.sql.ref.doc%2Fdoc%2Fr0000861.html
+       @query = &runTabdelDsmadmc( 'select n.domain_name,n.node_name,locked,date(n.lastacc_time),TIMESTAMPDIFF(16,CHAR(current_timestamp-n.lastacc_time)),o.type,sum(logical_mb),sum(o.num_files) from nodes as n, occupancy as o where n.node_name=o.node_name and TIMESTAMPDIFF(16,CHAR(current_timestamp-n.lastacc_time))>=15 group by n.domain_name,n.node_name,n.locked,n.lastacc_time,o.type order by 7 desc' ); 
+    }  
     return if ( $#query < 0 || $LastErrorcode );
     
     $LastCommandType = 'INACTIVE';
