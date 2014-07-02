@@ -96,7 +96,7 @@ $Commands{&commandRegexp( "delete", "associations" )} = sub {
     my @line = split ( /\t/, $LastResult[$number] );
 
     &setSimpleTXTOutput();
-    &universalTextPrinter( "NOHEADER", &runDsmadmc( "delete assoc $line[1] $line[2] $line[3]") );
+    &universalTextPrinter( "NOHEADER", &runDsmadmc( "delete assoc $line[1] $line[2] $line[3]" ) );
 
     return 0;
 };

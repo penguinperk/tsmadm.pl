@@ -34,6 +34,6 @@ use warnings;
 &defineAlias( 'mail2',    'reach mailto:?cc=TSMUzemeltetes@mkb.hu' );
 
 &defineAlias( 'actewoldv2',    'sh act begint=-10 | grep an[er]\d\d\d\d[ew] | invgrep match' );
-&defineAlias( 'actew',    'sh act --warnings --errors begint=-10 | invgrep ANR2034E | invgrep ANR2753I' );
+&defineAlias( 'actew',    'sh act --warnings --errors begint=-10 | invgrep ANR2034E | invgrep ANR2753I | invgrep ANR0162W | invgrep ANR0516E' );
 
 1;
