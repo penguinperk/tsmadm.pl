@@ -636,7 +636,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
         &msg( '0040I', $Settings{LIBRARYMANAGER} );
     }
         
-    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'ONL='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,VOLUME_NAME,ALLOCATED_TO from drives" );
+    my @query = &runTabdelDsmadmc( "select LIBRARY_NAME,DRIVE_NAME,'ONL='||ONLINE,ELEMENT,DRIVE_STATE,DRIVE_SERIAL,VOLUME_NAME,ALLOCATED_TO from drives order by 1,2" );
     return if ( $#query < 0 || $LastErrorcode );
 
     if ( defined( $Settings{LIBRARYMANAGER} ) && $TSMSeverStatus{SERVERNAME} ne $Settings{LIBRARYMANAGER} ) {
