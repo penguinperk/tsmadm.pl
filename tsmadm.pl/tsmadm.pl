@@ -51,7 +51,9 @@
 #        MS Windows (Version 5.1 (Build 2600.xpsp_sp2_gdr.050301-1519 : Service Pack 2))
 #        systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
 #        Microsoft Windows XP Professional 5.1.2600 Service Pack 3 Build 2600
+#
 #        Sun Solaris 9 ()
+#
 #        Debian Linux ()
 #
 #      with TSM servers:
