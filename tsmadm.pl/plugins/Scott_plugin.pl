@@ -100,6 +100,40 @@ $Commands{&commandRegexp( "show", "defassociation" )} = sub {
 
 };
 
+
+
+#######################
+# SHow drVolume ##################################################################################################
+#######################
+
+&msg( '0110D', 'SHow drvolume' );
+$Commands{&commandRegexp( "show", "drvolume" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow DR Media Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+  $LastCommandType = 'ASSOC';
+
+  my @query = &runTabdelDsmadmc("select location, count(volume_name) from drmedia where location<>'NULL'  group by location");
+  return if ( $#query < 0 );
+
+  &setSimpleTXTOutput();
+
+  &universalTextPrinter( "DR Location\t# of Volumes", @query );
+
+  return 0;
+
+};
 #######################
 # SHow Backup Retention ##################################################################################################
 #######################
@@ -299,6 +333,38 @@ $Commands{qr/^(show|^sho|^sh)\s*(nodedelta|nd)(\S*)/i} = sub {
 };
 
 #####################
+# Show avgTapeCap #
+#####################
+&msg( '0110D', 'SHow avgTapeCap' );
+$Commands{qr/^(show|^sho|^sh)\s*(avgTapeCap)(\S*)/i} = sub {
+	
+
+	
+	my @content = &runTabdelDsmadmc("select stgpool_name, avg((EST_CAPACITY_MB*PCT_UTILIZED)/100) from volumes where status='FULL' group by stgpool_name");
+ 
+ my @printable;
+  
+  foreach ( @content ) {
+      my @line = split ( /\t/ );
+      $line[1] = &byteFormatter ( $line[1], 'MB' );
+
+      push( @printable, join( "\t", $line[0], $line[1] )); 
+ 
+ 
+ }
+    
+
+ 
+ 
+  &universalTextPrinter("Average Tape Capacity", @printable);
+  
+
+  
+  return 0; 
+};
+
+
+#####################
 # Show VOlumeStatus #
 #####################
 &msg( '0110D', 'SHow VolumeStatus' );
@@ -366,6 +432,19 @@ $Commands{qr/^(show|^sho|^sh)\s*(dbspace)(\S*)/i} = sub {
   return 0;
 };
 
+
+#####################
+# Show Expiration #
+#####################
+&msg( '0110D', 'SHow Expp' );
+$Commands{qr/^(show)\s*(Expp)(\S*)/i} = sub {
+  my @content = &runTabdelDsmadmc("select Date(start_time) as Date, time(start_time) as startTime, time(end_time) as EndTime, timestampdiff(4, END_TIME - START_TIME) as Duration_Min, PROCESSES as threads, EXAMINED as Objects, EXAMINED/(timestampdiff(4, END_TIME - START_TIME)), SUCCESSFUL  from summary where start_time>=current_timestamp - 10 days  and activity='EXPIRATION' and entity is NULL order by start_time");
+  #my @content = &runTabdelDsmadmc("select Date(start_time) as Date, time(start_time) as startTime, time(end_time) as EndTime, timestampdiff(4, END_TIME - START_TIME) as Duration_Min, PROCESSES as threads, EXAMINED as Objects, EXAMINED/(timestampdiff(4, END_TIME - START_TIME)), SUCCESSFUL  from summary where start_time>=current_timestamp - 10 days  and activity<>'BACKUP' and activity<>'TAPE MOUNT' and activity='EXPIRATION' and entity is NULL order by start_time");
+  
+      
+      &universalTextPrinter("Date\tStart Time\tEnd Time\tDuration Minutes\tThreads\tObjects\tObject Per Minute\tStatus",@content);
+  return 0;
+};
 
 #####################
 # Show Extended Log 					#
@@ -472,8 +551,11 @@ $Commands{&commandRegexp( "show", "volreclaim" )} = sub {
   &universalTextPrinter( "#{%3s}\tVolumes Name (60%)\tActual Utilization(GB)\tEST Capacity\t%PCT Utilized\tPCT Reclaim", &addLineNumbers( @query ) );
   return 0;
 
+
 };
 &defineAlias( 'sh volr',    'show volreclaim' );
+
+
 
 ##########################
 # Show STGpools Enhanced 
