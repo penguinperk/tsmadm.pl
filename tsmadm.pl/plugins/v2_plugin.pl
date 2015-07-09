@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Pod::Usage;
+use POSIX;
 
 no warnings 'redefine';
 
@@ -326,8 +327,10 @@ sub basicPerformanceFromSummary ( $$$ ) {
                 $line[2] .= ' ';
             }
         }
-        
+        #'%0.2f' %3d
+        #my del = '\t';
         my $speed   = ( $line[15] > 0 ) ? int( ( $line[10]/1024/1024 ) / $line[15] )." MB/s" : "n/a";
+        my $xfrHr   = ( $line[15] > 0 ) ? sprintf( "%3d", ceil( ( ($line[10])/1024/1024/1024) / ($line[15]/3600) ) )." GB/Hr" : "n/a";
         my $failed  = ( $line[9] > 0 ) ? &colorString( $line[9], 'BOLD RED') : $line[9];
         my $success = ( $line[14] eq 'NO' ) ? &colorString( $line[14], 'BOLD RED') : $line[14];
         
@@ -343,7 +346,7 @@ sub basicPerformanceFromSummary ( $$$ ) {
             $line[5] =~ s/($volume) ->/$coloredVolume ->/;
         }
                 
-        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), $line[12], $line[13], $success ) );
+        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, $xfrHr, &timeFormatter ( $line[11], 's' ), $line[12], $line[13], $success ) );
        
     }
     
@@ -353,7 +356,7 @@ sub basicPerformanceFromSummary ( $$$ ) {
     }
         
     &setSimpleTXTOutput();    
-    &universalTextPrinter( "Start\tEnd{RIGHT}\t#Proc\t$columntmp\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc{RIGHT}", @printable );
+    &universalTextPrinter( "Start\tEnd{RIGHT}\t#Proc\t$columntmp\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tXfr/Hr\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc{RIGHT}", @printable );
     
 }
 
@@ -553,6 +556,7 @@ $Commands{&commandRegexp( "show", "dbbackup", 2, 3 )} = sub {
         return 0;
     }
 
+    ##my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,VOLUME_NAME from volhistory where type='DBSNAPSHOT' or type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
     my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,VOLUME_NAME from volhistory where type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
