@@ -394,7 +394,7 @@ $Commands{qr/^(show|^sho|^sh)\s*(volumestatus)(\S*)/i} = sub {
     }
     else {
     	#print "Array empty\n";
-    	 &universalTextPrinter("Number of volumes not accessable",@printable[0] = "***All of the volumes are in good shape***");
+    	 &universalTextPrinter("Number of volumes not accessable", $printable[0] = "***All of the volumes are in good shape***");
     }
 
   return 0; 
