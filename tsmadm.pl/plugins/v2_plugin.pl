@@ -186,6 +186,31 @@ $Commands{&commandRegexp( "show", "replicationperformance", 2, 12 )} = sub {
 
 };
 
+###############################
+# SHow PROTECTPerformance #####################################################################################################
+###############################
+&msg( '0110D', 'SHow PROTECTPerformance' );
+$Commands{&commandRegexp( "show", "protectperformance", 2, 9 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow PROTECTPerformance Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    &basicPerformanceFromSummary( 'STGPOOL PROTECTION', $3, $4 );
+
+    return 0;
+
+};
+
 ##########################
 # SHow CLIENTBACKUPPerformance #####################################################################################################
 ##########################
@@ -1270,6 +1295,67 @@ sub different ($$$$$) {
   }
 
   $r_hash->{@$r_array[$index_poz]} = @$r_array[$value_poz];
+
+};
+
+##############################
+# SHow REPLICATIONDifference #####################################################################################################
+##############################
+&msg( '0110D', 'REPLICATIONDifference' );
+$Commands{&commandRegexp( "show", "replicationdifference", 2, 12 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow REPLICATIONDifference Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    my $nodename = $3;
+
+    my @query = &runTabdelDsmadmc( "q repln $nodename" );
+    return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'REPLDIFF';
+
+    @query = deleteColumn( 3, @query);
+
+    &pbarInit( "PREPARATION |", scalar( @query ), "|");
+
+    my $i = 1;
+    my @printable;
+    
+    foreach ( @query ) {
+        my @line = split(/\t/);
+
+        $line[1] = '' if  ( ! defined ( $line[1] ) );
+        $line[2] = '' if  ( ! defined ( $line[2] ) );
+        $line[4] = '' if  ( ! defined ( $line[4] ) );
+
+        $line[3] = 0 if  ( ! defined ( $line[3] ) );
+        $line[5] = 0 if  ( ! defined ( $line[5] ) );
+
+        $line[3] =~ s/,//g;
+        $line[5] =~ s/,//g;
+
+        push ( @line, $line[5]-$line[3] );
+
+        push ( @printable, join( "\t", @line ) );
+
+        &pbarUpdate( $i++ );
+
+    }
+
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "#{RIGHT}\tNodeName\tType\tFilespaceName\tFilesonS\tReplServer\tFilesonR\tdelta", &addLineNumbers( @printable) );
+
+    return 0;
 
 };
 
