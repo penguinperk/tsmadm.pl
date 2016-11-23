@@ -1344,7 +1344,8 @@ $Commands{&commandRegexp( "show", "replicationdifference", 2, 12 )} = sub {
         $line[3] =~ s/,//g;
         $line[5] =~ s/,//g;
 
-        push ( @line, $line[5]-$line[3] );
+        my $delta = $line[5]-$line[3];
+        push ( @line, ( $delta != 0 ) ? &colorString( $delta, 'BOLD RED' ) : &colorString( $delta, 'BOLD GREEN' ) );
 
         push ( @printable, join( "\t", @line ) );
 
