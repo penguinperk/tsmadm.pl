@@ -629,6 +629,50 @@ $Commands{&commandRegexp( "show", "dbbackup", 2, 3 )} = sub {
 };
 
 #######################
+# SHow DBSBackup ########################################################################################################
+#######################
+&msg( '0110D', 'SHow DBSBackup' );
+$Commands{&commandRegexp( "show", "dbsbackup", 2, 4 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow DBSBackup Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,VOLUME_NAME from volhistory where type='DBSNAPSHOT' order by BACKUP_SERIES" );
+    return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'BACKUP';
+   
+    my @printable;
+
+    foreach ( @query ) {
+        my @line = split ( /\t/ );
+
+        if ( $line[2] eq 'DBSNAPSHOT' ) {
+            $line[2] = &colorString( $line[2], "BOLD GREEN");
+        }
+        
+        $line[7] = &colorString( $line[7], "BOLD GREEN");
+
+        push ( @printable, join( "\t", @line ) )
+    }   
+   
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "Date\tTime\tType\tSerie{RIGHT}\t#{RIGHT}\tSeq{RIGHT}\tDeviceClass\tVolume{RIGHT}", @printable );
+
+    return 0;
+};
+
+#######################
 # SHow STAtus ########################################################################################################
 #######################
 &msg( '0110D', 'SHow STAtus' );
@@ -1358,6 +1402,44 @@ $Commands{&commandRegexp( "show", "replicationdifference", 2, 12 )} = sub {
 
     return 0;
 
+};
+
+#######################
+# SHow CONTAINERUsage ########################################################################################################
+#######################
+&msg( '0110D', 'SHow CONTAINERUsage' );
+$Commands{&commandRegexp( "show", "containerusage", 2, 10 )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow CONTAINERUsage Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    my @query = &runTabdelDsmadmc( "select STGPOOLDIR_NAME,sum(TOTAL_SPACE_MB),sum(FREE_SPACE_MB),sum(TOTAL_SPACE_MB-FREE_SPACE_MB) from containers group by STGPOOLDIR_NAME order by 4 desc" );
+    return 0 if ( $#query < 0 || $LastErrorcode );
+
+    $LastCommandType = 'CONTAINER';
+   
+    my @printable;
+
+    foreach ( @query ) {
+        my @line = split ( /\t/ );
+
+        push ( @printable, join( "\t", @line ) )
+    }   
+   
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "Directory\tTotal(MB){RIGHT}\tFree(MB){RIGHT}\tUsed(MB){RIGHT}", @printable );
+
+    return 0;
 };
 
 1;
