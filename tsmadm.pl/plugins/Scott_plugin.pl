@@ -66,6 +66,84 @@ $Commands{&commandRegexp( "show", "veocc" )} = sub {
 
 };
 
+###############
+# SHow EVEnts ##########################################################################################################
+###############
+&msg( '0110D', 'SHow new' );
+$Commands{&commandRegexp( "show", "new" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow EVEnts Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+    $LastCommandType = 'EVENTS';
+
+    my @query = &runTabdelDsmadmc('q event * * begind=-7 endd=today endt=now f=d ex=yes'.$3.' '.$4.' '.$5);
+	
+	#my @MY = uniq @query;
+	
+    return if ( $#query < 0 || $LastErrorcode );
+
+    @query = deleteColumn( 8, @query);
+
+    &pbarInit( "PREPARATION |", scalar( @query ), "|");
+
+    my $i = 1;
+    my @printable;
+    
+    foreach ( @query ) {
+        my @line = split(/\t/);
+
+        $line[7] = '' if  ( ! defined ( $line[7] ) );
+
+        if ( $line[3] =~ m/(\d\d\/\d\d\/\d\d\d\d\s*)/ ) {
+            my $date = $1;
+            $line[4] =~ s/$date//;
+            $line[5] =~ s/$date//;
+        }
+        
+
+        elsif ( $line[6] =~ m/missed/i ) {
+            $line[7] = &colorString( $line[7], "BOLD YELLOW" );
+        }
+        elsif ( $line[6] =~ m/failed/i ) {
+            $line[6] = &colorString( $line[6], "BOLD RED" );
+            $line[7] = &colorString( $line[7], "BOLD RED" );
+        }
+        elsif ( $line[6] =~ m/severed/i ) {
+            $line[6] = &colorString( $line[6], "BOLD RED" );
+            $line[7] = &colorString( $line[7], "BOLD RED" );
+        }
+        elsif ( $line[6] =~ m/started/i ) {
+            $line[6] = &colorString( $line[6], "BOLD GREEN" );
+        }
+        elsif ( $line[6] =~ m/pending/i ) {
+            $line[6] = &colorString( $line[6], "GREEN" );
+        }
+
+        push ( @printable, join( "\t", @line ) );
+
+        &pbarUpdate( $i++ );
+
+    }
+
+    &setSimpleTXTOutput();
+    &universalTextPrinter( "#{RIGHT}\tDomain\tScheduleName\tNodeName\tScheduledStart\tActStart{RIGHT}\tCompleted{RIGHT}\tStatus\tRC{RIGHT}", &addLineNumbers( @printable ) );
+
+    return 0;
+
+};
+&defineAlias( 'sh exc', 'show events exc=yes' );
+
 #######################
 # SHow DefineASSOciations ##################################################################################################
 #######################
@@ -394,7 +472,7 @@ $Commands{qr/^(show|^sho|^sh)\s*(volumestatus)(\S*)/i} = sub {
     }
     else {
     	#print "Array empty\n";
-    	 &universalTextPrinter("Number of volumes not accessable", $printable[0] = "***All of the volumes are in good shape***");
+    	 &universalTextPrinter("Number of volumes not accessable",@printable[0] = "***All of the volumes are in good shape***");
     }
 
   return 0; 
@@ -633,13 +711,94 @@ $Commands{&commandRegexp( "show", "estgpools" )} = sub {
 &defineAlias( 'sh estgp', 'show estgp' );
 
 
+#######################
+#SHow dbStatus ##################################################################################################
+#######################
+
+&msg( '0110D', 'SHow dbstatus' );
+$Commands{&commandRegexp( "show", "dbstatus" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow dbstatus Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+ # my $stg = $3;
+  
+  my @query = &runTabdelDsmadmc("select date(start_time), time(start_time),time(end_time),timestampdiff(4, char(end_time - start_time)), bytes, successful, number from summary where start_time>=current_timestamp - 30 days  and  activity='FULL_DBBACKUP' order by 1");
+  return if ( $#query < 0 );
+
+  &setSimpleTXTOutput();
+  
+      my @printable;
+
+    foreach ( @query ) {
+      my @line = split ( /\t/ );
+      $line[4] = &byteFormatter ( $line[4], 'B' );
+	  
+	   if ( $line[5] eq "NO")   {
+          $line[5] = &colorString( "$line[5]", "BOLD RED" )
+		  }
+
+	   push ( @printable, join( "\t", $line[0], $line[1], $line[2], $line[3], $line[4], $line[5]) );
+	  }
+  &universalTextPrinter( "#{%3s}\tDate\tStart Time\tEnd Time\tDuration (min)\tTotal Backed Up\tSucessful", &addLineNumbers( @printable) );
+  return 0;
+
+
+};
+&defineAlias( 'sh volr',    'show volreclaim' );
+
+
 ##########################
 # Show Deduppping 
 ##########################
 $Commands{qr/^(show)\s*(deduppending, "")(\S*)/i} = sub {
   my @content = &runTabdelDsmadmc("show deduppending");
+  #$LastCommandType = 'ASSOC';
+
   &universalTextPrinter("Date/Time\tMessage",@content);
   return 0;
+};
+
+
+#######################
+# SHow DRtapes ##################################################################################################
+#######################
+
+&msg( '0110D', 'SHow DRTapes' );
+$Commands{&commandRegexp( "show", "DRTapes" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow DRTapes Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+
+  my @query = &runTabdelDsmadmc("select Volume_name, date(upd_date) as date, state, voltype from drmedia where state='COURIERRETRIEVE' or state='COURIER' order by 3");
+  return if ( $#query < 0 );
+
+  &setSimpleTXTOutput();
+
+  &universalTextPrinter( "#{RIGHT}\tVolume Name\tDate\tState\tVolume Type", &addLineNumbers( @query ) );
+
+  return 0;
+
 };
 
 1;

@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Pod::Usage;
+use POSIX;
 
 no warnings 'redefine';
 
@@ -156,56 +157,6 @@ $Commands{&commandRegexp( "show", "reclamationperformance", 2, 12 )} = sub {
     }
 
     &basicPerformanceFromSummary( 'RECLAMATION', $3, $4 );
-
-    return 0;
-
-};
-
-###############################
-# SHow REPLICATIONPerformance #####################################################################################################
-###############################
-&msg( '0110D', 'SHow REPLICATIONPerformance' );
-$Commands{&commandRegexp( "show", "replicationperformance", 2, 12 )} = sub {
-
-    if ( $ParameterRegExpValues{HELP} ) {
-        ###############################
-        # Put your help message here! #
-        ###############################
-        print "--------\n";
-        print "SHow REPlicationperformance Help!\n";
-        print "--------\n";
-
-        $LastCommandType = "HELP";
-
-        return 0;
-    }
-
-    &basicPerformanceFromSummary( 'REPLICATION', $3, $4 );
-
-    return 0;
-
-};
-
-###############################
-# SHow PROTECTPerformance #####################################################################################################
-###############################
-&msg( '0110D', 'SHow PROTECTPerformance' );
-$Commands{&commandRegexp( "show", "protectperformance", 2, 9 )} = sub {
-
-    if ( $ParameterRegExpValues{HELP} ) {
-        ###############################
-        # Put your help message here! #
-        ###############################
-        print "--------\n";
-        print "SHow PROTECTPerformance Help!\n";
-        print "--------\n";
-
-        $LastCommandType = "HELP";
-
-        return 0;
-    }
-
-    &basicPerformanceFromSummary( 'STGPOOL PROTECTION', $3, $4 );
 
     return 0;
 
@@ -376,8 +327,10 @@ sub basicPerformanceFromSummary ( $$$ ) {
                 $line[2] .= ' ';
             }
         }
-        
+        #'%0.2f' %3d
+        #my del = '\t';
         my $speed   = ( $line[15] > 0 ) ? int( ( $line[10]/1024/1024 ) / $line[15] )." MB/s" : "n/a";
+        my $xfrHr   = ( $line[15] > 0 ) ? sprintf( "%3d", ceil( ( ($line[10])/1024/1024/1024) / ($line[15]/3600) ) )." GB/Hr" : "n/a";
         my $failed  = ( $line[9] > 0 ) ? &colorString( $line[9], 'BOLD RED') : $line[9];
         my $success = ( $line[14] eq 'NO' ) ? &colorString( $line[14], 'BOLD RED') : $line[14];
         
@@ -393,7 +346,7 @@ sub basicPerformanceFromSummary ( $$$ ) {
             $line[5] =~ s/($volume) ->/$coloredVolume ->/;
         }
                 
-        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, &timeFormatter ( $line[11], 's' ), $line[12], $line[13], $success ) );
+        push ( @printable, join( "\t", $line[0].' '.$line[1], $line[2].$line[3], $line[4], $line[5], $line[6], $line[7].'/'.$line[8].'/'.$failed, &byteFormatter ( $line[10], 'B' ), &timeFormatter ( $line[15], 's' ), $speed, $xfrHr, &timeFormatter ( $line[11], 's' ), $line[12], $line[13], $success ) );
        
     }
     
@@ -403,7 +356,7 @@ sub basicPerformanceFromSummary ( $$$ ) {
     }
         
     &setSimpleTXTOutput();    
-    &universalTextPrinter( "Start\tEnd{RIGHT}\t#Proc\t$columntmp\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc{RIGHT}", @printable );
+    &universalTextPrinter( "Start\tEnd{RIGHT}\t#Proc\t$columntmp\tSchedName\t#E/A/F\t#Bytes{RIGHT}\tTime{RIGHT}\tSpeed{RIGHT}\tXfr/Hr\tIdle{RIGHT}\tMedW{RIGHT}\tP\tSuc{RIGHT}", @printable );
     
 }
 
@@ -603,7 +556,8 @@ $Commands{&commandRegexp( "show", "dbbackup", 2, 3 )} = sub {
         return 0;
     }
 
-    my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,VOLUME_NAME from volhistory where type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
+    my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,VOLUME_NAME from volhistory where type='DBSNAPSHOT' or type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
+    #my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,VOLUME_NAME from volhistory where type='BACKUPFULL' or type='BACKUPINCR' order by BACKUP_SERIES" );
     return 0 if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'BACKUP';
@@ -614,50 +568,6 @@ $Commands{&commandRegexp( "show", "dbbackup", 2, 3 )} = sub {
         my @line = split ( /\t/ );
 
         if ( $line[2] eq 'BACKUPFULL' ) {
-            $line[2] = &colorString( $line[2], "BOLD GREEN");
-        }
-        
-        $line[7] = &colorString( $line[7], "BOLD GREEN");
-
-        push ( @printable, join( "\t", @line ) )
-    }   
-   
-    &setSimpleTXTOutput();
-    &universalTextPrinter( "Date\tTime\tType\tSerie{RIGHT}\t#{RIGHT}\tSeq{RIGHT}\tDeviceClass\tVolume{RIGHT}", @printable );
-
-    return 0;
-};
-
-#######################
-# SHow DBSBackup ########################################################################################################
-#######################
-&msg( '0110D', 'SHow DBSBackup' );
-$Commands{&commandRegexp( "show", "dbsbackup", 2, 4 )} = sub {
-
-    if ( $ParameterRegExpValues{HELP} ) {
-        ###############################
-        # Put your help message here! #
-        ###############################
-        print "--------\n";
-        print "SHow DBSBackup Help!\n";
-        print "--------\n";
-
-        $LastCommandType = "HELP";
-
-        return 0;
-    }
-
-    my @query = &runTabdelDsmadmc( "select date(DATE_TIME),time(DATE_TIME),TYPE,BACKUP_SERIES,BACKUP_OPERATION,VOLUME_SEQ,DEVCLASS,VOLUME_NAME from volhistory where type='DBSNAPSHOT' order by BACKUP_SERIES" );
-    return 0 if ( $#query < 0 || $LastErrorcode );
-
-    $LastCommandType = 'BACKUP';
-   
-    my @printable;
-
-    foreach ( @query ) {
-        my @line = split ( /\t/ );
-
-        if ( $line[2] eq 'DBSNAPSHOT' ) {
             $line[2] = &colorString( $line[2], "BOLD GREEN");
         }
         
@@ -1340,106 +1250,6 @@ sub different ($$$$$) {
 
   $r_hash->{@$r_array[$index_poz]} = @$r_array[$value_poz];
 
-};
-
-##############################
-# SHow REPLICATIONDifference #####################################################################################################
-##############################
-&msg( '0110D', 'REPLICATIONDifference' );
-$Commands{&commandRegexp( "show", "replicationdifference", 2, 12 )} = sub {
-
-    if ( $ParameterRegExpValues{HELP} ) {
-        ###############################
-        # Put your help message here! #
-        ###############################
-        print "--------\n";
-        print "SHow REPLICATIONDifference Help!\n";
-        print "--------\n";
-
-        $LastCommandType = "HELP";
-
-        return 0;
-    }
-
-    my $nodename = $3;
-
-    my @query = &runTabdelDsmadmc( "q repln $nodename" );
-    return 0 if ( $#query < 0 || $LastErrorcode );
-
-    $LastCommandType = 'REPLDIFF';
-
-    @query = deleteColumn( 3, @query);
-
-    &pbarInit( "PREPARATION |", scalar( @query ), "|");
-
-    my $i = 1;
-    my @printable;
-    
-    foreach ( @query ) {
-        my @line = split(/\t/);
-
-        $line[1] = '' if  ( ! defined ( $line[1] ) );
-        $line[2] = '' if  ( ! defined ( $line[2] ) );
-        $line[4] = '' if  ( ! defined ( $line[4] ) );
-
-        $line[3] = 0 if  ( ! defined ( $line[3] ) );
-        $line[5] = 0 if  ( ! defined ( $line[5] ) );
-
-        $line[3] =~ s/,//g;
-        $line[5] =~ s/,//g;
-
-        my $delta = $line[5]-$line[3];
-        push ( @line, ( $delta != 0 ) ? &colorString( $delta, 'BOLD RED' ) : &colorString( $delta, 'BOLD GREEN' ) );
-
-        push ( @printable, join( "\t", @line ) );
-
-        &pbarUpdate( $i++ );
-
-    }
-
-    &setSimpleTXTOutput();
-    &universalTextPrinter( "#{RIGHT}\tNodeName\tType\tFilespaceName\tFilesonS\tReplServer\tFilesonR\tdelta", &addLineNumbers( @printable) );
-
-    return 0;
-
-};
-
-#######################
-# SHow CONTAINERUsage ########################################################################################################
-#######################
-&msg( '0110D', 'SHow CONTAINERUsage' );
-$Commands{&commandRegexp( "show", "containerusage", 2, 10 )} = sub {
-
-    if ( $ParameterRegExpValues{HELP} ) {
-        ###############################
-        # Put your help message here! #
-        ###############################
-        print "--------\n";
-        print "SHow CONTAINERUsage Help!\n";
-        print "--------\n";
-
-        $LastCommandType = "HELP";
-
-        return 0;
-    }
-
-    my @query = &runTabdelDsmadmc( "select STGPOOLDIR_NAME,sum(TOTAL_SPACE_MB),sum(FREE_SPACE_MB),sum(TOTAL_SPACE_MB-FREE_SPACE_MB) from containers group by STGPOOLDIR_NAME order by 4 desc" );
-    return 0 if ( $#query < 0 || $LastErrorcode );
-
-    $LastCommandType = 'CONTAINER';
-   
-    my @printable;
-
-    foreach ( @query ) {
-        my @line = split ( /\t/ );
-
-        push ( @printable, join( "\t", @line ) )
-    }   
-   
-    &setSimpleTXTOutput();
-    &universalTextPrinter( "Directory\tTotal(MB){RIGHT}\tFree(MB){RIGHT}\tUsed(MB){RIGHT}", @printable );
-
-    return 0;
 };
 
 1;

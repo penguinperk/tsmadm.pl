@@ -654,7 +654,7 @@ $Commands{&commandRegexp( "show", "drives" )} = sub {
     
     foreach ( @query_m ) {
        
-       if ( $_ =~ m/^ANR83{29|30|31|32|33}I/ ) {
+       if ( $_ =~ `m/^ANR83{29|30|31|32|33}I/ `) {
            if ( $_ =~ /.*volume (.*) is mounted (.*) in drive.*, status: (.*)\./ ) {
                 $vols{$1}[0]=$2;
                 $vols{$1}[1]=$3;
@@ -987,7 +987,7 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
 
     $LastCommandType = 'EVENTS';
 
-    my @query = &runTabdelDsmadmc('q event * * begint=-24 endd=today endt=now f=d '.$3.' '.$4.' '.$5);
+	my @query = &runTabdelDsmadmc('q event * * begint=-24 endd=today endt=now f=d '.$3.' '.$4.' '.$5);
     return if ( $#query < 0 || $LastErrorcode );
 
     @query = deleteColumn( 8, @query);
