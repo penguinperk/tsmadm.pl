@@ -297,6 +297,24 @@ $Commands{&commandRegexp( 'console', '' )} = sub {
 
 };
 
+&msg( '0110D', 'Mount' );
+$Commands{&commandRegexp( 'mount', '' )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "Console Help!\n";
+        print "--------\n";
+        pod2usage( -verbose => 3, -sections => "MOUNT" );
+        return 0;
+    }
+    &startMount;
+    return 0;
+
+};
+
 &msg( '0110D', 'DEBug' );
 $Commands{&commandRegexp( 'debug', '' )} = sub {
 
