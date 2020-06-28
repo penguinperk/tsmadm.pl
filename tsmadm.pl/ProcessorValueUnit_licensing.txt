@@ -1,0 +1,92 @@
+# CPU type      = core * PVU
+
+############
+# defaults #
+############
+default         = 1 * 100
+CPU             = 1 * 100
+
+#######
+# AMD #
+#######
+Opteron2        = 2 *  50
+Opteron4        = 4 *  50
+
+###########
+# Fujitsu #
+###########
+SPARC64VI       = 2 * 100
+
+######
+# HP #
+######
+PARISC          = 1 * 100
+Alpha           = 1 * 100
+VMGuest		= 1 * 0
+
+#######
+# IBM #
+#######
+IBMPOWER7       = 1 * 100
+IBMPOWER6       = 2 * 120
+IBMPOWER5       = 2 * 100
+
+Systemz9        = 1 * 100
+
+eServer         = 1 * 100
+
+zSeries         = 1 * 100
+
+System390       = 1 * 100
+
+PowerPC970      = 2 *  50
+
+POWER5QCM       = 4 *  50
+
+IBMCell         = 1 *  30
+
+P10             = 1 * 100
+
+#########
+# Intel #
+#########
+
+INTEL           = 1 * 100
+
+Itanium         = 1 * 100
+ItaniumDual     = 2 * 100
+ItaniumQuad     = 4 * 100
+
+# van ilyen?
+Xeon            = 1 * 100
+
+Xeon2           = 2 *  50
+Xeon4           = 4 *  50
+
+XeonSandyBridge2 = 2 * 70
+XeonSandyBridge4 = 4 * 70
+XeonSandyBridge6 = 6 * 70
+XeonSandyBridge8 = 8 * 70
+
+XeonNehalem4    = 4 *  100
+XeonNehalem6    = 6 *  120
+XeonNehalem8    = 8 *  120
+
+CoreDuo         = 2 *  50
+Core2Duo        = 2 *  50
+
+QuadCore        = 4 *  50
+
+#######
+# SUN #
+#######
+UltraSPARCT14   = 4 *  30
+UltraSPARCT16   = 6 *  30
+UltraSPARCT18   = 8 *  30
+
+UltraSPARCT24   = 4 *  50
+UltraSPARCT26   = 6 *  50
+UltraSPARCT28   = 8 *  50
+
+UltraSPARCIV    = 2 * 100
+UltraSPARCVII   = 4 * 100
