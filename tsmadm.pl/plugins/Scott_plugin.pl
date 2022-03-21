@@ -545,10 +545,10 @@ foreach ( @query ) {
       $line[2] = &byteFormatter ( $line[2], 'MB' );
       $line[3] = &byteFormatter ( $line[3], 'MB' );
 
-        if ( $line[4] >= 75 && $line[4] <= 90 ) {
+        if ( $line[4] >= 75 && $line[4] <= 86 ) {
           $line[4] = &colorString( "$line[4]", "BOLD YELLOW" );
         }
-        elsif ( $line[4] > 91 ) {
+        elsif ( $line[4] > 87 ) {
           $line[4] = &colorString( "$line[4]", "BOLD RED" );
         }
     
