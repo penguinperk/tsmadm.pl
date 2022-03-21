@@ -69,8 +69,8 @@ $Commands{&commandRegexp( "show", "veocc" )} = sub {
 ###############
 # SHow EVEnts ##########################################################################################################
 ###############
-&msg( '0110D', 'SHow new' );
-$Commands{&commandRegexp( "show", "new" )} = sub {
+&msg( '0110D', 'SHow EWeek' );
+$Commands{&commandRegexp( "show", "eweek" )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
@@ -142,7 +142,7 @@ $Commands{&commandRegexp( "show", "new" )} = sub {
     return 0;
 
 };
-&defineAlias( 'sh exc', 'show events exc=yes' );
+&defineAlias( 'sh new', 'show events exc=yes' );
 
 #######################
 # SHow DefineASSOciations ##################################################################################################
