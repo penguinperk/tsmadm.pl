@@ -2,4 +2,5 @@
 *.bak
 tsmadm.pl/plugins/.DS_Store
 tsmadm.pl/.DS_Store
+scott_plugin.pl_orig
 

@@ -67,10 +67,10 @@ $Commands{&commandRegexp( "show", "veocc" )} = sub {
 };
 
 ###############
-# SHow EVEnts ##########################################################################################################
+# SHow enhaced weekly ##########################################################################################################
 ###############
-&msg( '0110D', 'SHow EWeek' );
-$Commands{&commandRegexp( "show", "eweek" )} = sub {
+&msg( '0110D', 'SHow eweekly' );
+$Commands{&commandRegexp( "show", "eweekly" )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
@@ -142,7 +142,7 @@ $Commands{&commandRegexp( "show", "eweek" )} = sub {
     return 0;
 
 };
-&defineAlias( 'sh new', 'show events exc=yes' );
+&defineAlias( 'sh exc', 'show events exc=yes' );
 
 #######################
 # SHow DefineASSOciations ##################################################################################################
@@ -212,6 +212,38 @@ $Commands{&commandRegexp( "show", "drvolume" )} = sub {
   return 0;
 
 };
+
+#######################
+# SHow Event Archive  ##################################################################################################
+#######################
+
+&msg( '0110D', 'SHow eventarchive' );
+$Commands{&commandRegexp( "show", "eventarchive" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow retention Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+  my @query = &runTabdelDsmadmc("select schedule_name, actual_start, node_name, completed, result, status,  timestampdiff(4, char(completed - actual_start)) from events where schedule_name like 'ARCHIVE%'");
+  return if ( $#query < 0 );
+
+  &setSimpleTXTOutput();
+
+  &universalTextPrinter( "#{RIGHT}\tSchedule Name\tActual Start\tNode Name\tCompleted\tResult\tStatus\tArchive Duration Minutes", &addLineNumbers( @query ) );
+
+  return 0;
+
+};
+
 #######################
 # SHow Backup Retention ##################################################################################################
 #######################
@@ -525,6 +557,30 @@ $Commands{qr/^(show)\s*(Expp)(\S*)/i} = sub {
 };
 
 #####################
+# Show Expiration #
+#####################
+&msg( '0110D', 'SHow pp' );
+$Commands{qr/^(show)\s*(pp)(\S*)/i} = sub {
+  my @content = &runTabdelDsmadmc("select Date(start_time) as Date, time(start_time) as startTime, time(end_time) as EndTime, timestampdiff(4, END_TIME - START_TIME) as Duration_Min, PROCESSES as threads, EXAMINED as Objects, EXAMINED/(timestampdiff(4, END_TIME - START_TIME)), SUCCESSFUL  from summary where start_time>=current_timestamp - 10 days  and activity='EXPIRATION' and entity is NULL order by start_time");
+  #my @content = &runTabdelDsmadmc("select Date(start_time) as Date, time(start_time) as startTime, time(end_time) as EndTime, timestampdiff(4, END_TIME - START_TIME) as Duration_Min, PROCESSES as threads, EXAMINED as Objects, EXAMINED/(timestampdiff(4, END_TIME - START_TIME)), SUCCESSFUL  from summary where start_time>=current_timestamp - 10 days  and activity<>'BACKUP' and activity<>'TAPE MOUNT' and activity='EXPIRATION' and entity is NULL order by start_time");
+  
+      
+      &universalTextPrinter("Date\tStart Time\tEnd Time\tDuration Minutes\tThreads\tObjects\tObject Per Minute\tStatus",@content);
+  return 0;
+};
+
+# Show Direcotry Space #
+#####################
+#####################
+&msg( '0110D', 'SHow dirspace' );
+$Commands{qr/^(show|^sho|^sh)\s*(dir)(\S*)/i} = sub {
+  my @content = &runTabdelDsmadmc("q dirspace");
+      
+      &universalTextPrinter("DevClass Name\tDirecotry\tEst. Capacity\tEst. Availability",@content);
+  return 0;
+};
+
+#####################
 # Show Extended Log 					#
 #####################
 &msg( '0110D', 'SHow elog' );
@@ -545,10 +601,10 @@ foreach ( @query ) {
       $line[2] = &byteFormatter ( $line[2], 'MB' );
       $line[3] = &byteFormatter ( $line[3], 'MB' );
 
-        if ( $line[4] >= 75 && $line[4] <= 86 ) {
+        if ( $line[4] >= 75 && $line[4] <= 90 ) {
           $line[4] = &colorString( "$line[4]", "BOLD YELLOW" );
         }
-        elsif ( $line[4] > 87 ) {
+        elsif ( $line[4] > 91 ) {
           $line[4] = &colorString( "$line[4]", "BOLD RED" );
         }
     
@@ -800,5 +856,6 @@ $Commands{&commandRegexp( "show", "DRTapes" )} = sub {
   return 0;
 
 };
+
 
 1;
