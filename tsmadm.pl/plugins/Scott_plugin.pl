@@ -217,8 +217,8 @@ $Commands{&commandRegexp( "show", "drvolume" )} = sub {
 # SHow Event Archive  ##################################################################################################
 #######################
 
-&msg( '0110D', 'SHow eventarchive' );
-$Commands{&commandRegexp( "show", "eventarchive" )} = sub {
+&msg( '0110D', 'SHow event_archive' );
+$Commands{&commandRegexp( "show", "event_archive" )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
