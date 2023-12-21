@@ -882,9 +882,16 @@ sub reach ( $ ) {
 }
 
 sub byteFormatter( $$ ) {
-
     my $bytes = $_[0];
+	#my $bytes = $_[0];
     my $unit  = $_[1];
+
+    # Check if $bytes is defined
+    unless (defined $bytes) {
+        # Handle the case where $bytes is not defined (initialize to 0 or return an error)
+        # For now, let's initialize it to 0
+        $bytes = 0;
+    }
 
     my @units = ( 'B', 'KB', 'MB', 'GB', 'TB', 'PT');
 
@@ -902,6 +909,7 @@ sub byteFormatter( $$ ) {
         }
 
         if ( $bytes <= 1024 ) {
+			
           $return = int( $bytes ).' '.$_;
           last;
         }

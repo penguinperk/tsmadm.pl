@@ -36,7 +36,7 @@ my @temp;
 # SHow TSM for Virtual Environment ##################################################################################################
 #######################
 
-&msg( '0110D', 'SHow veocc' );
+&msg( '0110D', 'SHow veocc`' );
 $Commands{&commandRegexp( "show", "veocc" )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
@@ -208,6 +208,201 @@ $Commands{&commandRegexp( "show", "drvolume" )} = sub {
   &setSimpleTXTOutput();
 
   &universalTextPrinter( "DR Location\t# of Volumes", @query );
+
+  return 0;
+
+};
+
+###########################
+# SHow Replication Status #
+###########################
+
+&msg( '0110D', 'SHow replstatus' );
+$Commands{&commandRegexp( "show", "replstatus" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow replstatus Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+  my @query = &runTabdelDsmadmc("select type, Name, fsname, status, synctime, server, TGTSRV, STGRULE_NAME, REASONCODE  from TSMGUI_REPLCLI_GRID where STATUS != '0'");
+  return if ( $#query < 0 );
+
+  &setSimpleTXTOutput();
+
+  &universalTextPrinter( "#{RIGHT}\ttype\tName\tfsname\tstatus\tsynctime\tserver\tTGTSRV\tSTGRULE_NAME\tREASONCODE", &addLineNumbers( @query ) );
+
+  return 0;
+
+};
+
+###########################
+# SHow eocc #
+###########################
+
+&msg( '0110D', 'SHow eocc' );
+$Commands{&commandRegexp( "show", "eocc" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow replstatus Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+  my @query = &runTabdelDsmadmc("select node_name, type, filespace_name, filespace_ID, stgpool_name, num_files, reporting_MB from occupancy");
+  return if ( $#query < 0 );
+
+  &setSimpleTXTOutput();
+
+  &universalTextPrinter( "#{RIGHT}\tNodeName\tType\tFS_Name\tFSID\tStgPoolName\tNumFiles\tReported Space(MB)", &addLineNumbers( @query ) );
+
+  return 0;
+
+};
+#select status, count(name) as StatusCount from TSMGUI_REPLCLI_GRID group by status
+###########################
+# SHow replcount #
+###########################
+
+&msg( '0110D', 'SHow replcount' );
+$Commands{&commandRegexp( "show", "replcount" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow replcount Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+  my @query = &runTabdelDsmadmc("select status, count(name) as StatusCount from TSMGUI_REPLCLI_GRID group by status");
+  return if ( $#query < 0 );
+
+  &setSimpleTXTOutput();
+
+  &universalTextPrinter( "#{RIGHT}\tStatus\tReplItems", &addLineNumbers( @query ) );
+
+  return 0;
+
+};
+
+#>select NAME,sum(FILES_NOT_REPLD) as FILES_NOT_REPLD from TSMGUI_REPLCLI_GRID where FILES_NOT_REPLD>0 group by name
+###########################
+# SHow replcount #
+###########################
+
+&msg( '0110D', 'SHow groupnotrepl' );
+$Commands{&commandRegexp( "show", "groupnotrepl" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow groupnotrepl Help!\n";
+		print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+  my @query = &runTabdelDsmadmc("select sum(FILES_NOT_REPLD) from TSMGUI_REPLCLI_GRID");
+  return if ( $#query < 0 );
+  &setSimpleTXTOutput();
+  &universalTextPrinter( "Files_NotRepld", @query );
+
+
+  my @query1 = &runTabdelDsmadmc("select NAME,sum(FILES_NOT_REPLD) as FILES_NOT_REPLD from TSMGUI_REPLCLI_GRID where FILES_NOT_REPLD>0 group by name");
+  return if ( $#query1 < 0 );
+  &setSimpleTXTOutput();
+  &universalTextPrinter( "#{RIGHT}\tNodeName\tFiles_NotRepld", &addLineNumbers( @query1 ) );
+
+  return 0;
+
+};
+&defineAlias( 'sh gnr',    'SHow groupnotrepl' );
+
+#select count(FILES_NOT_REPLD) from TSMGUI_REPLCLI_GRID group by name 
+###########################
+# SHow replcount #
+###########################
+
+&msg( '0110D', 'SHow totalnotrepl' );
+$Commands{&commandRegexp( "show", "totalnotrepl" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow totalnotrepl Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+  my @query = &runTabdelDsmadmc("select sum(FILES_NOT_REPLD) from TSMGUI_REPLCLI_GRID");
+  return if ( $#query < 0 );
+
+  &setSimpleTXTOutput();
+
+  &universalTextPrinter( "Files_NotRepld", ( @query ) );
+
+  return 0;
+
+};
+&defineAlias( 'sh tnr',    'SHow totalnotrepl' );
+
+#select RULENAME, TGTPOOL, TYPE, SRCPOOL, active, LASTEXETIME, MAXSESSIONS from stgrules
+###########################
+# SHow estgrule #
+###########################
+
+&msg( '0110D', 'SHow stgrule' );
+$Commands{&commandRegexp( "show", "stgrule" )} = sub {
+
+    if ( $ParameterRegExpValues{HELP} ) {
+        ###############################
+        # Put your help message here! #
+        ###############################
+        print "--------\n";
+        print "SHow stgrule Help!\n";
+        print "--------\n";
+
+        $LastCommandType = "HELP";
+
+        return 0;
+    }
+
+  my @query = &runTabdelDsmadmc("select RULENAME, TGTPOOL, TYPE, SRCPOOL, active, LASTEXETIME, MAXSESSIONS from stgrules");
+  return if ( $#query < 0 );
+
+  &setSimpleTXTOutput();
+
+  &universalTextPrinter( "#{RIGHT}\tRuleName\tTGT Pool\tActionType\tSRCPool\tActive\tLastExTime\tMaxSession", &addLineNumbers( @query ) );
 
   return 0;
 
@@ -713,16 +908,39 @@ $Commands{&commandRegexp( "show", "estgpools" )} = sub {
    my @query = &runTabdelDsmadmc( "select STGPOOL_NAME,DEVCLASS,COLLOCATE,EST_CAPACITY_MB,PCT_UTILIZED,PCT_MIGR,HIGHMIG,LOWMIG,RECLAIM,NEXTSTGPOOL, ((EST_CAPACITY_MB*PCT_UTILIZED)/100) from stgpools", 'select_x_from_stgpools' );
          #                                         0      1         2           3              4          5        6       7      8        9                           10
    #my @query = &runTabdelDsmadmc( "select STGPOOL_NAME,DEVCLASS,COLLOCATE,EST_CAPACITY_MB,PCT_UTILIZED,PCT_MIGR,HIGHMIG,LOWMIG,RECLAIM,NEXTSTGPOOL, ((PCT_UTILIZED/100) * EST_CAPACITY_MB) from STGPOOLS", 'select_x_from_stgpools' );
-    
+   
+#print "Initial value of line5: $line[4]\n";  # Display the initial value of $bytes
+   
+	    # Check if $bytes is defined
+    #if ($line[5] != 0) {
+        # Handle the case where $bytes is not defined (initialize to 0 or return an error)
+        # For now, let's initialize it to 0
+     #   $line[5] = 0;
+   # }
+	
     return if ( $#query < 0 || $LastErrorcode );
 
     $LastCommandType = 'GENERAL';
 
     my @printable;
+	
+	#if (defined $line[1]) {
+	#	print "is NULL";
+	#}else{[print "NOT NULL";
+	#}
+	
+    #print "Variable is defined and not null.\n";
+	#if (defined $example_variable) {
+	#} else {
+    #print "Variable is null (undefined).\n";
+	#}
 
     foreach ( @query ) {
       my @line = split ( /\t/ );
       $line[3] = &byteFormatter ( $line[3], 'MB' );
+	  $line[1] = " " if ( ! defined ( $line[1] ) );
+	  $line[2] = " " if ( ! defined ( $line[2] ) );
+	  $line[4] = "0" if ( ! defined ( $line[4] ) );
       $line[5] = " " if ( ! defined ( $line[5] ) );
       $line[6] = " " if ( ! defined ( $line[6] ) );
       $line[7] = " " if ( ! defined ( $line[7] ) );
