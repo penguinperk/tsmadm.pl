@@ -77,7 +77,7 @@ $Commands{&commandRegexp( "show", "eweekly" )} = sub {
         # Put your help message here! #
         ###############################
         print "--------\n";
-        print "SHow EVEnts Help!\n";
+        print "SHow eweekly Help!\n";
         print "--------\n";
 
         $LastCommandType = "HELP";
@@ -85,7 +85,7 @@ $Commands{&commandRegexp( "show", "eweekly" )} = sub {
         return 0;
     }
 
-    $LastCommandType = 'EVENTS';
+    $LastCommandType = 'eweekly';
 
     my @query = &runTabdelDsmadmc('q event * * begind=-7 endd=today endt=now f=d ex=yes'.$3.' '.$4.' '.$5);
 	
@@ -142,7 +142,8 @@ $Commands{&commandRegexp( "show", "eweekly" )} = sub {
     return 0;
 
 };
-&defineAlias( 'sh exc', 'show events exc=yes' );
+#&defineAlias( 'sh exc' );
+#&defineAlias( 'sh exc', 'show events exc=yes' );
 
 #######################
 # SHow DefineASSOciations ##################################################################################################
@@ -412,15 +413,15 @@ $Commands{&commandRegexp( "show", "stgrule" )} = sub {
 # SHow Event Archive  ##################################################################################################
 #######################
 
-&msg( '0110D', 'SHow event_archive' );
-$Commands{&commandRegexp( "show", "event_archive" )} = sub {
+&msg( '0110D', 'SHow archive_event' );
+$Commands{&commandRegexp( "show", "archive_event" )} = sub {
 
     if ( $ParameterRegExpValues{HELP} ) {
         ###############################
         # Put your help message here! #
         ###############################
         print "--------\n";
-        print "SHow retention Help!\n";
+        print "SHow archive_event Help!\n";
         print "--------\n";
 
         $LastCommandType = "HELP";

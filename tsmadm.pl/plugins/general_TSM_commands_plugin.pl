@@ -1043,7 +1043,7 @@ $Commands{&commandRegexp( "show", "events" )} = sub {
     return 0;
 
 };
-&defineAlias( 'sh exc', 'show events exc=yes' );
+#&defineAlias( 'sh exc', 'show events exc=yes' );
 
 ########################################################################################################################
 
